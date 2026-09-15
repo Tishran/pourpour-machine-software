@@ -39,7 +39,7 @@ export default function App() {
         </button>
         <span className="header-status mono">
           <span className="status-dot" />
-          PROTOTYPE 01<span className="header-divider">/</span>IN DEVELOPMENT
+          IN DEVELOPMENT
         </span>
         <button className="header-index mono" onClick={() => goToAct(6)}>
           LAUNCH NOTES <span>↗</span>
@@ -74,7 +74,6 @@ export default function App() {
         ))}
       </nav>
       <div className="viewport-footer mono" aria-hidden="true">
-        <span>FB–01</span>
         <span>
           {String(active + 1).padStart(2, "0")} /{" "}
           {acts[active].label.toUpperCase()}

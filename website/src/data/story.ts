@@ -1,12 +1,24 @@
 export const acts = [
-  { id: "object", label: "The object" },
-  { id: "physical", label: "The recipe" },
-  { id: "engineering", label: "The mechanics" },
-  { id: "scan", label: "The coffee" },
-  { id: "brew", label: "The pour" },
-  { id: "purpose", label: "The ritual" },
-  { id: "launch", label: "Your morning" },
+  { id: "object", label: "The object", scrollVh: 150 },
+  { id: "physical", label: "The recipe", scrollVh: 150 },
+  { id: "engineering", label: "The mechanics", scrollVh: 150 },
+  { id: "scan", label: "The coffee", scrollVh: 240 },
+  { id: "brew", label: "The pour", scrollVh: 270 },
+  { id: "purpose", label: "The ritual", scrollVh: 150 },
+  { id: "launch", label: "Your morning", scrollVh: 100 },
 ] as const;
+
+// The final viewport has no outgoing transition. Longer acts advance less per scroll pixel.
+export function stageToScrollProgress(stage: number) {
+  const outgoing = acts.slice(0, -1);
+  const total = outgoing.reduce((sum, act) => sum + act.scrollVh, 0);
+  const s = Math.max(0, Math.min(outgoing.length, stage));
+  const index = Math.floor(s);
+  const before = outgoing
+    .slice(0, index)
+    .reduce((sum, act) => sum + act.scrollVh, 0);
+  return (before + (outgoing[index]?.scrollVh ?? 0) * (s - index)) / total;
+}
 export type Part =
   "heater" | "flow" | "nozzle" | "reservoir" | "dripper" | "scale" | null;
 export const story = {

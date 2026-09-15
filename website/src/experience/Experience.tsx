@@ -1,11 +1,13 @@
-import { Component, useEffect, useRef, useState, type ReactNode } from "react";
-import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import {
-  AdaptiveDpr,
-  ContactShadows,
-  Environment,
-  Lightformer,
-} from "@react-three/drei";
+  Component,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
 import * as THREE from "three";
 import Machine from "./Machine";
 import Fallback from "./Fallback";
@@ -112,16 +114,9 @@ function Stage({ reduced }: { reduced: boolean }) {
           rotation={[Math.PI / 2, 0, 0]}
         />
       </Environment>
-      <Machine mobile={mobile} />
-      <ContactShadows
-        position={[0, -0.09, 0]}
-        opacity={0.3}
-        scale={7}
-        blur={2.5}
-        far={5}
-        resolution={256}
-        frames={1}
-      />
+      <Suspense fallback={null}>
+        <Machine mobile={mobile} />
+      </Suspense>
       <AdaptiveDpr pixelated />
     </>
   );

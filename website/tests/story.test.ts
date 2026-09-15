@@ -1,6 +1,12 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { brewAt, trajectory, keyframe } from "../src/data/story";
+import {
+  acts,
+  brewAt,
+  trajectory,
+  keyframe,
+  stageToScrollProgress,
+} from "../src/data/story";
 
 test("three pours deliver 300 ml with stationary volume during both pauses", () => {
   assert.equal(brewAt(0).volume, 0);
@@ -34,4 +40,19 @@ test("scroll keyframes hit precise mechanical endpoints in either direction", ()
   assert.equal(keyframe([0, 1, 0], 1), 1);
   assert.equal(keyframe([0, 1, 0], 2), 0);
   assert.equal(keyframe([0, 1, 0], 0.5), keyframe([0, 1, 0], 1.5));
+});
+
+test("longer scan and brew acts preserve navigation positions and slow stage progression", () => {
+  const total = acts.slice(0, -1).reduce((sum, act) => sum + act.scrollVh, 0);
+  let position = 0;
+  acts.forEach((act, index) => {
+    assert(Math.abs(stageToScrollProgress(index) - position / total) < 1e-10);
+    position += act.scrollVh;
+  });
+  const distance = (stage: number) =>
+    stageToScrollProgress(stage + 0.5) - stageToScrollProgress(stage);
+  assert(Math.abs(distance(3) / distance(0) - 1.6) < 1e-10);
+  assert(Math.abs(distance(4) / distance(0) - 1.8) < 1e-10);
+  assert.equal(stageToScrollProgress(-1), 0);
+  assert.equal(stageToScrollProgress(7), 1);
 });

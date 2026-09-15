@@ -180,12 +180,12 @@ button:disabled {
   height: 100svh;
 }
 .act-panel {
-  position: fixed;
-  inset: 0;
-  opacity: 0;
-  visibility: hidden;
+  position: sticky;
+  top: 0;
+  min-height: 100svh;
+  opacity: 1;
+  visibility: visible;
   pointer-events: none;
-  will-change: opacity, transform;
 }
 .act-panel button,
 .act-panel a {
@@ -579,7 +579,7 @@ em {
   height: 1px;
   background: #d99255;
   box-shadow: 0 0 10px #d9925580;
-  animation: scan 3s ease-in-out infinite alternate;
+  top: calc(4% + var(--scan-progress, 0) * 92%);
 }
 .scan-caption {
   position: absolute;
@@ -588,18 +588,10 @@ em {
   right: 0;
   text-align: center;
   font:
-    10px "IBM Plex Mono",
+    12px "IBM Plex Mono",
     monospace;
   color: #714c33;
   letter-spacing: 1px;
-}
-@keyframes scan {
-  from {
-    top: 4%;
-  }
-  to {
-    top: 96%;
-  }
 }
 .brew-editorial {
   top: 22%;
@@ -1697,5 +1689,112 @@ em {
   }
   .app[data-act="5"] .scene-shell {
     inset: 50% -12% 23% 17%;
+  }
+}
+
+/* Keep copy in one continuous reading flow, including at short heights. */
+.act-panel > .editorial,
+.act-panel > .hero-copy {
+  position: relative;
+  top: auto;
+  padding-top: max(100px, 14svh);
+  padding-bottom: 90px;
+}
+.act-panel > .hero-copy {
+  padding-top: 36svh;
+}
+.hero-index {
+  display: none;
+}
+.recipe-value,
+.recipe-specs > * {
+  min-width: 0;
+}
+.brew-hud {
+  grid-template-columns: repeat(3, minmax(0, 1fr)) minmax(145px, 1.3fr);
+}
+.act-panel > .brew-editorial {
+  padding-bottom: 230px;
+}
+.instrument-header {
+  background: var(--bg);
+}
+.viewport-footer {
+  background: var(--bg);
+}
+@media (max-width: 760px) {
+  .viewport-footer {
+    display: none;
+  }
+  .act-panel > .editorial,
+  .act-panel > .hero-copy {
+    padding-top: 95px;
+    padding-bottom: 85px;
+  }
+  .hero-copy .body-copy,
+  .hero-copy .scroll-link,
+  .recipe-equation,
+  .statement,
+  .panel-physical .fineprint,
+  .engineering-legend,
+  .appliance-recipe,
+  .brew-phase,
+  .brew-instruction,
+  .workflow,
+  .purpose-editorial > .body-copy,
+  .final-editorial .action,
+  .prototype-status {
+    position: relative;
+    inset: auto;
+    width: auto;
+    max-width: none;
+    margin-top: 20px;
+  }
+  .hero-copy .body-copy,
+  .recipe-equation,
+  .engineering-legend,
+  .appliance-recipe,
+  .brew-phase,
+  .workflow,
+  .final-editorial .action {
+    margin-top: 38svh;
+  }
+  .hero-copy .scroll-link {
+    width: fit-content;
+  }
+  .recipe-specs {
+    display: flex;
+    gap: 14px;
+  }
+  .recipe-specs .recipe-value {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .brew-hud {
+    position: relative;
+    inset: auto;
+    margin: 0 7%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+  }
+  .act-panel > .brew-editorial {
+    padding-bottom: 25px;
+  }
+  .simulation-note {
+    position: relative;
+    inset: auto;
+    display: block;
+    margin: 22px 7% 0;
+    padding-bottom: 80px;
+    line-height: 1.7;
+  }
+  .prototype-status {
+    gap: 10px 20px;
+  }
+  .end-footer {
+    position: relative;
+    inset: auto;
+    margin: 0 7%;
+    padding-bottom: 30px;
   }
 }

@@ -1,7 +1,14 @@
 import { useLayoutEffect, useState, type RefObject } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { acts, brewAt, brewProgress, keyframe, story } from "../data/story";
+import {
+  acts,
+  brewAt,
+  brewProgress,
+  keyframe,
+  stageToScrollProgress,
+  story,
+} from "../data/story";
 gsap.registerPlugin(ScrollTrigger);
 export function useStory(root: RefObject<HTMLElement | null>) {
   const [active, setActive] = useState(0);
@@ -19,7 +26,6 @@ export function useStory(root: RefObject<HTMLElement | null>) {
     const el = root.current;
     if (!el) return;
     let last = -1;
-    const panels = [...el.querySelectorAll<HTMLElement>(".act-panel")];
     const update = () => {
       const s = story.stage;
       const index = Math.min(6, Math.floor(s + 0.22));
@@ -29,7 +35,7 @@ export function useStory(root: RefObject<HTMLElement | null>) {
       }
       story.light = keyframe([0, 1, 1, 0.94, 0, 0.15, 1], reduced ? index : s);
       el.style.setProperty("--light", String(story.light));
-      el.style.setProperty("--progress", String(s / 6));
+      el.style.setProperty("--progress", String(stageToScrollProgress(s)));
       const bg = [23, 24, 21].map((v, i) =>
         Math.round(v + ([242, 237, 227][i] - v) * story.light),
       );
@@ -38,26 +44,8 @@ export function useStory(root: RefObject<HTMLElement | null>) {
       );
       el.style.setProperty("--bg", `rgb(${bg.join(",")})`);
       el.style.setProperty("--fg", `rgb(${fg.join(",")})`);
-      panels.forEach((panel, i) => {
-        const visible = i === index,
-          d = s - i;
-        const opacity = reduced
-          ? Number(visible)
-          : Math.max(0, Math.min(1, (d + 0.22) / 0.18, (0.82 - d) / 0.18));
-        panel.style.opacity = String(
-          i === 0 && s < 0.1
-            ? 1
-            : i === 6
-              ? Math.min(1, Math.max(0, (s - 5.78) / 0.18))
-              : opacity,
-        );
-        panel.style.visibility = visible ? "visible" : "hidden";
-        panel.style.transform = reduced
-          ? "none"
-          : `translate3d(0,${Math.max(-15, Math.min(15, -d * 16))}px,0)`;
-        panel.inert = !visible;
-        panel.setAttribute("aria-hidden", String(!visible));
-      });
+      // Text stays in document flow: sticky panels leave with their section,
+      // so adjacent acts never crossfade or occupy the same text area.
       const brew = brewAt(brewProgress(s));
       for (const [id, text] of [
         [
@@ -79,18 +67,28 @@ export function useStory(root: RefObject<HTMLElement | null>) {
       window.dispatchEvent(new Event("firstbrew:frame"));
     };
     const ctx = gsap.context(() => {
-      gsap
-        .timeline({
-          scrollTrigger: {
-            trigger: ".story",
-            start: "top top",
-            end: "bottom bottom",
-            scrub: reduced ? true : 0.65,
-            invalidateOnRefresh: true,
+      const timeline = gsap.timeline({
+        scrollTrigger: {
+          trigger: ".story",
+          start: "top top",
+          end: () => `+=${document.getElementById("launch")!.offsetTop}`,
+          scrub: reduced ? true : 0.65,
+          invalidateOnRefresh: true,
+        },
+        onUpdate: update,
+      });
+      acts.slice(0, -1).forEach((act, index) => {
+        timeline.fromTo(
+          story,
+          { stage: index },
+          {
+            stage: index + 1,
+            duration: act.scrollVh / 150,
+            ease: "none",
+            immediateRender: index === 0,
           },
-          onUpdate: update,
-        })
-        .fromTo(story, { stage: 0 }, { stage: 6, duration: 6, ease: "none" });
+        );
+      });
     }, el);
     update();
     return () => ctx.revert();

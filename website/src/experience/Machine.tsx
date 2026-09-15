@@ -1,12 +1,16 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { useFrame } from "@react-three/fiber";
-import { Html, Line, RoundedBox } from "@react-three/drei";
+import { ContactShadows, Html, Line, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
+import { Finish, SurfaceProvider } from "./Materials";
+import { Dripper, Carafe } from "./Vessels";
+import { CENTER_Z, BED_Y } from "./vesselGeometry";
 import {
   brewAt,
   brewProgress,
   clamp,
   keyframe,
+  smooth,
   story,
   trajectory,
   type Part,
@@ -16,41 +20,6 @@ const CERAMIC = "#dedbd1",
   METAL = "#a4aaa8",
   RUBBER = "#252723",
   COPPER = "#b87542";
-const CENTER_Z = 0.3,
-  BED_Y = 1.94;
-
-function Finish({
-  color = CERAMIC,
-  metal = 0,
-  rough = 0.35,
-  part,
-}: {
-  color?: string;
-  metal?: number;
-  rough?: number;
-  part?: Part;
-}) {
-  const ref = useRef<THREE.MeshStandardMaterial>(null);
-  useFrame((_, delta) => {
-    if (ref.current)
-      ref.current.emissiveIntensity = THREE.MathUtils.damp(
-        ref.current.emissiveIntensity,
-        part && story.highlight === part ? 0.6 : 0,
-        10,
-        delta,
-      );
-  });
-  return (
-    <meshStandardMaterial
-      ref={ref}
-      color={color}
-      roughness={rough}
-      metalness={metal}
-      emissive={COPPER}
-      emissiveIntensity={0}
-    />
-  );
-}
 
 function Block({
   position,
@@ -108,10 +77,10 @@ function Inscription({
       ctx.fillRect(0, 0, 1024, 160);
     }
     ctx.fillStyle = color;
-    ctx.font = "500 64px monospace";
+    ctx.font = "600 112px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(text, 512, 80);
+    ctx.fillText(text, 512, 80, 980);
     const t = new THREE.CanvasTexture(c);
     t.colorSpace = THREE.SRGBColorSpace;
     return t;
@@ -362,167 +331,6 @@ export function Reservoir() {
   );
 }
 
-export function CoffeeBed() {
-  const grains = useRef<THREE.InstancedMesh>(null);
-  useEffect(() => {
-    if (!grains.current) return;
-    const dummy = new THREE.Object3D();
-    for (let i = 0; i < 480; i++) {
-      const r = Math.sqrt((i + 0.5) / 480) * 0.423;
-      const a = i * 2.399963;
-      dummy.position.set(
-        Math.cos(a) * r,
-        0.006 + Math.sin(i * 47.2) * 0.008,
-        Math.sin(a) * r,
-      );
-      dummy.rotation.set(i, i * 0.7, i * 0.2);
-      dummy.scale.setScalar(0.65 + (Math.sin(i * 3.7) + 1) * 0.32);
-      dummy.updateMatrix();
-      grains.current.setMatrixAt(i, dummy.matrix);
-      grains.current.setColorAt(
-        i,
-        new THREE.Color(i % 3 === 0 ? "#76503a" : "#3d271b"),
-      );
-    }
-    grains.current.instanceMatrix.needsUpdate = true;
-    if (grains.current.instanceColor)
-      grains.current.instanceColor.needsUpdate = true;
-  }, []);
-  return (
-    <group position={[0, BED_Y, CENTER_Z]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
-        <circleGeometry args={[0.435, 64]} />
-        <meshStandardMaterial color="#352117" roughness={1} />
-      </mesh>
-      <instancedMesh ref={grains} args={[undefined, undefined, 480]}>
-        <icosahedronGeometry args={[0.019, 0]} />
-        <meshStandardMaterial roughness={1} />
-      </instancedMesh>
-    </group>
-  );
-}
-
-export function Dripper() {
-  return (
-    <group>
-      <mesh position={[0, 1.73, CENTER_Z]} castShadow>
-        <cylinderGeometry args={[0.52, 0.105, 0.65, 64, 1, true]} />
-        <meshStandardMaterial
-          color="#e8e0cc"
-          side={THREE.DoubleSide}
-          roughness={0.54}
-        />
-      </mesh>
-      {Array.from({ length: 24 }, (_, i) => {
-        const a = (i * Math.PI) / 12;
-        return (
-          <mesh
-            key={i}
-            position={[
-              Math.cos(a) * 0.323,
-              1.735,
-              CENTER_Z + Math.sin(a) * 0.323,
-            ]}
-            rotation={[Math.sin(a) * 0.54, 0, -Math.cos(a) * 0.54]}
-          >
-            <cylinderGeometry args={[0.012, 0.006, 0.74, 8]} />
-            <Finish color="#f4eddf" part="dripper" />
-          </mesh>
-        );
-      })}
-      <mesh position={[0, 2.062, CENTER_Z]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.518, 0.019, 8, 64]} />
-        <Finish part="dripper" />
-      </mesh>
-      <mesh position={[0.51, 1.88, CENTER_Z]} rotation={[0, 0.5, 0]}>
-        <torusGeometry args={[0.15, 0.035, 10, 32]} />
-        <Finish part="dripper" />
-      </mesh>
-      <mesh position={[0, 1.39, CENTER_Z]}>
-        <cylinderGeometry args={[0.34, 0.34, 0.055, 48]} />
-        <Finish color={METAL} metal={0.8} />
-      </mesh>
-      <CoffeeBed />
-      <Annotation position={[-0.44, 1.85, CENTER_Z]} side="left">
-        05 / STANDARD V60
-      </Annotation>
-    </group>
-  );
-}
-
-export function Carafe() {
-  const liquid = useRef<THREE.Mesh>(null);
-  const shape = useMemo(
-    () => [
-      new THREE.Vector2(0, 0.03),
-      new THREE.Vector2(0.31, 0.03),
-      new THREE.Vector2(0.48, 0.08),
-      new THREE.Vector2(0.5, 0.18),
-      new THREE.Vector2(0.47, 0.43),
-      new THREE.Vector2(0.3, 0.76),
-      new THREE.Vector2(0.26, 0.83),
-      new THREE.Vector2(0.26, 1),
-    ],
-    [],
-  );
-  useFrame(() => {
-    if (liquid.current) {
-      const amount = clamp(brewAt(brewProgress(story.stage)).volume / 300);
-      const height = 0.025 + amount * 0.4;
-      liquid.current.scale.y = height;
-      liquid.current.position.y = 0.39 + height / 2;
-    }
-  });
-  return (
-    <group>
-      <mesh position={[0, 0.35, CENTER_Z]}>
-        <latheGeometry args={[shape, 48]} />
-        <meshPhysicalMaterial
-          color="#d2ded9"
-          transparent
-          opacity={0.2}
-          roughness={0.06}
-          metalness={0.12}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh ref={liquid} position={[0, 0.39, CENTER_Z]}>
-        <cylinderGeometry args={[0.44, 0.43, 1, 48]} />
-        <meshStandardMaterial
-          color="#4e2613"
-          roughness={0.18}
-          metalness={0.05}
-        />
-      </mesh>
-      <mesh position={[0.48, 0.91, CENTER_Z]} scale={[0.85, 1.2, 1]}>
-        <torusGeometry args={[0.24, 0.035, 12, 32, Math.PI * 1.75]} />
-        <meshPhysicalMaterial
-          color="#d8e2dc"
-          transparent
-          opacity={0.5}
-          roughness={0.12}
-        />
-      </mesh>
-      <mesh position={[0, 1.335, CENTER_Z]} rotation={[Math.PI / 2, 0, 0]}>
-        <torusGeometry args={[0.26, 0.014, 8, 48]} />
-        <meshStandardMaterial
-          color="#bcc7c0"
-          metalness={0.65}
-          roughness={0.14}
-        />
-      </mesh>
-      <Inscription
-        text="300 —"
-        position={[-0.15, 0.8, 0.738]}
-        width={0.18}
-        height={0.04}
-        color="#c6c6b6"
-      />
-    </group>
-  );
-}
-
 export function WaterStream({
   head,
 }: {
@@ -599,9 +407,15 @@ function Bag() {
   const frame = useRef<HTMLDivElement>(null);
   useFrame(() => {
     if (ref.current) {
-      const visibility = Math.max(0, 1 - Math.abs(story.stage - 3) * 2.7);
+      const visibility =
+        smooth((story.stage - 2.72) / 0.28) *
+        (1 - smooth((story.stage - 3.55) / 0.25));
       ref.current.visible = visibility > 0.02;
       if (frame.current) {
+        frame.current.style.setProperty(
+          "--scan-progress",
+          String(story.reduced ? 0.5 : clamp((story.stage - 2.9) / 0.62)),
+        );
         frame.current.style.opacity = String(visibility);
         frame.current.style.visibility =
           visibility > 0.02 ? "visible" : "hidden";
@@ -707,13 +521,14 @@ function WaterSystem() {
   );
 }
 
-export default function Machine({ mobile }: { mobile: boolean }) {
+function MachineModel({ mobile }: { mobile: boolean }) {
   const root = useRef<THREE.Group>(null),
     base = useRef<THREE.Group>(null),
     arm = useRef<THREE.Group>(null),
     nozzle = useRef<THREE.Group>(null),
     reservoir = useRef<THREE.Group>(null),
     dripper = useRef<THREE.Group>(null),
+    carafe = useRef<THREE.Group>(null),
     pathGroup = useRef<THREE.Group>(null),
     waterPath = useRef<THREE.Group>(null);
   const points = useMemo(
@@ -748,6 +563,7 @@ export default function Machine({ mobile }: { mobile: boolean }) {
           );
     }
     if (base.current) base.current.position.y = -explode * 0.45;
+    if (carafe.current) carafe.current.position.y = -explode * 0.45;
     if (arm.current) arm.current.position.y = explode * 0.38;
     if (reservoir.current) reservoir.current.position.x = -explode * 0.72;
     if (dripper.current) dripper.current.position.y = -explode * 0.22;
@@ -782,8 +598,13 @@ export default function Machine({ mobile }: { mobile: boolean }) {
       </group>
       <group ref={dripper}>
         <Dripper />
+        <Annotation position={[-0.44, 1.85, CENTER_Z]} side="left">
+          05 / STANDARD V60
+        </Annotation>
       </group>
-      <Carafe />
+      <group ref={carafe}>
+        <Carafe />
+      </group>
       <WaterStream head={nozzle} />
       <group ref={pathGroup}>
         <Line
@@ -820,5 +641,22 @@ export default function Machine({ mobile }: { mobile: boolean }) {
       />
       <Bag />
     </group>
+  );
+}
+
+export default function Machine({ mobile }: { mobile: boolean }) {
+  return (
+    <SurfaceProvider>
+      <MachineModel mobile={mobile} />
+      <ContactShadows
+        position={[0, -0.09, 0]}
+        opacity={0.3}
+        scale={7}
+        blur={2.5}
+        far={5}
+        resolution={256}
+        frames={1}
+      />
+    </SurfaceProvider>
   );
 }

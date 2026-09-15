@@ -41,6 +41,7 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
         <section
           className={`act act-${act.id}`}
           id={act.id}
+          style={{ height: `${act.scrollVh}svh` }}
           key={act.id}
           aria-label={`${i + 1}. ${act.label}`}
         >
