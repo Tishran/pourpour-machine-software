@@ -51,6 +51,10 @@ Launch subscriptions remain disabled unless a real subscription backend is confi
 
 The nozzle and path share a trajectory function. Scroll advances three pours (90 + 110 + 100 ml) with bloom and drawdown pauses. The water stream follows the nozzle; the server fills with delivered volume. The time and flow readouts are illustrative, not a physical simulation or measured prototype results. The scan is a fictional package demonstration, not a camera or recognition service.
 
+The pour uses a fixed recipe with no editable parameters or Brew navigation buttons. Scrolling determines delivered volume and progression. Scan brackets and the scanning line remain WebGL geometry attached to the bag, avoiding a separate CSS-transformed HTML layer.
+
+To test the built deployment rather than the development server, run `npm run build` followed by `TEST_PRODUCTION=1 npm run test:browser`. Production browser tests serve `dist/` on port 4175.
+
 Reduced motion uses discrete camera/component states and demand rendering. Mobile retains the model with simpler framing and shorter exploded offsets. DPR is clamped to 1–1.5; six 512-pixel texture maps total about 240 KB; grounds are instanced; lighting uses a small locally rendered environment. Texture loading is isolated from the lighting scene. Glass uses alpha transparency and environment reflections rather than a separate screen-space refraction pass. A static SVG object and all page controls remain if WebGL fails. Audio is not used.
 
 The V60 and carafe have hollow profiles with real wall thickness and curved handles that attach at defined mounts. A separate paper-filter mesh has a shaped upper edge, folded seam, and fiber texture, with the grounds contained inside it. The carafe follows the base downward in the exploded view to maintain clearance below the V60. See [texture sources and licenses](public/textures/SOURCES.md).

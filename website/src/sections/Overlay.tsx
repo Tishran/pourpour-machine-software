@@ -41,7 +41,7 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
         <section
           className={`act act-${act.id}`}
           id={act.id}
-          style={{ height: `${act.scrollVh}svh` }}
+          style={{ minHeight: `${act.scrollVh}svh` }}
           key={act.id}
           aria-label={`${i + 1}. ${act.label}`}
         >
@@ -167,9 +167,6 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                   <p className="prepare-note">
                     Grind your beans. Load your V60. Fill the tank.
                   </p>
-                  <MagneticButton onClick={() => goToAct(4)}>
-                    BREW
-                  </MagneticButton>
                   <span className="fineprint mono">
                     ILLUSTRATIVE SCAN & RECIPE
                   </span>
@@ -235,9 +232,7 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                   <br />
                   <em>Same gesture.</em>
                 </h2>
-                <button className="press-brew" onClick={() => goToAct(4)}>
-                  Press Brew. <span>↗</span>
-                </button>
+                <p className="press-brew">Press Brew.</p>
                 <div className="workflow mono">
                   SCAN <span>→</span> CHOOSE <span>→</span> BREW
                 </div>
@@ -265,26 +260,6 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                   <MagneticButton onClick={onLaunch}>
                     GET NOTIFIED AT LAUNCH
                   </MagneticButton>
-                  <div className="prototype-status mono">
-                    <span className="status-title">
-                      <span className="status-dot" /> PROTOTYPE STATUS
-                    </span>
-                    <p>
-                      Architecture defined
-                      <br />
-                      Components selected
-                      <br />
-                      <span className="copper">
-                        Automated brewing tests next ↗
-                      </span>
-                    </p>
-                    <span className="status-title">NEXT TO VALIDATE</span>
-                    <p>
-                      Brew repeatability · Active user time
-                      <br />
-                      Water-delivery accuracy
-                    </p>
-                  </div>
                 </div>
                 <div className="final-wordmark" aria-hidden="true">
                   FIRST BREW

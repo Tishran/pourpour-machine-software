@@ -173,11 +173,11 @@ button:disabled {
   pointer-events: none;
 }
 .act {
-  height: 150svh;
+  height: auto;
   position: relative;
 }
 .act:last-child {
-  height: 100svh;
+  height: auto;
 }
 .act-panel {
   position: sticky;
@@ -197,14 +197,14 @@ button:disabled {
 }
 .hero-wordmark {
   position: fixed;
-  left: 4vw;
+  left: 6.1vw;
   top: 12vh;
   white-space: nowrap;
-  font-size: clamp(75.6px, 15.88vw, 280.8px);
+  font-size: clamp(30px, 3.7vw, 62px);
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.085em;
-  opacity: 0.16;
+  opacity: 0.65;
   z-index: 1;
   pointer-events: none;
 }
@@ -212,11 +212,11 @@ button:disabled {
   visibility: hidden;
 }
 .hero-wordmark span {
+  display: none;
   font-family: "IBM Plex Mono", monospace;
   font-size: 15px;
   letter-spacing: 0;
   vertical-align: top;
-  display: inline-block;
   margin: 1.5em 0 0 2.8em;
 }
 .hero-copy {
@@ -678,7 +678,6 @@ em {
   font-size: clamp(37.8px, 4.75vw, 72.36px);
   letter-spacing: -0.06em;
   padding: 0 0 9px;
-  border-bottom: 1px solid #b8754250;
   margin-top: -8px;
 }
 .press-brew span {
@@ -1109,10 +1108,7 @@ em {
     z-index: 2;
   }
   .hero-wordmark {
-    top: 13%;
-    left: 6%;
-    font-size: 16.2vw;
-    opacity: 0.24;
+    display: none;
   }
   .hero-wordmark span {
     font-size: 10px;
@@ -1693,6 +1689,30 @@ em {
 }
 
 /* Keep copy in one continuous reading flow, including at short heights. */
+.body-copy,
+.editorial > .body-copy,
+.statement {
+  font-size: 18px;
+  line-height: 1.75;
+}
+.eyebrow,
+.mono,
+.recipe-value > span,
+.fineprint,
+.pour-rows,
+.recipe-header,
+.prepare-note,
+.brew-hud > div > span,
+.component-label {
+  font-size: 14px;
+}
+.recipe-value strong {
+  font-size: 18px;
+}
+.action,
+.scroll-link {
+  font-size: 15px;
+}
 .act-panel > .editorial,
 .act-panel > .hero-copy {
   position: relative;
@@ -1796,5 +1816,28 @@ em {
     inset: auto;
     margin: 0 7%;
     padding-bottom: 30px;
+  }
+  .editorial > .body-copy,
+  .hero-copy .body-copy,
+  .statement {
+    font-size: 16px;
+  }
+  .eyebrow,
+  .mono,
+  .recipe-value > span,
+  .fineprint,
+  .pour-rows,
+  .recipe-header,
+  .prepare-note,
+  .brew-hud > div > span,
+  .appliance-recipe .fineprint,
+  .prototype-status .status-title {
+    font-size: 12px;
+  }
+  .recipe-value strong {
+    font-size: 16px;
+  }
+  .recipe-equation {
+    max-width: none;
   }
 }

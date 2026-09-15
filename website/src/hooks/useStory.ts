@@ -66,6 +66,7 @@ export function useStory(root: RefObject<HTMLElement | null>) {
           .padStart(2, "0")}:${(seconds % 60).toString().padStart(2, "0")}`;
       window.dispatchEvent(new Event("firstbrew:frame"));
     };
+    let rebuild: () => void = () => {};
     const ctx = gsap.context(() => {
       const timeline = gsap.timeline({
         scrollTrigger: {
@@ -77,21 +78,34 @@ export function useStory(root: RefObject<HTMLElement | null>) {
         },
         onUpdate: update,
       });
-      acts.slice(0, -1).forEach((act, index) => {
-        timeline.fromTo(
-          story,
-          { stage: index },
-          {
-            stage: index + 1,
-            duration: act.scrollVh / 150,
-            ease: "none",
-            immediateRender: index === 0,
-          },
-        );
-      });
+      rebuild = () => {
+        timeline.clear();
+        acts.slice(0, -1).forEach((act, index) => {
+          timeline.fromTo(
+            story,
+            { stage: index },
+            {
+              stage: index + 1,
+              duration: document.getElementById(act.id)!.offsetHeight,
+              ease: "none",
+              immediateRender: index === 0,
+            },
+          );
+        });
+      };
+      rebuild();
     }, el);
+    ScrollTrigger.addEventListener("refreshInit", rebuild);
+    let disposed = false;
+    document.fonts.ready.then(() => {
+      if (!disposed) ScrollTrigger.refresh();
+    });
     update();
-    return () => ctx.revert();
+    return () => {
+      disposed = true;
+      ScrollTrigger.removeEventListener("refreshInit", rebuild);
+      ctx.revert();
+    };
   }, [root, reduced]);
   return { active, reduced };
 }

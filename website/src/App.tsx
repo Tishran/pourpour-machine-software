@@ -37,10 +37,6 @@ export default function App() {
             ↘
           </span>
         </button>
-        <span className="header-status mono">
-          <span className="status-dot" />
-          IN DEVELOPMENT
-        </span>
         <button className="header-index mono" onClick={() => goToAct(6)}>
           LAUNCH NOTES <span>↗</span>
         </button>
@@ -77,9 +73,6 @@ export default function App() {
         <span>
           {String(active + 1).padStart(2, "0")} /{" "}
           {acts[active].label.toUpperCase()}
-        </span>
-        <span>
-          {reduced ? "REDUCED MOTION" : "SCROLL TO DISCOVER"} <i>↓</i>
         </span>
       </div>
       <div className="scroll-progress" aria-hidden="true" />

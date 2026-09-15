@@ -7,12 +7,12 @@ import { Dripper, Carafe } from "./Vessels";
 import { CENTER_Z, BED_Y } from "./vesselGeometry";
 import {
   brewAt,
+  trajectory,
   brewProgress,
   clamp,
   keyframe,
   smooth,
   story,
-  trajectory,
   type Part,
 } from "../data/story";
 
@@ -404,22 +404,16 @@ export function WaterStream({
 
 function Bag() {
   const ref = useRef<THREE.Group>(null);
-  const frame = useRef<HTMLDivElement>(null);
+  const scanLine = useRef<THREE.Group>(null);
   useFrame(() => {
     if (ref.current) {
       const visibility =
         smooth((story.stage - 2.72) / 0.28) *
         (1 - smooth((story.stage - 3.55) / 0.25));
       ref.current.visible = visibility > 0.02;
-      if (frame.current) {
-        frame.current.style.setProperty(
-          "--scan-progress",
-          String(story.reduced ? 0.5 : clamp((story.stage - 2.9) / 0.62)),
-        );
-        frame.current.style.opacity = String(visibility);
-        frame.current.style.visibility =
-          visibility > 0.02 ? "visible" : "hidden";
-      }
+      if (scanLine.current)
+        scanLine.current.position.y =
+          1.5 - (story.reduced ? 0.5 : clamp((story.stage - 2.9) / 0.62)) * 1.4;
       ref.current.position.set(-0.7 - (1 - visibility) * 2, 0.6, 1.35);
       ref.current.rotation.y = 0.15;
     }
@@ -468,18 +462,34 @@ function Bag() {
         width={0.49}
         height={0.05}
       />
-      <Html
-        position={[0, 0.8, 0.23]}
-        center
-        transform
-        distanceFactor={3}
-        zIndexRange={[3, 0]}
-      >
-        <div ref={frame} className="scan-frame">
-          <span className="scan-line" />
-          <span className="scan-caption">READING THE BAG</span>
-        </div>
-      </Html>
+      <Line
+        points={[
+          [-0.46, 0.06, 0.24],
+          [-0.46, 1.57, 0.24],
+          [0.46, 1.57, 0.24],
+          [0.46, 0.06, 0.24],
+          [-0.46, 0.06, 0.24],
+        ]}
+        color={COPPER}
+        lineWidth={1}
+      />
+      <group ref={scanLine}>
+        <Line
+          points={[
+            [-0.44, 0, 0.25],
+            [0.44, 0, 0.25],
+          ]}
+          color="#e5a567"
+          lineWidth={2}
+        />
+      </group>
+      <Inscription
+        text="READING THE BAG"
+        position={[0, -0.04, 0.24]}
+        width={0.85}
+        height={0.075}
+        color={COPPER}
+      />
     </group>
   );
 }

@@ -12,7 +12,7 @@ test("text panels flow continuously without overlapping at act boundaries", asyn
     await page.setViewportSize(size);
     await page.goto("/");
     await page.evaluate(() => document.fonts.ready);
-    await expect(page.locator(".header-status")).toHaveText("IN DEVELOPMENT");
+    await expect(page.locator(".instrument-header")).not.toContainText("IN DEVELOPMENT");
     await expect(page.locator(".viewport-footer")).not.toContainText("FB–01");
     for (let index = 0; index < 6; index++) {
       const geometry = await page.evaluate((index) => {
@@ -130,6 +130,16 @@ test("desktop: seven acts, working 3D, recipe highlights, brew and launch dialog
   await page.getByRole("button", { name: /TEMPERATURE 92/ }).focus();
   await page.getByRole("button", { name: /TEMPERATURE 92/ }).hover();
   expect(errors).toEqual([]);
+});
+
+test("brew buttons and editable parameters are absent", async ({ page }) => {
+  await page.goto("/");
+  await expect(
+    page.getByRole("button", { name: /^(BREW|Press Brew\.)$/ }),
+  ).toHaveCount(0);
+  await expect(
+    page.locator("#pour-path, #pour-radius, #pour-speed, .brew-controls"),
+  ).toHaveCount(0);
 });
 
 test("mobile: portrait object, all acts fit horizontally and launch remains reachable", async ({
