@@ -25,6 +25,21 @@ npm run test:browser
 
 Deploy the generated `dist/` directory to a static host. If your environment proxies localhost, set `NO_PROXY=127.0.0.1,localhost` when running browser tests.
 
+## Netlify deployment
+
+The repository-root `netlify.toml` configures the Git-connected build:
+
+- Base directory: `website`
+- Build command: `npm run build`
+- Publish directory: `dist` (relative to the base; `website/dist` in this repository)
+- Node.js: 22
+
+Import this repository in Netlify and select the branch containing these changes. The configuration builds only the landing page, not the OCR benchmark or data collection tools. No Netlify plugin or server is needed for this static Vite site. See [Netlify's Vite setup](https://docs.netlify.com/build/frameworks/framework-setup-guides/vite/).
+
+For a manual deployment, run `npm run build` inside `website/`, then upload **the generated `website/dist` folder** to Netlify Drop. Do not upload the repository or the source `website` folder. The build includes the interactive 3D experience, fonts, textures, and `_headers` configuration. Manual uploads do not run a build.
+
+Launch subscriptions remain disabled unless a real subscription backend is configured. For Git builds, add the public `VITE_LAUNCH_ENDPOINT` in Netlify's build environment and rebuild; for manual uploads, configure it locally before building. Never add API keys to `VITE_` variables.
+
 ## Architecture
 
 - `src/experience/`: isolated WebGL scene, procedural machine, and SVG fallback.
