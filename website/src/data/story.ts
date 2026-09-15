@@ -1,26 +1,28 @@
 export const acts = [
-  { id: "object", label: "The object", scrollVh: 150 },
-  { id: "physical", label: "The recipe", scrollVh: 150 },
-  { id: "engineering", label: "The mechanics", scrollVh: 150 },
-  { id: "scan", label: "The coffee", scrollVh: 240 },
-  { id: "brew", label: "The pour", scrollVh: 270 },
-  { id: "purpose", label: "The ritual", scrollVh: 150 },
-  { id: "launch", label: "Your morning", scrollVh: 100 },
+  { id: "object", label: "The object" },
+  { id: "purpose", label: "The ritual" },
+  { id: "brew", label: "The pour" },
+  { id: "engineering", label: "The mechanics" },
+  { id: "launch", label: "Your morning" },
 ] as const;
 
-// The final viewport has no outgoing transition. Longer acts advance less per scroll pixel.
-export function stageToScrollProgress(stage: number) {
-  const outgoing = acts.slice(0, -1);
-  const total = outgoing.reduce((sum, act) => sum + act.scrollVh, 0);
+// Match the scene to actual section heights, without invisible scroll padding.
+export function stageToScrollProgress(
+  stage: number,
+  heights: readonly number[],
+) {
+  const outgoing = heights.slice(0, -1);
+  const total = outgoing.reduce((sum, height) => sum + height, 0);
   const s = Math.max(0, Math.min(outgoing.length, stage));
   const index = Math.floor(s);
   const before = outgoing
     .slice(0, index)
-    .reduce((sum, act) => sum + act.scrollVh, 0);
-  return (before + (outgoing[index]?.scrollVh ?? 0) * (s - index)) / total;
+    .reduce((sum, height) => sum + height, 0);
+  return (before + (outgoing[index] ?? 0) * (s - index)) / total;
 }
 export type Part =
   "heater" | "flow" | "nozzle" | "reservoir" | "dripper" | "scale" | null;
+export const inspectionCamera = { x: 5, y: 4.6, z: 8.2, targetY: 2.06 };
 export const story = {
   stage: 0,
   light: 0,
@@ -100,4 +102,22 @@ export function brewAt(progress: number) {
     pulse: 3,
   };
 }
-export const brewProgress = (stage: number) => clamp((stage - 3.85) / 0.98);
+export const brewProgress = (stage: number) => clamp((stage - 1.85) / 0.98);
+
+// Keep the nozzle mounted below the housing. Only its horizontal pour path
+// moves; it recenters before the component study, never lifting through the arm.
+export function nozzlePose(stage: number) {
+  const brew = brewAt(brewProgress(stage));
+  const travel =
+    smooth((stage - 1.75) / 0.1) * (1 - smooth((stage - 2.83) / 0.17));
+  return { x: brew.x * travel, y: 3.08, z: brew.z * travel };
+}
+
+// Introduce and scan the bag during the ritual, then hold it for the recipe.
+export function scanAt(stage: number) {
+  return {
+    visibility:
+      smooth((stage - 0.72) / 0.28) * (1 - smooth((stage - 1.65) / 0.17)),
+    progress: clamp((stage - 1) / 0.6),
+  };
+}

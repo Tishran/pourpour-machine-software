@@ -7,11 +7,12 @@ import { Dripper, Carafe } from "./Vessels";
 import { CENTER_Z, BED_Y } from "./vesselGeometry";
 import {
   brewAt,
+  nozzlePose,
   trajectory,
   brewProgress,
   clamp,
   keyframe,
-  smooth,
+  scanAt,
   story,
   type Part,
 } from "../data/story";
@@ -111,7 +112,7 @@ function Annotation({
   const ref = useRef<HTMLDivElement>(null);
   useFrame(() => {
     if (ref.current) {
-      const visible = story.stage > 1.67 && story.stage < 2.72;
+      const visible = story.stage > 2.67 && story.stage < 3.72;
       ref.current.style.opacity = visible ? "1" : "0";
       ref.current.style.visibility = visible ? "visible" : "hidden";
     }
@@ -153,7 +154,7 @@ export function MachineBase() {
         <Finish color="#383a34" part="scale" />
       </mesh>
       <Inscription
-        text="FIRST BREW / FB–01"
+        text="FIRST BREW"
         position={[0, 0.17, 1.021]}
         width={0.9}
         height={0.07}
@@ -270,7 +271,7 @@ export function Nozzle() {
         <Finish color={RUBBER} />
       </mesh>
       <Inscription
-        text="FB-N01"
+        text="NOZZLE"
         position={[0, -0.08, 0.102]}
         width={0.16}
         height={0.035}
@@ -344,7 +345,7 @@ export function WaterStream({
       return;
     const stage = story.stage,
       brew = brewAt(brewProgress(stage));
-    const active = stage >= 3.85 && stage <= 4.84 && brew.pouring;
+    const active = stage >= 1.85 && stage <= 2.84 && brew.pouring;
     water.current.visible = active;
     const bottom = BED_Y + 0.015,
       top = head.current.position.y - 0.3;
@@ -354,7 +355,7 @@ export function WaterStream({
       head.current.position.z,
     );
     water.current.scale.set(1, Math.max(0, top - bottom), 1);
-    drop.current.visible = stage > 3.9 && stage < 5.1;
+    drop.current.visible = stage > 1.9 && stage < 2.85;
     drop.current.position.y = story.reduced
       ? 1.2
       : 1.3 - ((clock.elapsedTime * 0.9) % 0.38);
@@ -407,13 +408,11 @@ function Bag() {
   const scanLine = useRef<THREE.Group>(null);
   useFrame(() => {
     if (ref.current) {
-      const visibility =
-        smooth((story.stage - 2.72) / 0.28) *
-        (1 - smooth((story.stage - 3.55) / 0.25));
+      const { visibility, progress } = scanAt(story.stage);
       ref.current.visible = visibility > 0.02;
       if (scanLine.current)
         scanLine.current.position.y =
-          1.5 - (story.reduced ? 0.5 : clamp((story.stage - 2.9) / 0.62)) * 1.4;
+          1.5 - (story.reduced ? 0.5 : progress) * 1.4;
       ref.current.position.set(-0.7 - (1 - visibility) * 2, 0.6, 1.35);
       ref.current.rotation.y = 0.15;
     }
@@ -531,16 +530,10 @@ function WaterSystem() {
   );
 }
 
-function MachineModel({ mobile }: { mobile: boolean }) {
+function MachineModel() {
   const root = useRef<THREE.Group>(null),
-    base = useRef<THREE.Group>(null),
-    arm = useRef<THREE.Group>(null),
     nozzle = useRef<THREE.Group>(null),
-    reservoir = useRef<THREE.Group>(null),
-    dripper = useRef<THREE.Group>(null),
-    carafe = useRef<THREE.Group>(null),
-    pathGroup = useRef<THREE.Group>(null),
-    waterPath = useRef<THREE.Group>(null);
+    pathGroup = useRef<THREE.Group>(null);
   const points = useMemo(
     () =>
       Array.from({ length: 150 }, (_, i) => {
@@ -551,15 +544,10 @@ function MachineModel({ mobile }: { mobile: boolean }) {
   );
   useFrame((_, delta) => {
     const stage = story.reduced
-      ? Math.min(6, Math.floor(story.stage + 0.22))
+      ? Math.min(4, Math.floor(story.stage + 0.22))
       : story.stage;
-    const explode =
-      keyframe([0, 0, 1, 0, 0, 0, 0], stage) * (mobile ? 0.65 : 1);
     if (root.current) {
-      const rotation = keyframe(
-        [-0.28, 0.27, 0.18, -0.22, 0.04, 0.04, -0.32],
-        stage,
-      );
+      const rotation = keyframe([-0.28, 0.27, 0.04, 0.18, -0.32], stage);
       const parallax = story.reduced
         ? 0
         : story.pointer.x * 0.035 * clamp(1 - stage);
@@ -572,47 +560,36 @@ function MachineModel({ mobile }: { mobile: boolean }) {
             delta,
           );
     }
-    if (base.current) base.current.position.y = -explode * 0.45;
-    if (carafe.current) carafe.current.position.y = -explode * 0.45;
-    if (arm.current) arm.current.position.y = explode * 0.38;
-    if (reservoir.current) reservoir.current.position.x = -explode * 0.72;
-    if (dripper.current) dripper.current.position.y = -explode * 0.22;
     if (nozzle.current) {
-      const brew = brewAt(brewProgress(story.reduced ? 4.45 : stage));
-      const active = stage > 3.8 && stage < 5.8;
-      nozzle.current.position.set(
-        active ? brew.x : 0,
-        3.08 + explode * 1.4,
-        CENTER_Z + (active ? brew.z : 0),
-      );
+      const pose = nozzlePose(story.reduced && stage === 2 ? 2.45 : stage);
+      nozzle.current.position.set(pose.x, pose.y, CENTER_Z + pose.z);
     }
     if (pathGroup.current)
-      pathGroup.current.visible = stage > 3.78 && stage < 5.8;
-    if (waterPath.current) waterPath.current.visible = explode > 0.2;
+      pathGroup.current.visible = stage > 1.78 && stage < 2.8;
   });
   return (
     <group ref={root}>
-      <group ref={base}>
+      <group>
         <MachineBase />
       </group>
       <Column />
       <WaterSystem />
-      <group ref={arm}>
+      <group>
         <Arm />
       </group>
-      <group ref={reservoir}>
+      <group>
         <Reservoir />
       </group>
       <group ref={nozzle} position={[0, 3.08, CENTER_Z]}>
         <Nozzle />
       </group>
-      <group ref={dripper}>
+      <group>
         <Dripper />
         <Annotation position={[-0.44, 1.85, CENTER_Z]} side="left">
           05 / STANDARD V60
         </Annotation>
       </group>
-      <group ref={carafe}>
+      <group>
         <Carafe />
       </group>
       <WaterStream head={nozzle} />
@@ -623,23 +600,6 @@ function MachineModel({ mobile }: { mobile: boolean }) {
           lineWidth={1}
           transparent
           opacity={0.47}
-        />
-      </group>
-      <group ref={waterPath}>
-        <Line
-          points={[
-            [-1.42, 1.7, -0.65],
-            [-1.42, 3.25, -0.65],
-            [0.8, 3.25, -0.65],
-            [0.8, 3.7, 0.3],
-            [0, 3.7, 0.3],
-            [0, 3.5, 0.3],
-          ]}
-          color={COPPER}
-          lineWidth={1.4}
-          dashed
-          dashSize={0.07}
-          gapSize={0.04}
         />
       </group>
       <Inscription
@@ -654,10 +614,10 @@ function MachineModel({ mobile }: { mobile: boolean }) {
   );
 }
 
-export default function Machine({ mobile }: { mobile: boolean }) {
+export default function Machine() {
   return (
     <SurfaceProvider>
-      <MachineModel mobile={mobile} />
+      <MachineModel />
       <ContactShadows
         position={[0, -0.09, 0]}
         opacity={0.3}

@@ -11,7 +11,7 @@ import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
 import * as THREE from "three";
 import Machine from "./Machine";
 import Fallback from "./Fallback";
-import { keyframe, story } from "../data/story";
+import { inspectionCamera, keyframe, story } from "../data/story";
 
 class SceneBoundary extends Component<
   { children: ReactNode },
@@ -44,13 +44,15 @@ function Stage({ reduced }: { reduced: boolean }) {
   }, [reduced, invalidate]);
   useFrame((_, delta) => {
     const s = reduced
-      ? Math.min(6, Math.floor(story.stage + 0.22))
+      ? Math.min(4, Math.floor(story.stage + 0.22))
       : story.stage;
     const x =
-      keyframe([4.7, 4.1, 5, 4.7, 1.6, 1.6, 4.7], s) * (mobile ? 0.84 : 1);
-    const y = keyframe([3.1, 4.2, 4.6, 3.8, 4.1, 4.1, 3.4], s);
+      keyframe([4.7, 4.1, 1.6, inspectionCamera.x, 4.7], s) *
+      (mobile ? 0.84 : 1);
+    const y = keyframe([3.1, 4.2, 4.1, inspectionCamera.y, 3.4], s);
     const z =
-      keyframe([7.8, 6.1, 8.2, 7.7, 3.25, 3.25, 8.1], s) * (mobile ? 1.12 : 1);
+      keyframe([7.8, 6.1, 3.25, inspectionCamera.z, 8.1], s) *
+      (mobile ? 1.12 : 1);
     if (reduced) camera.position.set(x, y, z);
     else {
       camera.position.x = THREE.MathUtils.damp(camera.position.x, x, 7, delta);
@@ -62,7 +64,11 @@ function Stage({ reduced }: { reduced: boolean }) {
       );
       camera.position.z = THREE.MathUtils.damp(camera.position.z, z, 7, delta);
     }
-    target.set(0, keyframe([1.8, 2.0, 2.06, 1.8, 2.1, 2.1, 1.82], s), 0.05);
+    target.set(
+      0,
+      keyframe([1.8, 2.0, 2.1, inspectionCamera.targetY, 1.82], s),
+      0.05,
+    );
     camera.lookAt(target);
     if (key.current) key.current.intensity = 85 + story.light * 35;
     if (fill.current) fill.current.intensity = 0.6 + story.light * 1.2;
@@ -115,7 +121,7 @@ function Stage({ reduced }: { reduced: boolean }) {
         />
       </Environment>
       <Suspense fallback={null}>
-        <Machine mobile={mobile} />
+        <Machine />
       </Suspense>
       <AdaptiveDpr pixelated />
     </>

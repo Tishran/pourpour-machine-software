@@ -14,6 +14,7 @@ export default function App() {
       className={`app ${reduced ? "reduced-motion" : ""}`}
       ref={root}
       data-act={active}
+      data-scene={acts[active].id}
       onPointerMove={(e) => {
         story.pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
         story.pointer.y = (e.clientY / window.innerHeight) * 2 - 1;
@@ -37,13 +38,13 @@ export default function App() {
             ↘
           </span>
         </button>
-        <button className="header-index mono" onClick={() => goToAct(6)}>
+        <button
+          className="header-index mono"
+          onClick={() => goToAct(acts.length - 1)}
+        >
           LAUNCH NOTES <span>↗</span>
         </button>
       </header>
-      <div className="hero-wordmark" aria-hidden="true">
-        FIRST BREW<span>01</span>
-      </div>
       <div
         className="scene-shell"
         role="img"

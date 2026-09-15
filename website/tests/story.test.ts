@@ -6,7 +6,18 @@ import {
   trajectory,
   keyframe,
   stageToScrollProgress,
+  scanAt,
 } from "../src/data/story";
+
+test("bag scans during Different coffee and clears before pouring", () => {
+  assert.equal(scanAt(0).visibility, 0);
+  assert.equal(scanAt(1).visibility, 1);
+  assert.equal(scanAt(1).progress, 0);
+  assert(scanAt(1.5).progress > 0);
+  assert.equal(scanAt(1.6).progress, 1);
+  assert.equal(scanAt(1.6).visibility, 1);
+  assert.equal(scanAt(1.85).visibility, 0);
+});
 
 test("three pours deliver 300 ml with stationary volume during both pauses", () => {
   assert.equal(brewAt(0).volume, 0);
@@ -42,17 +53,24 @@ test("scroll keyframes hit precise mechanical endpoints in either direction", ()
   assert.equal(keyframe([0, 1, 0], 0.5), keyframe([0, 1, 0], 1.5));
 });
 
-test("longer scan and brew acts preserve navigation positions and slow stage progression", () => {
-  const total = acts.slice(0, -1).reduce((sum, act) => sum + act.scrollVh, 0);
+test("scroll progress follows measured sections without extra pinned distance", () => {
+  const heights = [800, 900, 1200, 1000, 1100, 800];
+  const total = heights.slice(0, -1).reduce((sum, height) => sum + height, 0);
   let position = 0;
-  acts.forEach((act, index) => {
-    assert(Math.abs(stageToScrollProgress(index) - position / total) < 1e-10);
-    position += act.scrollVh;
+  heights.forEach((height, index) => {
+    assert(
+      Math.abs(stageToScrollProgress(index, heights) - position / total) <
+        1e-10,
+    );
+    position += height;
   });
-  const distance = (stage: number) =>
-    stageToScrollProgress(stage + 0.5) - stageToScrollProgress(stage);
-  assert(Math.abs(distance(3) / distance(0) - 1.6) < 1e-10);
-  assert(Math.abs(distance(4) / distance(0) - 1.8) < 1e-10);
-  assert.equal(stageToScrollProgress(-1), 0);
-  assert.equal(stageToScrollProgress(7), 1);
+  assert.equal(stageToScrollProgress(-1, heights), 0);
+  assert.equal(stageToScrollProgress(7, heights), 1);
+});
+
+test("story starts with the ritual and ends with mechanics then launch", () => {
+  assert.deepEqual(
+    acts.map((act) => act.id),
+    ["object", "purpose", "brew", "engineering", "launch"],
+  );
 });

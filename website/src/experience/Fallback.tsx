@@ -75,7 +75,7 @@ export default function Fallback({ loading = false }: { loading?: boolean }) {
           fontSize="9"
           fill="#282c24"
         >
-          FB–01
+          FIRST BREW
         </text>
       </svg>
       <span className="mono fallback-note">

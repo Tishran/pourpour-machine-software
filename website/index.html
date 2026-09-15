@@ -13,6 +13,20 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- Static blueprint for Netlify's deploy-time form detection. -->
+    <form
+      name="preorder-first-brew"
+      method="POST"
+      data-netlify="true"
+      data-netlify-honeypot="bot-field"
+      hidden
+    >
+      <input name="bot-field" />
+      <input name="name" />
+      <input name="email" type="email" />
+      <textarea name="message"></textarea>
+      <input name="contact-consent" type="checkbox" />
+    </form>
     <noscript
       ><main
         style="

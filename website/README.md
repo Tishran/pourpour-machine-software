@@ -1,6 +1,6 @@
 # First Brew / Prototype 01
 
-A continuous, seven-act product experience for the Pour Pour project. React, TypeScript, Vite, Three.js, React Three Fiber, Drei, and GSAP ScrollTrigger. All copy is English. The machine geometry, inscriptions, and scan demonstration are constructed locally. CC0 material maps from ambientCG are optimized and hosted with the site; no paid models, remote photography, or external font requests.
+A continuous, five-act product experience for the Pour Pour project. React, TypeScript, Vite, Three.js, React Three Fiber, Drei, and GSAP ScrollTrigger. All copy is English. The machine geometry, inscriptions, and scan demonstration are constructed locally. CC0 material maps from ambientCG are optimized and hosted with the site; no paid models, remote photography, or external font requests.
 
 ## Run
 
@@ -55,13 +55,19 @@ The pour uses a fixed recipe with no editable parameters or Brew navigation butt
 
 To test the built deployment rather than the development server, run `npm run build` followed by `TEST_PRODUCTION=1 npm run test:browser`. Production browser tests serve `dist/` on port 4175.
 
-Reduced motion uses discrete camera/component states and demand rendering. Mobile retains the model with simpler framing and shorter exploded offsets. DPR is clamped to 1–1.5; six 512-pixel texture maps total about 240 KB; grounds are instanced; lighting uses a small locally rendered environment. Texture loading is isolated from the lighting scene. Glass uses alpha transparency and environment reflections rather than a separate screen-space refraction pass. A static SVG object and all page controls remain if WebGL fails. Audio is not used.
+Reduced motion uses discrete camera/component states and demand rendering. Mobile retains the model with simpler framing. DPR is clamped to 1–1.5; six 512-pixel texture maps total about 240 KB; grounds are instanced; lighting uses a small locally rendered environment. Texture loading is isolated from the lighting scene. Glass uses alpha transparency and environment reflections rather than a separate screen-space refraction pass. A static SVG object and all page controls remain if WebGL fails. Audio is not used.
 
-The V60 and carafe have hollow profiles with real wall thickness and curved handles that attach at defined mounts. A separate paper-filter mesh has a shaped upper edge, folded seam, and fiber texture, with the grounds contained inside it. The carafe follows the base downward in the exploded view to maintain clearance below the V60. See [texture sources and licenses](public/textures/SOURCES.md).
+The V60 and carafe have hollow profiles with real wall thickness and curved handles that attach at defined mounts. A separate paper-filter mesh has a shaped upper edge, folded seam, and fiber texture, with the grounds contained inside it. The component-study section keeps the machine assembled: the base, carafe, V60, reservoir, arm, and nozzle stay in their mounted positions. The nozzle returns smoothly to center after pouring, without lifting through the housing. See [texture sources and licenses](public/textures/SOURCES.md).
 
 ## Launch subscriptions
 
 By default, the launch dialog clearly states that sign-ups are not open and collects no data. To enable the form, set `VITE_LAUNCH_ENDPOINT` in `.env.local` and rebuild. The endpoint must accept `POST` JSON `{ "email": "..." }`, allow the site's origin, and return a successful status only after saving the subscription. It must implement validation, rate limiting, consent storage, and unsubscribe handling. Never put service secrets in `VITE_` variables; those are public browser configuration.
+
+## Preorder interest
+
+The final preorder section uses a native Netlify Forms submission named `preorder-first-brew`, separate from launch subscriptions and the former team form. It collects name, email, optional notes, and consent to preorder emails. It registers interest only: it does not take payment, place an order, reserve stock, or promise a delivery date. A static blueprint in `index.html` mirrors the React form, with a honeypot for spam filtering. Local development deliberately prevents delivery and shows an honest preview notice.
+
+Before accepting real preorder interest, enable **Forms → Enable form detection** in the site's Netlify dashboard, then deploy the updated site. Submissions appear under Forms; configure notifications there if needed. The native POST uses Netlify's receipt page rather than displaying a simulated success message. See [Netlify Forms setup](https://docs.netlify.com/manage/forms/setup/). This integration has not been activated or tested against a live Netlify account.
 
 ## Product status
 

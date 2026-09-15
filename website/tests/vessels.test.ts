@@ -1,5 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { PerspectiveCamera, Vector3 } from "three";
+import { nozzlePose, inspectionCamera } from "../src/data/story";
 import {
   BED_RADIUS,
   BED_Y,
@@ -7,6 +9,44 @@ import {
   dripperHandleCurve,
   filterGeometry,
 } from "../src/experience/vesselGeometry";
+
+test("nozzle stays below the housing and recenters for component inspection", () => {
+  for (let i = 0; i <= 600; i++) {
+    const stage = i / 100,
+      pose = nozzlePose(stage);
+    assert.equal(pose.y, 3.08);
+    assert(pose.y + 0.15 < 3.268 - 0.065 / 2);
+    assert(Math.hypot(pose.x, pose.z) <= 0.280001);
+    if (stage >= 3) {
+      assert.equal(Math.abs(pose.x), 0);
+      assert.equal(Math.abs(pose.z), 0);
+    }
+  }
+});
+
+test("assembled inspection model stays inside desktop and portrait framing", () => {
+  for (const mobile of [false, true]) {
+    for (const aspect of [0.65, 0.9, 1.4]) {
+      const camera = new PerspectiveCamera(36, aspect, 0.1, 100);
+      camera.position.set(
+        inspectionCamera.x * (mobile ? 0.84 : 1),
+        inspectionCamera.y,
+        inspectionCamera.z * (mobile ? 1.12 : 1),
+      );
+      camera.lookAt(0, inspectionCamera.targetY, 0.05);
+      camera.updateMatrixWorld();
+      for (const x of [-1.3, 1.3])
+        for (const y of [0, 3.73])
+          for (const z of [-1.05, 1.05]) {
+            const point = new Vector3(x, y, z)
+              .applyAxisAngle(new Vector3(0, 1, 0), 0.18)
+              .project(camera);
+            assert(Math.abs(point.x) < 0.95, `horizontal frame: ${point.x}`);
+            assert(Math.abs(point.y) < 0.95, `vertical frame: ${point.y}`);
+          }
+    }
+  }
+});
 
 test("coffee grounds and nozzle path fit inside the paper filter", () => {
   const filterRadiusAtBed = 0.059 + ((BED_Y - 1.48) / 0.68) * (0.496 - 0.059);

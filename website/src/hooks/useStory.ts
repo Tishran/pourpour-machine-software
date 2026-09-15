@@ -1,16 +1,18 @@
 import { useLayoutEffect, useState, type RefObject } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { useArrowScroll } from "./useArrowScroll";
+import { themeAt } from "../data/theme";
 import {
   acts,
   brewAt,
   brewProgress,
-  keyframe,
   stageToScrollProgress,
   story,
 } from "../data/story";
 gsap.registerPlugin(ScrollTrigger);
 export function useStory(root: RefObject<HTMLElement | null>) {
+  useArrowScroll();
   const [active, setActive] = useState(0);
   const [reduced, setReduced] = useState(
     () => window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -25,23 +27,24 @@ export function useStory(root: RefObject<HTMLElement | null>) {
     story.reduced = reduced;
     const el = root.current;
     if (!el) return;
+    let heights = acts.map(
+      (act) => document.getElementById(act.id)!.offsetHeight,
+    );
     let last = -1;
     const update = () => {
       const s = story.stage;
-      const index = Math.min(6, Math.floor(s + 0.22));
+      const index = Math.min(acts.length - 1, Math.floor(s + 0.22));
       if (last !== index) {
         last = index;
         setActive(index);
       }
-      story.light = keyframe([0, 1, 1, 0.94, 0, 0.15, 1], reduced ? index : s);
+      story.light = 0;
       el.style.setProperty("--light", String(story.light));
-      el.style.setProperty("--progress", String(stageToScrollProgress(s)));
-      const bg = [23, 24, 21].map((v, i) =>
-        Math.round(v + ([242, 237, 227][i] - v) * story.light),
+      el.style.setProperty(
+        "--progress",
+        String(stageToScrollProgress(s, heights)),
       );
-      const fg = [242, 237, 227].map((v, i) =>
-        Math.round(v + ([23, 24, 21][i] - v) * story.light),
-      );
+      const { background: bg, foreground: fg } = themeAt(story.light);
       el.style.setProperty("--bg", `rgb(${bg.join(",")})`);
       el.style.setProperty("--fg", `rgb(${fg.join(",")})`);
       // Text stays in document flow: sticky panels leave with their section,
@@ -73,12 +76,15 @@ export function useStory(root: RefObject<HTMLElement | null>) {
           trigger: ".story",
           start: "top top",
           end: () => `+=${document.getElementById("launch")!.offsetTop}`,
-          scrub: reduced ? true : 0.65,
+          scrub: true,
           invalidateOnRefresh: true,
         },
         onUpdate: update,
       });
       rebuild = () => {
+        heights = acts.map(
+          (act) => document.getElementById(act.id)!.offsetHeight,
+        );
         timeline.clear();
         acts.slice(0, -1).forEach((act, index) => {
           timeline.fromTo(
@@ -86,7 +92,7 @@ export function useStory(root: RefObject<HTMLElement | null>) {
             { stage: index },
             {
               stage: index + 1,
-              duration: document.getElementById(act.id)!.offsetHeight,
+              duration: heights[index],
               ease: "none",
               immediateRender: index === 0,
             },
