@@ -1,1 +1,3 @@
-# pourpour-machine-software
+# Landing Page
+
+Landing page for the pourpour machine.
