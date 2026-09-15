@@ -70,12 +70,6 @@ export default function App() {
           </button>
         ))}
       </nav>
-      <div className="viewport-footer mono" aria-hidden="true">
-        <span>
-          {String(active + 1).padStart(2, "0")} /{" "}
-          {acts[active].label.toUpperCase()}
-        </span>
-      </div>
       <div className="scroll-progress" aria-hidden="true" />
       <LaunchDialog open={launch} onClose={() => setLaunch(false)} />
     </div>

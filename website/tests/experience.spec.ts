@@ -138,7 +138,8 @@ test("text panels flow continuously without overlapping at act boundaries", asyn
     await expect(page.locator(".instrument-header")).not.toContainText(
       "IN DEVELOPMENT",
     );
-    await expect(page.locator(".viewport-footer")).not.toContainText("FB–01");
+    await expect(page.locator(".viewport-footer")).toHaveCount(0);
+    await expect(page.locator(".object-caption")).toHaveCount(0);
     for (let index = 0; index < acts.length - 1; index++) {
       const geometry = await page.evaluate((index) => {
         const panels = [

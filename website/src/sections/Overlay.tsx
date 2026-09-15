@@ -31,10 +31,6 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                     without manually controlling the pour.
                   </p>
                 </div>
-                <div className="object-caption mono">
-                  <span>DESIGNED AROUND THE POUR.</span>
-                  <span>A WORKING IDEA. A PHYSICAL OBJECT.</span>
-                </div>
                 <div className="hero-index mono">
                   01—05 <span>SCROLL TO EXPLORE</span>
                   <i />
