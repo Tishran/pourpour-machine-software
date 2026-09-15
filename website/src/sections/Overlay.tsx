@@ -54,9 +54,9 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                     AUTOMATIC POUR-OVER / FB–01
                   </p>
                   <h1>
-                    Every bag.
+                    We finally bring you
                     <br />
-                    <em>Its own pour.</em>
+                    <em>the tasty coffee</em>
                   </h1>
                   <p className="body-copy">
                     Brew every new bag with a recipe matched to that coffee —
@@ -247,9 +247,9 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                 <div className="editorial final-editorial">
                   <p className="eyebrow">06 / ROOM FOR A NEW RITUAL</p>
                   <h2>
-                    Every bag.
+                    We finally bring you
                     <br />
-                    <em>Its own pour.</em>
+                    <em>the tasty coffee</em>
                   </h2>
                   <p className="final-invite">
                     Bring First Brew to your kitchen.
