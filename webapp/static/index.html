@@ -4,11 +4,11 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f4f1e9">
   <meta name="description" content="Find the V60 pour-over recipe for your coffee from The Welder Catherine.">
-  <title>PourPour — your coffee, its recipe</title>
+  <title>First Brew — your coffee, its recipe</title>
   <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
 </head>
 <body>
-  <header class="header"><a href="/" class="logo" aria-label="PourPour — home">pour<span>pour</span><i>↘</i></a><span class="edition">COFFEE RECIPE FINDER <b>01 / V60</b></span></header>
+  <header class="header"><a href="/" class="logo" aria-label="First Brew — home">first<span>brew</span><i>↘</i></a><span class="edition">COFFEE RECIPE FINDER <b>01 / V60</b></span></header>
   <main>
     <section class="hero">
       <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> A SMALL RITUAL. A BIG TASTE.</p>
@@ -41,6 +41,8 @@
         <div class="section-heading"><span class="eyebrow">01 / FIND COFFEE</span><span class="tag">The Welder Catherine</span></div>
         <form id="search-form"><label for="coffee-query">What are we brewing today?</label><div class="search-row"><input id="coffee-query" type="search" maxlength="120" placeholder="Coffee name, e.g. Rwanda Susa" autocomplete="off"><button type="submit" id="search-button">Search <span>↗</span></button></div></form>
         <div class="suggestions"><span>Try:</span><button type="button" data-query="Rwanda">Rwanda</button><button type="button" data-query="Efiopiya">Ethiopia</button><button type="button" data-query="Kolumbiya">Colombia</button></div>
+        <div class="scan"><button type="button" id="scan-button" class="scan-button">Scan or upload the bag <span aria-hidden="true">▣</span></button><input type="file" id="scan-input" accept="image/*" hidden></div>
+        <div id="scan-result" class="scan-result" role="status" aria-live="polite" hidden></div>
         <div class="results-heading"><h2 id="results-title">Filter coffees</h2><span id="count"></span></div>
         <p id="catalog-status" class="status" role="status" aria-live="polite">Loading the roaster's catalog…</p>
         <div id="results" class="results"></div>
@@ -53,6 +55,6 @@
     </section>
     <section class="how"><div><span>01</span><h3>Find your coffee</h3><p>Type the name from the bag.<br>Part of the name or Latin letters work too.</p></div><div><span>02</span><h3>Open the recipe</h3><p>The exact lot's parameters<br>from The Welder Catherine.</p></div><div><span>03</span><h3>Dial in your taste</h3><p>Follow the pours and the timer.<br>Enjoy every cup.</p></div></section>
   </main>
-  <footer><a href="/" class="logo small">pour<span>pour</span>↘</a><p>Made with care for your next cup.</p><a href="https://theweldercatherine.ru/" target="_blank" rel="noopener noreferrer">Source: The Welder Catherine ↗</a></footer>
+  <footer><a href="/" class="logo small">first<span>brew</span>↘</a><p>Made with care for your next cup.</p><a href="https://theweldercatherine.ru/" target="_blank" rel="noopener noreferrer">Source: The Welder Catherine ↗</a></footer>
 </body>
 </html>

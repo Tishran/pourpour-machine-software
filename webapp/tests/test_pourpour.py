@@ -5,9 +5,22 @@ import time
 import unittest
 from pathlib import Path
 from pourpour import (CoffeeService, SourceCache, SourceError, parse_catalog, parse_product,
-                      parse_recipes, safe_url, search_products, seconds)
+                      parse_recipes, safe_url, scan_label, search_products, seconds)
 
 FIXTURES = Path(__file__).parent / 'fixtures'
+
+
+class ScanTests(unittest.TestCase):
+    def test_placeholder_shape(self):
+        result = scan_label(b'\xff\xd8\xff', 'image/jpeg')
+        self.assertEqual(result['status'], 'placeholder')
+        self.assertEqual(result['text'], '')
+        self.assertEqual(result['candidates'], [])
+        self.assertTrue(result['message'])
+
+    def test_arbitrary_bytes_do_not_raise(self):
+        for payload, ctype in [(b'', 'image/png'), (b'not an image', 'image/jpeg'), (b'\x00\x01\x02', 'image/webp')]:
+            self.assertIn('message', scan_label(payload, ctype))
 
 
 class ParserTests(unittest.TestCase):

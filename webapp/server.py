@@ -5,7 +5,7 @@ import logging
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
-from pourpour import CoffeeService, SourceError
+from pourpour import CoffeeService, SourceError, scan_label
 
 ROOT = Path(__file__).parent / 'static'
 service = CoffeeService()
@@ -43,6 +43,27 @@ class Handler(BaseHTTPRequestHandler):
             logging.exception('Request failed')
             self.send_json(500, {'error': 'Не удалось обработать запрос. Попробуйте ещё раз.'})
 
+    def do_POST(self):
+        url = urlsplit(self.path)
+        try:
+            if url.path == '/api/scan':
+                length = int(self.headers.get('Content-Length') or 0)
+                if length <= 0:
+                    return self.send_json(400, {'error': 'Пустой запрос. Приложите изображение.'})
+                if length > 8 * 1024 * 1024:
+                    return self.send_json(413, {'error': 'Изображение слишком большое (до 8 МБ).'})
+                ctype = self.headers.get('Content-Type', '')
+                if not ctype.startswith('image/'):
+                    return self.send_json(400, {'error': 'Нужен файл изображения.'})
+                body = self.rfile.read(length)
+                return self.send_json(200, scan_label(body, ctype))
+            return self.send_json(404, {'error': 'Страница не найдена.'})
+        except (BrokenPipeError, ConnectionResetError):
+            pass
+        except Exception:
+            logging.exception('Request failed')
+            self.send_json(500, {'error': 'Не удалось обработать запрос. Попробуйте ещё раз.'})
+
     def send_json(self, code, body):
         self.respond(code, json.dumps(body, ensure_ascii=False).encode(), 'application/json; charset=utf-8')
 
@@ -63,5 +84,5 @@ if __name__ == '__main__':
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8000)
     args = parser.parse_args()
-    print(f'PourPour: http://{args.host}:{args.port}', flush=True)
+    print(f'First Brew: http://{args.host}:{args.port}', flush=True)
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()

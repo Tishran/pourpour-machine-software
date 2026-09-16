@@ -272,6 +272,68 @@ function updateTimer() {
   setText('timer-caption', caption);
 }
 
+// Coffee-package scanning. The recognizer is a placeholder for now; the whole
+// request path (file → preview → POST → confirm → search) is wired end to end.
+async function postScan(file) {
+  const response = await fetch('/api/scan', {method: 'POST', headers: {'Content-Type': file.type}, body: file});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Could not read the image. Please try again.');
+  return data;
+}
+
+function readImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error('Could not read the file.'));
+    reader.readAsDataURL(file); // CSP allows data: (not blob:) for img-src.
+  });
+}
+
+async function handleScan(file) {
+  const box = $('scan-result');
+  box.hidden = false;
+  if (!file.type.startsWith('image/')) {
+    box.innerHTML = `<p class="status error">That file is not an image. Please choose a photo of the bag.</p>`;
+    return;
+  }
+  if (file.size > 8 * 1024 * 1024) {
+    box.innerHTML = `<p class="status error">The image is too large (up to 8 MB). Please pick a smaller photo.</p>`;
+    return;
+  }
+  let preview = '';
+  try { preview = await readImage(file); } catch (_) { /* preview is optional */ }
+  box.innerHTML = `${preview ? `<img src="${escape(preview)}" alt="Coffee bag preview">` : ''}<p class="status loading" role="status">Reading the label…</p>`;
+  try {
+    const data = await postScan(file);
+    box.innerHTML = `
+      ${preview ? `<img src="${escape(preview)}" alt="Coffee bag preview">` : ''}
+      <p class="scan-message">${escape(data.message || 'Type or confirm the coffee name below.')}</p>
+      <form class="scan-confirm" id="scan-confirm"><div class="search-row"><input id="scan-name" type="search" maxlength="120" placeholder="Coffee name from the bag" value="${escape(data.text || '')}" autocomplete="off"><button type="submit">Search <span aria-hidden="true">↗</span></button></div></form>`;
+    if (data.status === 'ok' && data.text) {
+      $('coffee-query').value = data.text;
+      search(data.text);
+    }
+    $('scan-confirm').addEventListener('submit', event => {
+      event.preventDefault();
+      const value = $('scan-name').value.trim();
+      if (!value) return;
+      $('coffee-query').value = value;
+      search(value);
+    });
+    $('scan-name').focus();
+  } catch (error) {
+    box.innerHTML = `${preview ? `<img src="${escape(preview)}" alt="Coffee bag preview">` : ''}<p class="status error" role="alert">${escape(error.message)}</p>`;
+  }
+}
+
+$('scan-button').addEventListener('click', () => $('scan-input').click());
+$('scan-input').addEventListener('change', event => {
+  const file = event.target.files[0];
+  event.target.value = ''; // allow re-selecting the same file
+  if (file) handleScan(file);
+});
+
 $('search-form').addEventListener('submit', event => {event.preventDefault(); search($('coffee-query').value.trim());});
 document.querySelectorAll('[data-query]').forEach(button => button.addEventListener('click', () => {
   $('coffee-query').value = button.dataset.query;

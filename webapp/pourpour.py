@@ -40,7 +40,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 def download(url):
     if not safe_url(url):
         raise SourceError('Недопустимый адрес источника.')
-    request = urllib.request.Request(url, headers={'User-Agent': 'PourPour/0.1 (coffee recipe lookup)',
+    request = urllib.request.Request(url, headers={'User-Agent': 'FirstBrew/0.1 (coffee recipe lookup)',
                                                   'Accept': 'application/json, application/xml, text/html'})
     try:
         with urllib.request.build_opener(NoRedirect).open(request, timeout=15) as response:
@@ -237,6 +237,19 @@ def parse_recipes(body):
         if recipe not in recipes:
             recipes.append(recipe)
     return recipes
+
+
+def scan_label(image_bytes, content_type):
+    """Placeholder for coffee-package OCR / neural-net recognition.
+
+    The full request pipeline (camera or gallery upload → POST → response →
+    search) is wired end to end; only the recognizer itself is stubbed. Swap the
+    body for the real model later, returning
+    {'status': 'ok', 'text': <coffee name>, 'candidates': [...]}. Kept offline
+    (no network, no dependencies) for now.
+    """
+    return {'status': 'placeholder', 'text': '', 'candidates': [],
+            'message': 'Auto-recognition is coming soon. Type or confirm the coffee name below.'}
 
 
 class CoffeeService:
