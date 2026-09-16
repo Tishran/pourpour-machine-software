@@ -103,7 +103,6 @@ function renderRecipe(index) {
   const recipe = currentRecipe = currentData.recipes[index];
   const metrics = [[recipe.coffee_g,'g','Coffee'],[recipe.water_g,'g','Water'],[recipe.temperature_c,'°C','Temperature'],[clock(recipe.duration_seconds),'','Total time']];
   const variant = currentData.recipes.length > 1 ? `<label class="variant-label" for="recipe-variant">Recipe variant</label><select class="variant-select" id="recipe-variant">${currentData.recipes.map((r, i) => `<option value="${i}" ${i === index ? 'selected' : ''}>${escape(r.device)} · ${format(r.coffee_g)} g · ${escape(r.grinder || 'Grind not specified')} (${i+1})</option>`).join('')}</select>` : '';
-  const timestamp = new Date(currentData.source.fetched_at).toLocaleString('en-GB', {dateStyle:'short',timeStyle:'short'});
   const steps = recipe.steps.map((step, i) => {
     const water = step.water_g == null ? '—' : '+' + format(step.water_g) + ' g';
     return `<div class="step" id="step-${i}" data-state="upcoming">
@@ -117,7 +116,7 @@ function renderRecipe(index) {
     <h2 class="recipe-title" tabindex="-1">${escape(currentData.product.name)}</h2>
     <p class="recipe-subtitle">Recipe by The Welder Catherine · filter roast</p>
     ${variant}
-    ${currentData.stale ? '<p class="warning">The source is temporarily unavailable. Showing saved data; the recipe fetch date is below.</p>' : ''}
+    ${currentData.stale ? '<p class="warning">The source is temporarily unavailable. Showing saved data.</p>' : ''}
     ${recipe.warnings.map(w => `<p class="warning">${escape(w)}</p>`).join('')}
     <div class="specs">${metrics.map(([value,unit,label]) => `<div><span class="spec-value">${escape(format(value))}<small>${unit}</small></span><span class="spec-name">${label}</span></div>`).join('')}</div>
     <div class="detail-line"><span>Coffee-to-water ratio</span><strong>${recipe.ratio ? '1 : '+format(recipe.ratio) : 'Not specified'}</strong></div>
@@ -136,8 +135,7 @@ function renderRecipe(index) {
     </div>
     <p class="timer-caption" id="timer-caption" role="status">Prepare your coffee and hot water, then start the timer.</p>
     ${recipe.notes ? `<p class="recipe-notes">${escape(recipe.notes)}</p>` : ''}
-    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">Coffee page ↗</a><a href="${escape(currentData.source_url)}" target="_blank" rel="noopener noreferrer">Original recipe ↗</a></div>
-    <p class="source-time">DATA FETCHED ${escape(timestamp)} · BROWSER TIME ZONE</p>`;
+    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">Coffee page ↗</a></div>`;
   $('recipe-variant')?.addEventListener('change', event => renderRecipe(Number(event.target.value)));
   $('timer-toggle').addEventListener('click', toggleTimer);
   $('timer-reset').addEventListener('click', resetTimer);
