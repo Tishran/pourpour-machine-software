@@ -84,12 +84,10 @@ class Handler(BaseHTTPRequestHandler):
                 raise ValueError('The upload was incomplete.')
             if is_photo:
                 scan = scan_label(payload, content_type)
-                ocr = scan['ocr']
-                recommendation = get_model().recommend(ocr['text'])
-                # Low-confidence OCR is editable, but should not automatically prepare a recipe.
-                if ocr['needs_review']:
-                    recommendation.update(kind='review_label', recipe_data=None,
-                                          message='Review the label text and select Prepare recipe.')
+                # Use the recognized text directly: if the name was read and is in
+                # the catalog, its recipe is shown immediately; otherwise the model
+                # falls back to the closest recipe. No manual review/confirm step.
+                recommendation = get_model().recommend(scan['ocr']['text'])
                 return self.send_json(200, {**scan, 'candidates': recommendation['candidates'],
                                             'message': recommendation['message'], 'recommendation': recommendation})
             body = json.loads(payload)

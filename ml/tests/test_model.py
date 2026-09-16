@@ -30,6 +30,20 @@ class ModelTests(unittest.TestCase):
             self.assertEqual(r['kind'], 'catalog_match')
             self.assertEqual(r['recipe_data']['product']['name'], 'Руанда Суса')
 
+    def test_low_confidence_read_with_known_name_shows_recipe(self):
+        # Mirrors the server photo path: a low-confidence OCR read is used as-is,
+        # so a name that is in the catalog still returns its recipe immediately.
+        from unittest.mock import patch
+        from webapp.pourpour import scan_label
+        with patch('webapp.label_ocr.extract', return_value={
+                'text': 'Руанда Суса', 'needs_review': True,
+                'mean_word_confidence': 40, 'word_count': 2}):
+            scan = scan_label(b'\xff\xd8\xff', 'image/jpeg')
+        self.assertTrue(scan['ocr']['needs_review'])
+        recommendation = self.model.recommend(scan['ocr']['text'])
+        self.assertEqual(recommendation['kind'], 'catalog_match')
+        self.assertEqual(recommendation['recipe_data']['product']['name'], 'Руанда Суса')
+
     def test_ocr_mixed_cyrillic_latin_letters(self):
         result = self.model.recommend('The Welder Catherine\nРуанда Cyca')
         self.assertEqual(result['kind'], 'catalog_match')

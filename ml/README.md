@@ -122,10 +122,12 @@ evaluate recommendations by coffee/farm/harvest groups plus real brewing outcome
 - `POST /api/recommend`: JSON `{"text":"Country: Rwanda\nProcessing: washed"}`.
   An optional `selected_coffee_id` confirms a catalog candidate; unknown IDs fail.
 
-Response `kind` is one of `catalog_match`, `confirm_match`, `suggested_reference`,
-`source_needs_review`, `insufficient_data`, or (photo only) `review_label`.
-`recipe_data` is null when the system abstains. Suggested recipes are never
-written back into the roaster dataset. This remains a local development server.
+Response `kind` is one of `catalog_match` (a confident name match, used
+directly), `closest_reference` (no catalog match — the nearest recipe, chosen by
+a placeholder standing in for a neural matcher in development), `source_needs_review`,
+or `insufficient_data`. `recipe_data` is null only when the label is unreadable.
+There is no manual OCR-confirmation step. Suggested recipes are never written
+back into the roaster dataset. This remains a local development server.
 
 ## Verification
 
