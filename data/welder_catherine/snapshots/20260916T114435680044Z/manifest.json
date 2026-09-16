@@ -1,0 +1,909 @@
+{
+  "schema_version": 1,
+  "snapshot_id": "20260916T114435680044Z",
+  "started_at": "2026-09-16T11:44:35.680443+00:00",
+  "completed_at": "2026-09-16T11:45:13.363762+00:00",
+  "scope": "current_filter_catalog",
+  "parser_version": "1.0.0",
+  "sources": [
+    {
+      "url": "https://theweldercatherine.ru/bitrix/catalog_export/yandex_848006.php",
+      "fetched_at": "2026-09-16T11:44:36.171508+00:00",
+      "sha256": "606320b561a42cfec59582624a6bd1a23b8fa2aab3438e98706ce3d66a5d1873",
+      "path": "raw/606320b561a42cfec59582624a6bd1a23b8fa2aab3438e98706ce3d66a5d1873.gz",
+      "kind": "catalog"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_la_liama_yava/",
+      "fetched_at": "2026-09-16T11:44:36.732186+00:00",
+      "sha256": "67881dcaa15bcd8e12fcdfdeb73d6b76cfe8319befa7efd3cba46228981d8a9d",
+      "path": "raw/67881dcaa15bcd8e12fcdfdeb73d6b76cfe8319befa7efd3cba46228981d8a9d.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56980&view=true",
+      "fetched_at": "2026-09-16T11:44:37.030606+00:00",
+      "sha256": "21e59de78f8c32639151d1b14a38e3cc51def9b5f849f19b464853886e17dab0",
+      "path": "raw/21e59de78f8c32639151d1b14a38e3cc51def9b5f849f19b464853886e17dab0.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_los_rodriges_batian/",
+      "fetched_at": "2026-09-16T11:44:37.808366+00:00",
+      "sha256": "ba33971d570adc79c47ef6709da3f99d44769a0bb66dc3a2dbf650945f40e7c3",
+      "path": "raw/ba33971d570adc79c47ef6709da3f99d44769a0bb66dc3a2dbf650945f40e7c3.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56977&view=true",
+      "fetched_at": "2026-09-16T11:44:38.185155+00:00",
+      "sha256": "69199cd60e0420a1efe6000dacb17af6d7f2365eab4a2a488ff871b394f27274",
+      "path": "raw/69199cd60e0420a1efe6000dacb17af6d7f2365eab4a2a488ff871b394f27274.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_samaypata_sl_28/",
+      "fetched_at": "2026-09-16T11:44:38.748717+00:00",
+      "sha256": "c36d5d5304ce0ad38187934a249af0feb7f4c3ba3b43bd42e63c0a86420cee94",
+      "path": "raw/c36d5d5304ce0ad38187934a249af0feb7f4c3ba3b43bd42e63c0a86420cee94.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56978&view=true",
+      "fetched_at": "2026-09-16T11:44:39.015767+00:00",
+      "sha256": "cdb071c8238bf431251bd628bcc022a3bc3217b54307902bd105d9deda1fe449",
+      "path": "raw/cdb071c8238bf431251bd628bcc022a3bc3217b54307902bd105d9deda1fe449.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_samaypata_pakamara/",
+      "fetched_at": "2026-09-16T11:44:39.786962+00:00",
+      "sha256": "dae2a07f0bc077e0e03d8785ceb2638ee922ac5e76b5c0d71f4b0b0198a5de26",
+      "path": "raw/dae2a07f0bc077e0e03d8785ceb2638ee922ac5e76b5c0d71f4b0b0198a5de26.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56981&view=true",
+      "fetched_at": "2026-09-16T11:44:40.071739+00:00",
+      "sha256": "fa6af36285273ae5a7bbe1428324db152e4e28fe9d964d9c2ddd8d8ff3832008",
+      "path": "raw/fa6af36285273ae5a7bbe1428324db152e4e28fe9d964d9c2ddd8d8ff3832008.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/burundi_bursiara/",
+      "fetched_at": "2026-09-16T11:44:40.927241+00:00",
+      "sha256": "95207503f884d80fd4d27e1ab66f31b16e96888b624bfd7276904ba87484a852",
+      "path": "raw/95207503f884d80fd4d27e1ab66f31b16e96888b624bfd7276904ba87484a852.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56754&view=true",
+      "fetched_at": "2026-09-16T11:44:41.173424+00:00",
+      "sha256": "ef7fa27804ff1762c6b362c2ae0374cd7bd09e0a02b3830e1e8ceb84b6a1aa2d",
+      "path": "raw/ef7fa27804ff1762c6b362c2ae0374cd7bd09e0a02b3830e1e8ceb84b6a1aa2d.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/gonduras_ksinakla/",
+      "fetched_at": "2026-09-16T11:44:41.916185+00:00",
+      "sha256": "66c4abd6fade0bb9133f0eee9c10b8a96d709656f6366843ecae5fd61ed6bd0a",
+      "path": "raw/66c4abd6fade0bb9133f0eee9c10b8a96d709656f6366843ecae5fd61ed6bd0a.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=30352&view=true",
+      "fetched_at": "2026-09-16T11:44:42.172839+00:00",
+      "sha256": "7f8fb8c7147a453ec0eb504fa80c64d369ce61aefbaa80e175327484b71f1e40",
+      "path": "raw/7f8fb8c7147a453ec0eb504fa80c64d369ce61aefbaa80e175327484b71f1e40.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/gonduras_moyzes/",
+      "fetched_at": "2026-09-16T11:44:42.885251+00:00",
+      "sha256": "d3393350ff02814fefa01877387863e8c54d090ba8a53cb2cd1e8e3677b2291a",
+      "path": "raw/d3393350ff02814fefa01877387863e8c54d090ba8a53cb2cd1e8e3677b2291a.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=39692&view=true",
+      "fetched_at": "2026-09-16T11:44:43.146444+00:00",
+      "sha256": "3f9d018d7992157182c9e285cbf98a7da37b2aad3cd26cfbd90854c5a2fe9f84",
+      "path": "raw/3f9d018d7992157182c9e285cbf98a7da37b2aad3cd26cfbd90854c5a2fe9f84.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/gonduras_tanairi/",
+      "fetched_at": "2026-09-16T11:44:43.924333+00:00",
+      "sha256": "48ab5c8cf4503f5e3327d42656fbc26ce59d1122ed4e220540f5563e41996c0e",
+      "path": "raw/48ab5c8cf4503f5e3327d42656fbc26ce59d1122ed4e220540f5563e41996c0e.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=37966&view=true",
+      "fetched_at": "2026-09-16T11:44:44.251033+00:00",
+      "sha256": "7d6670adba3307f56e1af631f7be74a184f2f418a52e0658798056d6938a556b",
+      "path": "raw/7d6670adba3307f56e1af631f7be74a184f2f418a52e0658798056d6938a556b.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/indoneziya_khani_rizopus_1/",
+      "fetched_at": "2026-09-16T11:44:44.844062+00:00",
+      "sha256": "0b724d88dc1bacf67ad37dca7304a4c8ebc0eb8a37ad14561889f0872db0ff02",
+      "path": "raw/0b724d88dc1bacf67ad37dca7304a4c8ebc0eb8a37ad14561889f0872db0ff02.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=42803&view=true",
+      "fetched_at": "2026-09-16T11:44:45.094910+00:00",
+      "sha256": "8b413f3fec43d75964837d8dee06c6cbe5408d6830ca41f31054ee737154bf8a",
+      "path": "raw/8b413f3fec43d75964837d8dee06c6cbe5408d6830ca41f31054ee737154bf8a.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_barichu_gotomboya_aa/",
+      "fetched_at": "2026-09-16T11:44:45.966121+00:00",
+      "sha256": "a35b179bdde0bfa672fe96f2fc10ff6e4d318355b205d66b4d83bd7bfbec8564",
+      "path": "raw/a35b179bdde0bfa672fe96f2fc10ff6e4d318355b205d66b4d83bd7bfbec8564.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58490&view=true",
+      "fetched_at": "2026-09-16T11:44:46.205318+00:00",
+      "sha256": "2492c103b8a148e98852ab31a232a58fc2da177b91e3888dd9565f96d2e63b83",
+      "path": "raw/2492c103b8a148e98852ab31a232a58fc2da177b91e3888dd9565f96d2e63b83.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_inoi_pb/",
+      "fetched_at": "2026-09-16T11:44:47.027560+00:00",
+      "sha256": "0adf6e3e91b8aa2fabfd521b524932dfae5441737b6a6adbab120349a01f4bc3",
+      "path": "raw/0adf6e3e91b8aa2fabfd521b524932dfae5441737b6a6adbab120349a01f4bc3.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=55665&view=true",
+      "fetched_at": "2026-09-16T11:44:47.271446+00:00",
+      "sha256": "741769294660863784a669811a5cc067c59aefb70328461f4aa5e357bc4afa3c",
+      "path": "raw/741769294660863784a669811a5cc067c59aefb70328461f4aa5e357bc4afa3c.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_kabare_karani_av/",
+      "fetched_at": "2026-09-16T11:44:48.106389+00:00",
+      "sha256": "0f3e23ec90b984ea055421f2a155fe7a22f2591ed9534b2e9ef5c27b5e814714",
+      "path": "raw/0f3e23ec90b984ea055421f2a155fe7a22f2591ed9534b2e9ef5c27b5e814714.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=47947&view=true",
+      "fetched_at": "2026-09-16T11:44:48.356549+00:00",
+      "sha256": "7570151d2fd3075d43a999f887cb285104e2fe507cc0b78996e373a0b878d5b7",
+      "path": "raw/7570151d2fd3075d43a999f887cb285104e2fe507cc0b78996e373a0b878d5b7.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_kilombe/",
+      "fetched_at": "2026-09-16T11:44:49.078765+00:00",
+      "sha256": "0e1aca178d2accfe8939226d79fdc06ec2b55b47ce8c444d16f5c0dda65904a3",
+      "path": "raw/0e1aca178d2accfe8939226d79fdc06ec2b55b47ce8c444d16f5c0dda65904a3.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=45204&view=true",
+      "fetched_at": "2026-09-16T11:44:49.327504+00:00",
+      "sha256": "687e710a84825bac62513715727996cb69263cce28f6c5c9e03afd59e72de6f8",
+      "path": "raw/687e710a84825bac62513715727996cb69263cce28f6c5c9e03afd59e72de6f8.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_olbanata/",
+      "fetched_at": "2026-09-16T11:44:50.012458+00:00",
+      "sha256": "3084c59e1860aa7c2fac3ea4dcdac941c51d6cca426578af0b440d0289d1a484",
+      "path": "raw/3084c59e1860aa7c2fac3ea4dcdac941c51d6cca426578af0b440d0289d1a484.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=59283&view=true",
+      "fetched_at": "2026-09-16T11:44:50.329443+00:00",
+      "sha256": "5be43a49018b038c16e19d0677ef8f73c052668712708071dba232e0f263b14f",
+      "path": "raw/5be43a49018b038c16e19d0677ef8f73c052668712708071dba232e0f263b14f.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_vecinos_leonel_guterres/",
+      "fetched_at": "2026-09-16T11:44:51.026379+00:00",
+      "sha256": "ed6e6b73e60d5a134cdd8f6d6822f606f3a6275960fbfca9d09b11905f30dd12",
+      "path": "raw/ed6e6b73e60d5a134cdd8f6d6822f606f3a6275960fbfca9d09b11905f30dd12.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58057&view=true",
+      "fetched_at": "2026-09-16T11:44:51.269649+00:00",
+      "sha256": "6cd0c47ef4e391fea88d8b4cd2452d3bff0e43f981b55c51e59860ea002e3c89",
+      "path": "raw/6cd0c47ef4e391fea88d8b4cd2452d3bff0e43f981b55c51e59860ea002e3c89.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_dzheferson_kastano/",
+      "fetched_at": "2026-09-16T11:44:51.954219+00:00",
+      "sha256": "62ebd05a10a32086e3fd3b0cd9a9fc02a19b7e3dc74aa9f4ff3a618f77143730",
+      "path": "raw/62ebd05a10a32086e3fd3b0cd9a9fc02a19b7e3dc74aa9f4ff3a618f77143730.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=52599&view=true",
+      "fetched_at": "2026-09-16T11:44:52.208712+00:00",
+      "sha256": "c214883bd3c2ae28cc1daca95d96fe6a30fb2bb5d8412d197ee874e3e037d680",
+      "path": "raw/c214883bd3c2ae28cc1daca95d96fe6a30fb2bb5d8412d197ee874e3e037d680.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_kompanya_libertad_f6/",
+      "fetched_at": "2026-09-16T11:44:52.997055+00:00",
+      "sha256": "696edcdf3dc82dd4a9a33a8d3ba5420815bfc8602f7c5fe83b5251b45f1a6533",
+      "path": "raw/696edcdf3dc82dd4a9a33a8d3ba5420815bfc8602f7c5fe83b5251b45f1a6533.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=49589&view=true",
+      "fetched_at": "2026-09-16T11:44:53.296927+00:00",
+      "sha256": "c65239753d533fa501950e447df9e972836a85d550c2e4cf3e7db4bf525cc724",
+      "path": "raw/c65239753d533fa501950e447df9e972836a85d550c2e4cf3e7db4bf525cc724.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_martines_katurra/",
+      "fetched_at": "2026-09-16T11:44:53.926460+00:00",
+      "sha256": "c456d7935a325d3ea5d9f15152b5191ce9044841fe34367456687d7918a4eff6",
+      "path": "raw/c456d7935a325d3ea5d9f15152b5191ce9044841fe34367456687d7918a4eff6.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=59187&view=true",
+      "fetched_at": "2026-09-16T11:44:54.163402+00:00",
+      "sha256": "2ee524ac9dd5af004231e7820071328ce4b74c4fa484fb4ff3b9910ea19e6c9e",
+      "path": "raw/2ee524ac9dd5af004231e7820071328ce4b74c4fa484fb4ff3b9910ea19e6c9e.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_martines_rozovyy_burbon/",
+      "fetched_at": "2026-09-16T11:44:54.860216+00:00",
+      "sha256": "9d4443bdf91f8c24e06fc1ad570a39d4b02515c660c2294e8533da4802a40066",
+      "path": "raw/9d4443bdf91f8c24e06fc1ad570a39d4b02515c660c2294e8533da4802a40066.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57763&view=true",
+      "fetched_at": "2026-09-16T11:44:55.177848+00:00",
+      "sha256": "97e9080e0d917d585823025617b4debccb418063ed7a7eca0b5fb7bdc7291bc1",
+      "path": "raw/97e9080e0d917d585823025617b4debccb418063ed7a7eca0b5fb7bdc7291bc1.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_oliver_berdugo_1/",
+      "fetched_at": "2026-09-16T11:44:55.904850+00:00",
+      "sha256": "bd7b93b685f089f5b187344ae82aadb34f3e285cc31f9b9435ef34494d6f6411",
+      "path": "raw/bd7b93b685f089f5b187344ae82aadb34f3e285cc31f9b9435ef34494d6f6411.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=37085&view=true",
+      "fetched_at": "2026-09-16T11:44:56.165665+00:00",
+      "sha256": "349a67003f3bef9b47e6844b31e712883dfe1e9d9247864f432841fe7e9b4a51",
+      "path": "raw/349a67003f3bef9b47e6844b31e712883dfe1e9d9247864f432841fe7e9b4a51.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_rafael_ayya_3/",
+      "fetched_at": "2026-09-16T11:44:56.870627+00:00",
+      "sha256": "71815b3d3e2678ba6ac82df99ed186a059f59a58ccb3e5e099ea3fb53af6fdb2",
+      "path": "raw/71815b3d3e2678ba6ac82df99ed186a059f59a58ccb3e5e099ea3fb53af6fdb2.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=32257&view=true",
+      "fetched_at": "2026-09-16T11:44:57.157187+00:00",
+      "sha256": "d42b37337170c85424f145d214eabeec573b45f1e723a16c04e9b3116a926f94",
+      "path": "raw/d42b37337170c85424f145d214eabeec573b45f1e723a16c04e9b3116a926f94.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_reynbou_dekaf/",
+      "fetched_at": "2026-09-16T11:44:57.909914+00:00",
+      "sha256": "25624bfe3493aa90b3b46bd208352bc7610ca15109c3ddf1723ea6c716ae5bb8",
+      "path": "raw/25624bfe3493aa90b3b46bd208352bc7610ca15109c3ddf1723ea6c716ae5bb8.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=53176&view=true",
+      "fetched_at": "2026-09-16T11:44:58.200903+00:00",
+      "sha256": "c01388af285d10edf1c37545f17b13b55592d4c5e118d11ec8d7eace83aa03e0",
+      "path": "raw/c01388af285d10edf1c37545f17b13b55592d4c5e118d11ec8d7eace83aa03e0.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kosta_rika_kennet_madrigal/",
+      "fetched_at": "2026-09-16T11:44:58.940672+00:00",
+      "sha256": "b72d2ca908840667cde3d7af38441eda926fb1daa5a07d18908d8f18331497d1",
+      "path": "raw/b72d2ca908840667cde3d7af38441eda926fb1daa5a07d18908d8f18331497d1.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=19725&view=true",
+      "fetched_at": "2026-09-16T11:44:59.199978+00:00",
+      "sha256": "ed6b33ccdb52ca2f14efa2bf6dfc26c7417bf8be6719fac62889c73d15e0e50c",
+      "path": "raw/ed6b33ccdb52ca2f14efa2bf6dfc26c7417bf8be6719fac62889c73d15e0e50c.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kosta_rika_san_khuanilo_milenio/",
+      "fetched_at": "2026-09-16T11:44:59.890124+00:00",
+      "sha256": "4b51fc6c5778182cc803d67172b2774b58ffdcc3b618dd1ece234e3f2fe6f245",
+      "path": "raw/4b51fc6c5778182cc803d67172b2774b58ffdcc3b618dd1ece234e3f2fe6f245.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=47608&view=true",
+      "fetched_at": "2026-09-16T11:45:00.162057+00:00",
+      "sha256": "77444c3077bfa879b82f991b7e5b0b91fb2444e4703e0d714278293b1235a3e0",
+      "path": "raw/77444c3077bfa879b82f991b7e5b0b91fb2444e4703e0d714278293b1235a3e0.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kosta_rika_uilyam_mora_2/",
+      "fetched_at": "2026-09-16T11:45:00.850693+00:00",
+      "sha256": "f8de673ab83071cd5ac24422f7c9090145e455cd08c15f7f6e2445a393130e00",
+      "path": "raw/f8de673ab83071cd5ac24422f7c9090145e455cd08c15f7f6e2445a393130e00.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=40159&view=true",
+      "fetched_at": "2026-09-16T11:45:01.123505+00:00",
+      "sha256": "03bd0c3318ef4093f7518f0ecba42a09a8ad8758b12c544e7f682d84bd9bb78f",
+      "path": "raw/03bd0c3318ef4093f7518f0ecba42a09a8ad8758b12c544e7f682d84bd9bb78f.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/peru_valle_sagrado_iz_bochki/",
+      "fetched_at": "2026-09-16T11:45:01.824746+00:00",
+      "sha256": "ba4b2c392aebb5ea1dea51472fb92183c28c534fde1fda1920640f1845c49d45",
+      "path": "raw/ba4b2c392aebb5ea1dea51472fb92183c28c534fde1fda1920640f1845c49d45.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=54895&view=true",
+      "fetched_at": "2026-09-16T11:45:02.088415+00:00",
+      "sha256": "9b3cf179a2a6df0b58f48d479d4964df6088b81c760923b9be07b23357b4ca0e",
+      "path": "raw/9b3cf179a2a6df0b58f48d479d4964df6088b81c760923b9be07b23357b4ca0e.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/peru_vilfredo_minga/",
+      "fetched_at": "2026-09-16T11:45:02.819191+00:00",
+      "sha256": "a71ac06a93ed4b8700f0c8e2fe92c41398787523f6a66f7b0779aa83d50ade6c",
+      "path": "raw/a71ac06a93ed4b8700f0c8e2fe92c41398787523f6a66f7b0779aa83d50ade6c.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56755&view=true",
+      "fetched_at": "2026-09-16T11:45:03.063014+00:00",
+      "sha256": "15cce11c4dc1d392009eb2ae904000f9f2c5f2828b054d2f8c2669cb7440e78a",
+      "path": "raw/15cce11c4dc1d392009eb2ae904000f9f2c5f2828b054d2f8c2669cb7440e78a.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_kabue_/",
+      "fetched_at": "2026-09-16T11:45:03.858903+00:00",
+      "sha256": "5b232a6105308b55a59e4534643e86bd8ed347f0dd8b3a2b7185b6267775939f",
+      "path": "raw/5b232a6105308b55a59e4534643e86bd8ed347f0dd8b3a2b7185b6267775939f.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=53478&view=true",
+      "fetched_at": "2026-09-16T11:45:04.149790+00:00",
+      "sha256": "6e9437023290c30bd89008c0d90bcc37faa90dc0ed853370e86e0e40208ec529",
+      "path": "raw/6e9437023290c30bd89008c0d90bcc37faa90dc0ed853370e86e0e40208ec529.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_kizibere_khill/",
+      "fetched_at": "2026-09-16T11:45:04.954713+00:00",
+      "sha256": "c0653cff1226417d9f42b285be158ea48d4c630a92e3f5ab24ff750af49627c6",
+      "path": "raw/c0653cff1226417d9f42b285be158ea48d4c630a92e3f5ab24ff750af49627c6.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57688&view=true",
+      "fetched_at": "2026-09-16T11:45:05.206889+00:00",
+      "sha256": "77d2640596dc4d7d23cac6f95c3fa73a4e8d4d881a7e139d8d5439de9f3d80bc",
+      "path": "raw/77d2640596dc4d7d23cac6f95c3fa73a4e8d4d881a7e139d8d5439de9f3d80bc.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_sovu/",
+      "fetched_at": "2026-09-16T11:45:05.894040+00:00",
+      "sha256": "90d103edc4695cd7c475280612bc0aa75164f9b2a1559139270f29666884d364",
+      "path": "raw/90d103edc4695cd7c475280612bc0aa75164f9b2a1559139270f29666884d364.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57761&view=true",
+      "fetched_at": "2026-09-16T11:45:06.162413+00:00",
+      "sha256": "df14be844361dd102fc3af3e455905e36704cbf89e374f1113efeaf61e7b0f60",
+      "path": "raw/df14be844361dd102fc3af3e455905e36704cbf89e374f1113efeaf61e7b0f60.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_susa/",
+      "fetched_at": "2026-09-16T11:45:06.909258+00:00",
+      "sha256": "2c75033349ce44e15a121d6bbb57dbef10a66d664f9db6046e283efeb3fa57f2",
+      "path": "raw/2c75033349ce44e15a121d6bbb57dbef10a66d664f9db6046e283efeb3fa57f2.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=55664&view=true",
+      "fetched_at": "2026-09-16T11:45:07.167281+00:00",
+      "sha256": "815096df06392d0ef4b050f93004bb1cdfe327c643877146e6c934de60b9da1e",
+      "path": "raw/815096df06392d0ef4b050f93004bb1cdfe327c643877146e6c934de60b9da1e.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_espresso/tanzaniya_landzhi_av/",
+      "fetched_at": "2026-09-16T11:45:08.002686+00:00",
+      "sha256": "02f1149c2ace5562828cd7534dd08e04d369b30c1bf2e59913e939d4f0b412e5",
+      "path": "raw/02f1149c2ace5562828cd7534dd08e04d369b30c1bf2e59913e939d4f0b412e5.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57762&view=true",
+      "fetched_at": "2026-09-16T11:45:08.257054+00:00",
+      "sha256": "722fb247fcb52be812ec7a4e884e251d6a40e4359198ed78c1eb281d2f2a326d",
+      "path": "raw/722fb247fcb52be812ec7a4e884e251d6a40e4359198ed78c1eb281d2f2a326d.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/tanzaniya_lungva_aa/",
+      "fetched_at": "2026-09-16T11:45:08.958484+00:00",
+      "sha256": "9173655afd1e88a1aa8364afee809cb45b24bc16ad8b7c918f59f996bea954eb",
+      "path": "raw/9173655afd1e88a1aa8364afee809cb45b24bc16ad8b7c918f59f996bea954eb.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58896&view=true",
+      "fetched_at": "2026-09-16T11:45:09.273955+00:00",
+      "sha256": "ec5092633465aa02ff66d99b803f335dc667da1700a30521c52bef9a9fd4377e",
+      "path": "raw/ec5092633465aa02ff66d99b803f335dc667da1700a30521c52bef9a9fd4377e.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_lalisa2/",
+      "fetched_at": "2026-09-16T11:45:10.017148+00:00",
+      "sha256": "f1e7061d432360d0f5a579337c10e39fe537f1a802f7fed1994e2374899696b8",
+      "path": "raw/f1e7061d432360d0f5a579337c10e39fe537f1a802f7fed1994e2374899696b8.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=33335&view=true",
+      "fetched_at": "2026-09-16T11:45:10.274192+00:00",
+      "sha256": "a51f945075db6d8a5410fb74ad71dd2252cc2b9a3c51befd795b02a3a9a6db8e",
+      "path": "raw/a51f945075db6d8a5410fb74ad71dd2252cc2b9a3c51befd795b02a3a9a6db8e.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_reku_1/",
+      "fetched_at": "2026-09-16T11:45:11.087875+00:00",
+      "sha256": "4f67a878834fa463a94734f56ced61e4dfa6fe53641dd0eabebe79c4101a1dd9",
+      "path": "raw/4f67a878834fa463a94734f56ced61e4dfa6fe53641dd0eabebe79c4101a1dd9.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58922&view=true",
+      "fetched_at": "2026-09-16T11:45:11.333433+00:00",
+      "sha256": "207ff44a4b36e286a83bbfeafc1d007ee328dafcca72385bd33467d8dc6d51c0",
+      "path": "raw/207ff44a4b36e286a83bbfeafc1d007ee328dafcca72385bd33467d8dc6d51c0.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_tatatu_120_chasov/",
+      "fetched_at": "2026-09-16T11:45:12.093061+00:00",
+      "sha256": "2232fccda8077ad8daad8ee5332434ceb944ed8081ba39184f188f01ceb58f33",
+      "path": "raw/2232fccda8077ad8daad8ee5332434ceb944ed8081ba39184f188f01ceb58f33.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58899&view=true",
+      "fetched_at": "2026-09-16T11:45:12.341034+00:00",
+      "sha256": "e4bb8f340170865642c8c297725bf5b622d45ebb85fed0ee4e730382e1a5fa51",
+      "path": "raw/e4bb8f340170865642c8c297725bf5b622d45ebb85fed0ee4e730382e1a5fa51.gz",
+      "kind": "recipes"
+    },
+    {
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/yava_vayni/",
+      "fetched_at": "2026-09-16T11:45:13.084295+00:00",
+      "sha256": "0c398a2d45e2393df2a39f29576a992c89acfd58cb393e4681e90aef8c771145",
+      "path": "raw/0c398a2d45e2393df2a39f29576a992c89acfd58cb393e4681e90aef8c771145.gz",
+      "kind": "product"
+    },
+    {
+      "url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=37965&view=true",
+      "fetched_at": "2026-09-16T11:45:13.358727+00:00",
+      "sha256": "41ac0c9e12c0977856f2b7dc5f76997076918db1531e67da6d62df26387a59f7",
+      "path": "raw/41ac0c9e12c0977856f2b7dc5f76997076918db1531e67da6d62df26387a59f7.gz",
+      "kind": "recipes"
+    }
+  ],
+  "products": [
+    {
+      "id": "58134197c7bc92cf",
+      "name": "Боливия Ла Лиама ява",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_la_liama_yava/",
+      "region": "Каранави",
+      "available": true,
+      "product_id": "56980",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56980&view=true"
+    },
+    {
+      "id": "dacc2b25929dc041",
+      "name": "Боливия Лос Родригес батиан",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_los_rodriges_batian/",
+      "region": "Каранави",
+      "available": true,
+      "product_id": "56977",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56977&view=true"
+    },
+    {
+      "id": "4849e9fa0447dfc5",
+      "name": "Боливия Самайпата SL-28",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_samaypata_sl_28/",
+      "region": "Каранави",
+      "available": true,
+      "product_id": "56978",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56978&view=true"
+    },
+    {
+      "id": "eeff09425982f526",
+      "name": "Боливия Самайпата пакамара",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/boliviya_samaypata_pakamara/",
+      "region": "Каранави",
+      "available": true,
+      "product_id": "56981",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56981&view=true"
+    },
+    {
+      "id": "cbc426ae8cb91b83",
+      "name": "Бурунди Бурсиара",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/burundi_bursiara/",
+      "region": "Бугесера",
+      "available": true,
+      "product_id": "56754",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56754&view=true"
+    },
+    {
+      "id": "9b9e2648d6fd5487",
+      "name": "Гондурас Ксинакла",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/gonduras_ksinakla/",
+      "region": "Маркала, Ла Пас",
+      "available": true,
+      "product_id": "30352",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=30352&view=true"
+    },
+    {
+      "id": "2f0cf6c4c512ca84",
+      "name": "Гондурас Мойзес",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/gonduras_moyzes/",
+      "region": "Маркала, Ла Пас",
+      "available": true,
+      "product_id": "39692",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=39692&view=true"
+    },
+    {
+      "id": "1122874879355f35",
+      "name": "Гондурас Танаири",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/gonduras_tanairi/",
+      "region": "Маркала, Ла Пас",
+      "available": true,
+      "product_id": "37966",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=37966&view=true"
+    },
+    {
+      "id": "5e58e3b9924b2ec3",
+      "name": "Индонезия Хани Ризопус",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/indoneziya_khani_rizopus_1/",
+      "region": "Сунда",
+      "available": true,
+      "product_id": "42803",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=42803&view=true"
+    },
+    {
+      "id": "cdabffe1c1a6f0ec",
+      "name": "Кения Баричу Готомбоя АА",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_barichu_gotomboya_aa/",
+      "region": "Кириньяга   ",
+      "available": true,
+      "product_id": "58490",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58490&view=true"
+    },
+    {
+      "id": "a9153cbda49909df",
+      "name": "Кения Инои ПБ",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_inoi_pb/",
+      "region": "Кириньяга   ",
+      "available": true,
+      "product_id": "55665",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=55665&view=true"
+    },
+    {
+      "id": "6f5fe84119b4d718",
+      "name": "Кения Кабаре Карани АВ",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_kabare_karani_av/",
+      "region": "Кириньяга   ",
+      "available": true,
+      "product_id": "47947",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=47947&view=true"
+    },
+    {
+      "id": "7bc516ac77d4fdb7",
+      "name": "Кения Киломбе",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_kilombe/",
+      "region": "Ронгаи",
+      "available": true,
+      "product_id": "45204",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=45204&view=true"
+    },
+    {
+      "id": "b86ebf0a87788100",
+      "name": "Кения Олбаната",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/keniya_olbanata/",
+      "region": "Кириньяга   ",
+      "available": true,
+      "product_id": "59283",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=59283&view=true"
+    },
+    {
+      "id": "3331a8ff758632a4",
+      "name": "Колумбия Vecinos: Леонель Гутьеррес",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_vecinos_leonel_guterres/",
+      "region": "Уила",
+      "available": true,
+      "product_id": "58057",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58057&view=true"
+    },
+    {
+      "id": "f5f4dc66de0de126",
+      "name": "Колумбия Джеферсон Кастаньо",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_dzheferson_kastano/",
+      "region": "Уила, Сан-Адольфо",
+      "available": true,
+      "product_id": "52599",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=52599&view=true"
+    },
+    {
+      "id": "a3a0cd7707ea1b17",
+      "name": "Колумбия Компанья Либертад Ф6",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_kompanya_libertad_f6/",
+      "region": "Уила , Тимана",
+      "available": true,
+      "product_id": "49589",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=49589&view=true"
+    },
+    {
+      "id": "3f57953e94140fee",
+      "name": "Колумбия Мартинес катурра",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_martines_katurra/",
+      "region": "Уила",
+      "available": true,
+      "product_id": "59187",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=59187&view=true"
+    },
+    {
+      "id": "c528cf62997a9b65",
+      "name": "Колумбия Мартинес розовый бурбон",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_martines_rozovyy_burbon/",
+      "region": "Уила",
+      "available": true,
+      "product_id": "57763",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57763&view=true"
+    },
+    {
+      "id": "d1d0f24745ed1a9e",
+      "name": "Колумбия Оливер Бердуго",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_oliver_berdugo_1/",
+      "region": "Уила, Асиведо",
+      "available": true,
+      "product_id": "37085",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=37085&view=true"
+    },
+    {
+      "id": "88dfadc80a83c549",
+      "name": "Колумбия Рафаэль Айя",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_rafael_ayya_3/",
+      "region": "Уила, Ла Флорида",
+      "available": false,
+      "product_id": "32257",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=32257&view=true"
+    },
+    {
+      "id": "b2aaf23301a748cc",
+      "name": "Колумбия Рэйнбоу декаф",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kolumbiya_reynbou_dekaf/",
+      "region": "Уила",
+      "available": true,
+      "product_id": "53176",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=53176&view=true"
+    },
+    {
+      "id": "0d5fd9587397bd13",
+      "name": "Коста-Рика Кеннет Мадригаль",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kosta_rika_kennet_madrigal/",
+      "region": "Тарразу",
+      "available": true,
+      "product_id": "19725",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=19725&view=true"
+    },
+    {
+      "id": "c92ef8bcb1c37fa2",
+      "name": "Коста-Рика Сан Хуанильо Миленио",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kosta_rika_san_khuanilo_milenio/",
+      "region": "Вест Вэлли",
+      "available": true,
+      "product_id": "47608",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=47608&view=true"
+    },
+    {
+      "id": "48b8202740dfaedb",
+      "name": "Коста-Рика Уильям Мора",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/kosta_rika_uilyam_mora_2/",
+      "region": "Лос Сантос, Паритийя",
+      "available": true,
+      "product_id": "40159",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=40159&view=true"
+    },
+    {
+      "id": "4b8a95e0db2948f1",
+      "name": "Перу Valle Sagrado из бочки",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/peru_valle_sagrado_iz_bochki/",
+      "region": "Долина Конвенций",
+      "available": true,
+      "product_id": "54895",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=54895&view=true"
+    },
+    {
+      "id": "7ccbeeb9fc0877e1",
+      "name": "Перу Вилфредо Минга",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/peru_vilfredo_minga/",
+      "region": "Кахамарка",
+      "available": true,
+      "product_id": "56755",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=56755&view=true"
+    },
+    {
+      "id": "98727a3efdedd79f",
+      "name": "Руанда Кабуе",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_kabue_/",
+      "region": "Уйе",
+      "available": true,
+      "product_id": "53478",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=53478&view=true"
+    },
+    {
+      "id": "7df9e66194b2d181",
+      "name": "Руанда Кизибере Хилл",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_kizibere_khill/",
+      "region": "Гизанга",
+      "available": true,
+      "product_id": "57688",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57688&view=true"
+    },
+    {
+      "id": "cecff8d84b454fb1",
+      "name": "Руанда Сову",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_sovu/",
+      "region": "Уйе",
+      "available": true,
+      "product_id": "57761",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57761&view=true"
+    },
+    {
+      "id": "e5fc5510543f7439",
+      "name": "Руанда Суса",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_susa/",
+      "region": "Ньямашеке",
+      "available": true,
+      "product_id": "55664",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=55664&view=true"
+    },
+    {
+      "id": "b5eaa5cce0815f06",
+      "name": "Танзания Ланджи АВ",
+      "url": "https://theweldercatherine.ru/catalog/dlya_espresso/tanzaniya_landzhi_av/",
+      "region": "Сонгве",
+      "available": true,
+      "product_id": "57762",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=57762&view=true"
+    },
+    {
+      "id": "e9c04dfafcf743ec",
+      "name": "Танзания Лунгва АА",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/tanzaniya_lungva_aa/",
+      "region": "Сонгве",
+      "available": true,
+      "product_id": "58896",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58896&view=true"
+    },
+    {
+      "id": "72a1d52e708f07cb",
+      "name": "Эфиопия Лалиса",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_lalisa2/",
+      "region": "Иргачифф",
+      "available": true,
+      "product_id": "33335",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=33335&view=true"
+    },
+    {
+      "id": "769138b6357c8c21",
+      "name": "Эфиопия Реку",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_reku_1/",
+      "region": "Иргачифф",
+      "available": true,
+      "product_id": "58922",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58922&view=true"
+    },
+    {
+      "id": "cf88c9c89dc9cc6d",
+      "name": "Эфиопия Татату 120 часов",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_tatatu_120_chasov/",
+      "region": "Иргачифф",
+      "available": true,
+      "product_id": "58899",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=58899&view=true"
+    },
+    {
+      "id": "babae703e11e0009",
+      "name": "Ява Вайни",
+      "url": "https://theweldercatherine.ru/catalog/dlya_filtra/yava_vayni/",
+      "region": "Сунда",
+      "available": true,
+      "product_id": "37965",
+      "status": "fetched",
+      "recipe_url": "https://recipes.theweldercatherine.ru/api/v1/recipes?product_id=37965&view=true"
+    }
+  ],
+  "errors": [],
+  "catalog_products": 37
+}

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "parser_version": "1.0.0",
+  "snapshot_id": "20260916T114435680044Z",
+  "scope": "current_filter_catalog",
+  "counts": {
+    "coffees": 37,
+    "packaging_offers": 70,
+    "pourover_recipes": 37,
+    "steps": 137,
+    "coffees_with_recipes": 37,
+    "scalar_targets_usable": 36,
+    "schedule_usable": 35,
+    "training_candidates": 35,
+    "unique_programs": 35,
+    "sources": 75
+  },
+  "coffee_statuses": {
+    "has_pourover": 37
+  },
+  "missing_coffee_features": {
+    "country_code": 1,
+    "region": 0,
+    "variety": 0,
+    "processing": 0,
+    "harvest": 0,
+    "flavor": 0,
+    "roaster_score": 1,
+    "filter_roast_color": 1
+  },
+  "quality_issue_counts": {
+    "invalid_step_time": 1,
+    "missing_duration_seconds": 1,
+    "step_water_sum_mismatch": 1,
+    "missing_step_temperature": 1
+  },
+  "fetch_errors": [],
+  "parse_errors": [],
+  "recipes_needing_review": [
+    {
+      "recipe_id": "twc:4b8a95e0db2948f1:4772d9c9a13ed8f9a3b4c3fe",
+      "name": "Перу Valle Sagrado из бочки в Воронке Hario",
+      "issues": [
+        {
+          "code": "invalid_step_time",
+          "severity": "error"
+        },
+        {
+          "code": "missing_duration_seconds",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:b2aaf23301a748cc:5a05517a600e79dd91b6f668",
+      "name": "Колумбия Рэйнбоу декаф в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:e5fc5510543f7439:e683930e91aace411a4aeeb3",
+      "name": "Руанда Суса в Воронке Hario",
+      "issues": [
+        {
+          "code": "missing_step_temperature",
+          "severity": "warning"
+        }
+      ]
+    }
+  ]
+}
