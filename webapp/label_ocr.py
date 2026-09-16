@@ -32,7 +32,7 @@ def status():
     _, _, ready = configuration()
     return {'available': ready, 'engine': 'Tesseract LSTM', 'languages': ['ru', 'en'],
             'privacy': 'local_only', 'max_bytes': MAX_IMAGE_BYTES,
-            'message': '' if ready else 'Для фото установите Tesseract, Pillow и выполните python3 -m ml.setup_ocr. Можно вставить текст этикетки вручную.'}
+            'message': '' if ready else 'Photo recognition needs Tesseract, Pillow and python3 -m ml.setup_ocr. You can enter label text manually.'}
 
 
 def image_dimensions(payload):
@@ -62,27 +62,27 @@ def image_dimensions(payload):
                 height, width = struct.unpack('>HH', payload[offset+3:offset+7])
                 return width, height, '.jpg'
             offset += length
-    raise ValueError('Нужна фотография JPEG или PNG. Пересохраните изображение и попробуйте снова.')
+    raise ValueError('A JPEG or PNG photo is required. Export the image and try again.')
 
 
 def extract(payload):
     if not payload or len(payload) > MAX_IMAGE_BYTES:
-        raise ValueError('Фото должно быть меньше 8 МБ.')
+        raise ValueError('The photo must be smaller than 8 MB.')
     width, height, suffix = image_dimensions(payload)
     if width < 40 or height < 40 or width * height > MAX_PIXELS:
-        raise ValueError('Размер фото должен быть от 40 × 40 пикселей до 16 мегапикселей.')
+        raise ValueError('Photo size must be between 40 × 40 pixels and 16 megapixels.')
     binary, data, ready = configuration()
     if not ready:
         raise OCRError(status()['message'])
     if not OCR_LOCK.acquire(blocking=False):
-        raise OCRError('Другое фото ещё обрабатывается. Попробуйте через несколько секунд.')
+        raise OCRError('Another photo is still being processed. Try again in a few seconds.')
     try:
         from PIL import Image, ImageOps, UnidentifiedImageError
         with tempfile.TemporaryDirectory(prefix='pourpour-label-') as directory:
             try:
                 with Image.open(io.BytesIO(payload)) as source:
                     if source.width * source.height > MAX_PIXELS:
-                        raise ValueError('Фото должно быть не больше 16 мегапикселей.')
+                        raise ValueError('The photo must not exceed 16 megapixels.')
                     source.load()
                     image = ImageOps.exif_transpose(source).convert('RGBA')
                     background = Image.new('RGBA', image.size, 'white')
@@ -90,7 +90,7 @@ def extract(payload):
                     image = ImageOps.autocontrast(background.convert('L'))
                     image.thumbnail((2400, 2400))
             except (OSError, UnidentifiedImageError, Image.DecompressionBombError) as exc:
-                raise ValueError('Не удалось прочитать изображение. Попробуйте другое фото JPEG или PNG.') from exc
+                raise ValueError('Could not read the image. Try a different JPEG or PNG photo.') from exc
             best = None
             deadline = time.monotonic() + 30
             # Try modest skew corrections. No name/dataset is used to choose OCR output.
@@ -117,12 +117,12 @@ def extract(payload):
                 if best and best['mean_word_confidence'] >= 90 and best['word_count'] >= 5:
                     break
             if best is None:
-                raise OCRError('Не удалось распознать фото за 30 секунд. Обрежьте его до этикетки.')
+                raise OCRError('Could not recognize the photo within 30 seconds. Crop it to the label.')
             needs_review = best['mean_word_confidence'] < 70 or best['word_count'] < 3
             best.pop('rank_score')
             return {**best, 'engine': 'Tesseract LSTM rus+eng',
                     'needs_review': needs_review,
-                    'warnings': ['Проверьте распознанный текст: этикетка читается неуверенно.'] if needs_review else [],
+                    'warnings': ['Please review the text: the label was not read confidently.'] if needs_review else [],
                     'privacy': 'Photo processed locally and deleted after OCR.'}
     finally:
         OCR_LOCK.release()

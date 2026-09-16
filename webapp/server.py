@@ -66,35 +66,35 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(404, {'error': 'Страница не найдена.'})
             origin = self.headers.get('Origin')
             if origin and origin != 'http://' + self.headers.get('Host', ''):
-                return self.send_json(403, {'error': 'Запрос должен быть отправлен из этого приложения.'})
+                return self.send_json(403, {'error': 'The request must come from this application.'})
             if self.headers.get('Transfer-Encoding'):
-                return self.send_json(400, {'error': 'Нужен запрос с Content-Length.'})
+                return self.send_json(400, {'error': 'The request must include Content-Length.'})
             length = int(self.headers.get('Content-Length', '0'))
             maximum = MAX_IMAGE_BYTES if url.path == '/api/label' else 60000
             if length <= 0 or length > maximum:
-                return self.send_json(413, {'error': 'Запрос слишком большой или пустой.'})
+                return self.send_json(413, {'error': 'The request is too large or empty.'})
             content_type = self.headers.get('Content-Type', '').split(';')[0]
             allowed = ('image/jpeg', 'image/png') if url.path == '/api/label' else ('application/json',)
             if content_type not in allowed:
-                return self.send_json(415, {'error': 'Неподдерживаемый формат запроса.'})
+                return self.send_json(415, {'error': 'Unsupported request format.'})
             self.connection.settimeout(35)
             payload = self.rfile.read(length)
             if len(payload) != length:
-                raise ValueError('Не удалось загрузить весь файл.')
+                raise ValueError('The upload was incomplete.')
             if url.path == '/api/label':
                 ocr = extract(payload)
                 recommendation = get_model().recommend(ocr['text'])
                 # Low-confidence OCR is editable, but should not automatically prepare a recipe.
                 if ocr['needs_review']:
                     recommendation.update(kind='review_label', recipe_data=None,
-                                          message='Проверьте текст этикетки и нажмите «Подготовить рецепт».')
+                                          message='Review the label text and select Prepare recipe.')
                 return self.send_json(200, {'ocr': ocr, 'recommendation': recommendation})
             body = json.loads(payload)
             if not isinstance(body, dict) or not isinstance(body.get('text'), str):
-                raise ValueError('Передайте текст этикетки.')
+                raise ValueError('Label text is required.')
             selected = body.get('selected_coffee_id')
             if selected is not None and not isinstance(selected, str):
-                raise ValueError('Неверный идентификатор кофе.')
+                raise ValueError('Invalid coffee identifier.')
             return self.send_json(200, get_model().recommend(body['text'], selected))
         except (ValueError, UnicodeError) as exc:
             self.send_json(400, {'error': str(exc)})
@@ -104,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
             pass
         except Exception:
             logging.exception('Photo/recommendation request failed')
-            self.send_json(500, {'error': 'Не удалось подготовить рецепт. Проверьте установку модели.'})
+            self.send_json(500, {'error': 'Could not prepare a recipe. Check the model setup.'})
 
     def send_json(self, code, body):
         self.respond(code, json.dumps(body, ensure_ascii=False).encode(), 'application/json; charset=utf-8')

@@ -84,7 +84,7 @@ def field(text, aliases):
 
 def parse_label(text):
     if not isinstance(text, str) or len(text) > 10000:
-        raise ValueError('Текст этикетки должен быть короче 10 000 символов.')
+        raise ValueError('Label text must be shorter than 10,000 characters.')
     country_line = field(text, ['страна', 'country', 'origin'])
     # Country matching on the first three lines avoids mistaking a Java variety for origin.
     origin_text = country_line or '\n'.join(text.splitlines()[:3])
@@ -106,7 +106,7 @@ def parse_label(text):
         'region': field(text, ['регион', 'region']),
         'flavor': field(text, ['вкус', 'букет', 'ноты', 'дескрипторы', 'flavor', 'flavour', 'notes', 'tasting notes']),
         'decaf': decaf, 'espresso_or_dark': espresso,
-        'warnings': (['На этикетке несколько стран; проверьте происхождение.'] if len(countries) > 1 else []),
+        'warnings': (['Multiple countries found; check the origin on the label.'] if len(countries) > 1 else []),
     }
 
 
@@ -168,10 +168,10 @@ def supported(profile, reference, similarity):
 
 def ui_recipe(raw):
     issue_text = {
-        'missing_step_temperature': 'В исходном рецепте не указана температура одного из вливаний.',
-        'step_water_sum_mismatch': 'В источнике сумма вливаний не совпадает с общим количеством воды.',
-        'invalid_step_time': 'В источнике некорректное время вливания.',
-        'missing_duration_seconds': 'В источнике некорректное общее время.',
+        'missing_step_temperature': 'The source recipe omits the temperature of one pour.',
+        'step_water_sum_mismatch': 'The source pour amounts do not match the stated total water.',
+        'invalid_step_time': 'The source contains an invalid pour time.',
+        'missing_duration_seconds': 'The source contains an invalid total duration.',
     }
     return {
         'name': raw['name'],
@@ -189,7 +189,7 @@ class RecipeModel:
     def __init__(self, path=MODEL_PATH):
         self.model = json.loads(Path(path).read_text(encoding='utf-8'))
         if self.model['version'] != MODEL_VERSION:
-            raise ValueError('Неподдерживаемая версия модели.')
+            raise ValueError('Unsupported model version.')
         self.rows = self.model['rows']
         self.by_id = {row['coffee']['coffee_id']: row for row in self.rows}
 
@@ -221,33 +221,33 @@ class RecipeModel:
                   'label': profile, 'candidates': candidates, 'kind': 'insufficient_data',
                   'message': '', 'recipe_data': None, 'neighbors': []}
         if len(text.strip()) < 4:
-            result['message'] = 'Не удалось прочитать этикетку. Добавьте название, страну и обработку.'
+            result['message'] = 'Could not read the label. Add the coffee name, country and processing.'
             return result
         exact = [c for c in candidates if c['exact_name']]
         selected = self.by_id.get(selected_coffee_id) if selected_coffee_id else None
         if selected_coffee_id and not selected:
-            raise ValueError('Выбранного кофе нет в модели.')
+            raise ValueError('The selected coffee is not in the model.')
         # Name-only matches must be confirmed unless the source brand is also visible.
         if not selected and len(exact) == 1 and profile['welder_brand_present'] and not profile['espresso_or_dark']:
             selected = self.by_id[exact[0]['coffee_id']]
         if selected:
             if not selected['usable']:
-                result.update(kind='source_needs_review', message='Кофе найден, но исходный рецепт содержит ошибки. Его нельзя использовать автоматически.')
+                result.update(kind='source_needs_review', message='Coffee found, but its source recipe contains errors and cannot be used automatically.')
                 return result
-            result.update(kind='catalog_match', message='Совпадение с сохранённым каталогом. Проверьте лот, урожай и обжарку под фильтр на пачке.')
+            result.update(kind='catalog_match', message='Matched the saved catalog. Check the lot, harvest and filter roast on your bag.')
             result['recipe_data'] = self.response_recipe(selected, result['kind'], selected['coffee']['name'])
             return result
         if candidates and (exact or candidates[0]['name_similarity'] >= .86):
-            result.update(kind='confirm_match', message='Похоже на кофе из каталога. Подтвердите название и обжарщика или уточните текст этикетки.')
+            result.update(kind='confirm_match', message='This looks like a catalog coffee. Confirm its name and roaster, or correct the label text.')
             return result
         if profile['espresso_or_dark']:
-            result['message'] = 'В базе только обжарка под фильтр. Для эспрессо или тёмной обжарки пока нет подходящей модели.'
+            result['message'] = 'This dataset covers filter roasts. Espresso and dark roasts are not supported yet.'
             return result
         if profile['decaf']:
-            result['message'] = 'Для нового декафа пока недостаточно проверенных рецептов в базе.'
+            result['message'] = 'There are not enough checked recipes to recommend one for a new decaf.'
             return result
         if not profile['country'] or not (set(profile['processing']) & {'washed', 'natural', 'honey'}):
-            result['message'] = 'Для нового кофе укажите страну и основную обработку: мытая, натуральная или хани.'
+            result['message'] = 'For a new coffee, include its country and base processing: washed, natural or honey.'
             return result
         ranked = rank(profile, [r for r in self.rows if r['usable']], self.model['idf'])
         result['neighbors'] = [{'name': row['coffee']['name'], 'coffee_id': row['coffee']['coffee_id'],
@@ -255,12 +255,12 @@ class RecipeModel:
         # Choose only a supported neighbor, not an unrelated best-scoring recipe.
         eligible = [(s, r) for s, r in ranked if supported(profile, r['profile'], s)]
         if not eligible:
-            result['message'] = 'В базе нет достаточно близкого кофе с такой страной и обработкой.'
+            result['message'] = 'No sufficiently similar coffee with this country and processing is in the dataset.'
             return result
         score, reference = eligible[0]
         result.update(kind='suggested_reference', similarity=round(score, 4),
-                      message='Стартовый рецепт похожего кофе из базы. Вкус на вашем кофе ещё не проверен; помол относится к указанной кофемолке.')
-        result['recipe_data'] = self.response_recipe(reference, result['kind'], profile['name'] or 'Ваш кофе')
+                      message='A starting recipe from a similar coffee. Taste is untested on your coffee; the grind setting applies only to the listed grinder.')
+        result['recipe_data'] = self.response_recipe(reference, result['kind'], profile['name'] or 'Your coffee')
         return result
 
     def response_recipe(self, row, kind, title):
@@ -271,8 +271,8 @@ class RecipeModel:
             'source': {'fetched_at': recipe['source']['fetched_at']}, 'stale': False,
             'source_url': recipe['source']['url'], 'recommendation_kind': kind,
             'reference_name': c['name'], 'snapshot': self.model['dataset_snapshot'],
-            'recipe_subtitle': ('Рецепт из сохранённого каталога The Welder Catherine' if kind == 'catalog_match'
-                                else 'Предложение на основе рецепта: ' + c['name']),
+            'recipe_subtitle': ('Saved recipe from The Welder Catherine' if kind == 'catalog_match'
+                                else 'Suggested reference recipe: ' + c['name']),
         }
 
 
@@ -298,7 +298,7 @@ def train(snapshot, output):
     rows = dataset_rows(snapshot)
     usable = [r for r in rows if r['usable']]
     if len(usable) < 2:
-        raise ValueError('Нужно минимум два кофе с проверенным рецептом.')
+        raise ValueError('At least two coffees with checked recipes are required.')
     model = {'version': MODEL_VERSION, 'dataset_snapshot': snapshot.name,
              'algorithm': 'TF-IDF weighted categorical/text features; nearest reference recipe',
              'feature_weights': FEATURE_WEIGHTS,

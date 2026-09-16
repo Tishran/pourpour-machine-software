@@ -17,21 +17,29 @@ const assert = require('node:assert/strict');
     assert.match(await page.locator('.specs').textContent(), /250/);
     assert.match(await page.locator('#label-text').inputValue(), /Руанда/i);
     await page.locator('#timer-toggle').click();
-    assert.equal(await page.locator('#timer-toggle').textContent(), 'Пауза');
+    assert.equal(await page.locator('#timer-toggle').textContent(), 'Pause');
+    assert.equal(await page.locator('#timer-phase').textContent(), 'BLOOM');
+    assert.equal(await page.locator('#step-0').getAttribute('data-state'), 'active');
+    assert.match(await page.locator('#timer-action').textContent(), /50 g/);
+    await page.evaluate(() => { running = false; clearInterval(timerInterval); elapsed = 16; updateTimer(); });
+    assert.equal(await page.locator('#step-0').getAttribute('data-state'), 'completed');
+    assert.equal(await page.locator('#step-1').getAttribute('data-state'), 'next');
+    assert.equal(await page.locator('#timer-phase').textContent(), 'PAUSE');
+    assert.match(await page.locator('#timer-action').textContent(), /Next pour in 14 sec/);
     await page.locator('#timer-reset').click();
 
     await page.locator('#label-editor').evaluate(element => { element.open = true; });
     await page.locator('#label-text').fill('Coffee: New Lot\nCountry: Rwanda\nProcessing: washed\nVariety: red bourbon');
     await page.locator('#prepare-recipe').click();
     await page.waitForFunction(() => document.querySelector('.recipe-title')?.textContent === 'New Lot');
-    assert.match(await page.locator('.recipe-subtitle').textContent(), /Предложение/);
-    assert.match(await page.locator('.warning').first().textContent(), /другом кофе/);
+    assert.match(await page.locator('.recipe-subtitle').textContent(), /Suggested/);
+    assert.match(await page.locator('.warning').first().textContent(), /different coffee/);
     const sum = await page.locator('.step-water').allTextContents();
     assert.equal(sum.reduce((total, x) => total + Number(x.replace(/[^\d.]/g, '')), 0), 250);
 
     await page.locator('#label-text').fill('Country: Brazil\nProcessing: natural');
     await page.locator('#prepare-recipe').click();
-    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('нет достаточно близкого'));
+    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('No sufficiently similar'));
     assert.equal(await page.locator('#recipe-content').isVisible(), false);
 
     await page.locator('#label-text').fill('Руанда Суса');
