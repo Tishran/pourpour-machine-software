@@ -4,6 +4,7 @@ const format = (value) => value == null ? '—' : String(value).replace('.', ','
 const clock = (seconds) => seconds == null ? '—' : `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 let searchRequest, recipeRequest, currentProduct, currentData, currentRecipe;
 let timerInterval, running = false, elapsed = 0, startedAt = 0;
+let photoRequest, photoGeneration = 0;
 
 async function api(path, signal) {
   const response = await fetch(path, {signal});
@@ -57,6 +58,7 @@ async function search(query = '') {
 }
 
 async function selectProduct(product) {
+  cancelPhotoRequests();
   recipeRequest?.abort();
   const request = new AbortController();
   recipeRequest = request;
@@ -96,7 +98,9 @@ function renderRecipe(index) {
   $('recipe-content').innerHTML = `
     <div class="recipe-top"><span class="eyebrow">02 / ВАШ РЕЦЕПТ</span><span class="tag">${escape(recipe.device)}</span></div>
     <h2 class="recipe-title" tabindex="-1">${escape(currentData.product.name)}</h2>
-    <p class="recipe-subtitle">Рецепт от The Welder Catherine · обжарка под фильтр</p>
+    <p class="recipe-subtitle">${escape(currentData.recipe_subtitle || 'Рецепт от The Welder Catherine · обжарка под фильтр')}</p>
+    ${currentData.recommendation_kind === 'suggested_reference' ? '<p class="warning">Предложение для первого заваривания. Этот рецепт проверен обжарщиком на другом кофе. Вкус на вашем кофе ещё не оценён.</p>' : ''}
+    ${currentData.recommendation_kind === 'catalog_match' ? '<p class="recipe-notes">Сверьте обжарщика, урожай и обжарку под фильтр с пачкой: название может повторяться у разных лотов.</p>' : ''}
     ${variant}
     ${currentData.stale ? '<p class="warning">Источник временно недоступен. Используются сохранённые данные; дата загрузки рецепта указана ниже.</p>' : ''}
     ${recipe.warnings.map(w => `<p class="warning">${escape(w)}</p>`).join('')}
@@ -108,7 +112,7 @@ function renderRecipe(index) {
     <div class="timer"><span id="timer-clock" class="timer-clock" role="timer" aria-label="Прошло времени">0:00</span><div class="timer-controls"><button type="button" id="timer-toggle" ${!recipe.duration_seconds ? 'disabled' : ''}>Начать заваривание</button><button type="button" id="timer-reset" aria-label="Сбросить таймер">↺</button></div></div>
     <p class="timer-caption" id="timer-caption" role="status">Подготовьте кофе и горячую воду, затем запустите таймер.</p>
     ${recipe.notes ? `<p class="recipe-notes">${escape(recipe.notes)}</p>` : ''}
-    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">Карточка кофе ↗</a><a href="${escape(currentData.source_url)}" target="_blank" rel="noopener noreferrer">Исходный рецепт ↗</a></div>
+    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Кофе-основа' : 'Карточка кофе'} ↗</a><a href="${escape(currentData.source_url)}" target="_blank" rel="noopener noreferrer">Исходный рецепт ↗</a></div>
     <p class="source-time">ДАННЫЕ ЗАГРУЖЕНЫ ${escape(timestamp)} · ЧАСОВОЙ ПОЯС БРАУЗЕРА</p>`;
   $('recipe-variant')?.addEventListener('change', event => renderRecipe(Number(event.target.value)));
   $('timer-toggle').addEventListener('click', toggleTimer);
@@ -156,4 +160,130 @@ document.querySelectorAll('[data-query]').forEach(button => button.addEventListe
   $('coffee-query').value = button.dataset.query;
   search(button.dataset.query);
 }));
+
+function cancelPhotoRequests() {
+  photoGeneration++;
+  photoRequest?.abort();
+  photoRequest = null;
+  $('prepare-recipe').disabled = false;
+}
+
+function startPhotoRequest(message) {
+  cancelPhotoRequests();
+  recipeRequest?.abort();
+  resetTimer();
+  currentRecipe = currentData = currentProduct = null;
+  document.querySelectorAll('.coffee.active').forEach(button => {
+    button.classList.remove('active');
+    button.setAttribute('aria-pressed', 'false');
+  });
+  $('recipe-content').hidden = true;
+  $('recipe-empty').hidden = false;
+  $('recipe-panel').setAttribute('aria-busy', 'false');
+  $('label-candidates').replaceChildren();
+  $('photo-status').className = 'status loading';
+  $('photo-status').textContent = message;
+  $('prepare-recipe').disabled = true;
+  photoRequest = new AbortController();
+  return {generation: photoGeneration, controller: photoRequest};
+}
+
+async function post(path, body, type, signal) {
+  const response = await fetch(path, {method:'POST', headers:{'Content-Type':type}, body, signal});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || 'Не удалось обработать этикетку.');
+  return data;
+}
+
+function showRecommendation(data) {
+  $('photo-status').className = 'status';
+  $('photo-status').textContent = data.message;
+  $('label-candidates').replaceChildren();
+  if (data.kind === 'confirm_match') {
+    data.candidates.forEach(candidate => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = `Да, ${candidate.name} от The Welder Catherine, под фильтр`;
+      button.addEventListener('click', () => prepareRecipe(candidate.coffee_id));
+      $('label-candidates').append(button);
+    });
+  }
+  if (data.recipe_data) {
+    currentData = data.recipe_data;
+    currentProduct = currentData.product;
+    $('recipe-empty').hidden = true;
+    $('recipe-content').hidden = false;
+    renderRecipe(0);
+    if (window.matchMedia('(max-width: 620px)').matches) $('recipe-panel').scrollIntoView({behavior:'smooth'});
+  }
+}
+
+async function prepareRecipe(selected) {
+  const request = startPhotoRequest('Подбираем рецепт по этикетке…');
+  try {
+    const data = await post('/api/recommend', JSON.stringify({text:$('label-text').value, selected_coffee_id:selected || null}), 'application/json', request.controller.signal);
+    if (request.generation !== photoGeneration) return;
+    showRecommendation(data);
+  } catch (error) {
+    if (error.name !== 'AbortError' && request.generation === photoGeneration) {
+      $('photo-status').className = 'status error';
+      $('photo-status').textContent = error.message;
+    }
+  } finally {
+    if (request.generation === photoGeneration) $('prepare-recipe').disabled = false;
+  }
+}
+
+async function photoBlob(file) {
+  if (file.size > 8000000) throw new Error('Выберите фото меньше 8 МБ.');
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Нужен файл JPEG, PNG или WebP.');
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.round(bitmap.width * scale);
+  canvas.height = Math.round(bitmap.height * scale);
+  const context = canvas.getContext('2d');
+  context.fillStyle = '#ffffff';
+  context.fillRect(0, 0, canvas.width, canvas.height);
+  context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  bitmap.close();
+  $('label-preview').src = canvas.toDataURL('image/jpeg', .92);
+  $('label-preview').hidden = false;
+  const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .92));
+  if (!blob) throw new Error('Не удалось открыть фото. Попробуйте пересохранить его как JPEG.');
+  return blob;
+}
+
+$('label-photo').addEventListener('change', async event => {
+  const file = event.target.files[0];
+  if (!file) return;
+  const request = startPhotoRequest('Читаем этикетку на фото…');
+  $('label-text').value = '';
+  $('label-preview').hidden = true;
+  try {
+    const body = await photoBlob(file);
+    if (request.generation !== photoGeneration) return;
+    const data = await post('/api/label', body, 'image/jpeg', request.controller.signal);
+    if (request.generation !== photoGeneration) return;
+    $('label-text').value = data.ocr.text;
+    $('label-editor').open = true;
+    showRecommendation(data.recommendation);
+  } catch (error) {
+    if (error.name !== 'AbortError' && request.generation === photoGeneration) {
+      $('photo-status').className = 'status error';
+      $('photo-status').textContent = error.message;
+      $('label-editor').open = true;
+    }
+  } finally {
+    if (request.generation === photoGeneration) $('prepare-recipe').disabled = false;
+    event.target.value = '';
+  }
+});
+$('prepare-recipe').addEventListener('click', () => prepareRecipe());
+api('/api/model').then(data => {
+  if (photoGeneration) return;
+  $('photo-status').textContent = data.ocr.available ? `${data.coffees} кофе в сохранённой базе · русский и английский` : data.ocr.message;
+}).catch(() => {
+  if (!photoGeneration) $('photo-status').textContent = 'Модель недоступна. Проверьте установку сервера.';
+});
 search();

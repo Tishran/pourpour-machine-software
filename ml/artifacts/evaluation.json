@@ -1,0 +1,571 @@
+{
+  "protocol": "leave-one-coffee-out; IDF refitted per fold; no recipe targets/names as inputs",
+  "coffees": 35,
+  "predicted": 27,
+  "abstained": 8,
+  "coverage": 0.7714285714285715,
+  "errors_on_supported_coffees": {
+    "temperature_c": {
+      "model_mae": 0.6666666666666666,
+      "median_baseline_mae": 0.4444444444444444
+    },
+    "duration_seconds": {
+      "model_mae": 9.62962962962963,
+      "median_baseline_mae": 8.148148148148149
+    },
+    "water_to_coffee_ratio": {
+      "model_mae": 0.04938271604938267,
+      "median_baseline_mae": 0.037037037037037035
+    }
+  },
+  "limitations": [
+    "One roaster, small sample; this is not a taste-quality evaluation.",
+    "Uses clean catalog characteristics, not held-out photos.",
+    "Shared farms and repeated recipe programs may make this evaluation optimistic.",
+    "Weights and acceptance thresholds are hand-set, not calibrated probabilities.",
+    "No evidence that transferring a recipe is optimal for a new coffee."
+  ],
+  "predictions": [
+    {
+      "coffee_id": "twc:58134197c7bc92cf",
+      "reference_coffee_id": "twc:4849e9fa0447dfc5",
+      "similarity": 0.7978658153784977,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 200,
+        "water_to_coffee_ratio": 16.0
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:dacc2b25929dc041",
+      "reference_coffee_id": "twc:4849e9fa0447dfc5",
+      "similarity": 0.6939753109366487,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:4849e9fa0447dfc5",
+      "reference_coffee_id": "twc:dacc2b25929dc041",
+      "similarity": 0.6808854642304293,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 97,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:eeff09425982f526",
+      "reference_coffee_id": "twc:dacc2b25929dc041",
+      "similarity": 0.7688741070283713,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 200,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 97,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:9b9e2648d6fd5487",
+      "reference_coffee_id": "twc:1122874879355f35",
+      "similarity": 0.9093193351724367,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:1122874879355f35",
+      "reference_coffee_id": "twc:9b9e2648d6fd5487",
+      "similarity": 0.9402478207855307,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:cdabffe1c1a6f0ec",
+      "reference_coffee_id": "twc:6f5fe84119b4d718",
+      "similarity": 0.9200454515109805,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:a9153cbda49909df",
+      "reference_coffee_id": "twc:6f5fe84119b4d718",
+      "similarity": 0.9211398753061921,
+      "actual": {
+        "temperature_c": 98,
+        "duration_seconds": 200,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:6f5fe84119b4d718",
+      "reference_coffee_id": "twc:cdabffe1c1a6f0ec",
+      "similarity": 0.9210663483963345,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:7bc516ac77d4fdb7",
+      "reference_coffee_id": "twc:b86ebf0a87788100",
+      "similarity": 0.8523192473009948,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 210,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 175,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:b86ebf0a87788100",
+      "reference_coffee_id": "twc:7bc516ac77d4fdb7",
+      "similarity": 0.7894565684108956,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 175,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 97,
+        "duration_seconds": 210,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:f5f4dc66de0de126",
+      "reference_coffee_id": "twc:c528cf62997a9b65",
+      "similarity": 0.8155710445200037,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:a3a0cd7707ea1b17",
+      "reference_coffee_id": "twc:c528cf62997a9b65",
+      "similarity": 0.7138117348212822,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:3f57953e94140fee",
+      "reference_coffee_id": "twc:88dfadc80a83c549",
+      "similarity": 0.66225190826246,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 97,
+        "duration_seconds": 175,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:c528cf62997a9b65",
+      "reference_coffee_id": "twc:f5f4dc66de0de126",
+      "similarity": 0.7281257342083857,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 97,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:d1d0f24745ed1a9e",
+      "reference_coffee_id": "twc:c528cf62997a9b65",
+      "similarity": 0.5376612939577217,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 195,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:88dfadc80a83c549",
+      "reference_coffee_id": "twc:3f57953e94140fee",
+      "similarity": 0.7334371094766124,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 175,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:0d5fd9587397bd13",
+      "reference_coffee_id": "twc:48b8202740dfaedb",
+      "similarity": 0.6009621642395753,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 165,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:c92ef8bcb1c37fa2",
+      "reference_coffee_id": "twc:0d5fd9587397bd13",
+      "similarity": 0.6366321566246175,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 165,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 165,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:48b8202740dfaedb",
+      "reference_coffee_id": "twc:0d5fd9587397bd13",
+      "similarity": 0.7105896386749329,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 180,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 165,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:98727a3efdedd79f",
+      "reference_coffee_id": "twc:cecff8d84b454fb1",
+      "similarity": 0.8770058515030105,
+      "actual": {
+        "temperature_c": 97,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 195,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:cecff8d84b454fb1",
+      "reference_coffee_id": "twc:98727a3efdedd79f",
+      "similarity": 0.8848231243373483,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 195,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 97,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:e5fc5510543f7439",
+      "reference_coffee_id": "twc:cecff8d84b454fb1",
+      "similarity": 0.7463051972922666,
+      "actual": {
+        "temperature_c": 98,
+        "duration_seconds": 175,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 195,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:b5eaa5cce0815f06",
+      "reference_coffee_id": "twc:e9c04dfafcf743ec",
+      "similarity": 0.8613009410638727,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 17.0
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:e9c04dfafcf743ec",
+      "reference_coffee_id": "twc:b5eaa5cce0815f06",
+      "similarity": 0.8780905118642024,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 185,
+        "water_to_coffee_ratio": 17.0
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:72a1d52e708f07cb",
+      "reference_coffee_id": "twc:769138b6357c8c21",
+      "similarity": 0.8266444372464334,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 200,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    },
+    {
+      "coffee_id": "twc:769138b6357c8c21",
+      "reference_coffee_id": "twc:72a1d52e708f07cb",
+      "similarity": 0.688389185206102,
+      "actual": {
+        "temperature_c": 96,
+        "duration_seconds": 190,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "prediction": {
+        "temperature_c": 96,
+        "duration_seconds": 200,
+        "water_to_coffee_ratio": 16.666666666666668
+      },
+      "training_median": {
+        "temperature_c": 96.0,
+        "duration_seconds": 185.0,
+        "water_to_coffee_ratio": 16.666666666666668
+      }
+    }
+  ],
+  "dataset_snapshot": "20260916T114435680044Z"
+}
