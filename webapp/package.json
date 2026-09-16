@@ -1,0 +1,13 @@
+{
+  "name": "pourpour-recipe-app-dev",
+  "private": true,
+  "scripts": {
+    "dev": "python3 server.py",
+    "test": "python3 -B -m unittest discover -s tests -v && node --check static/app.js",
+    "test:browser": "playwright test",
+    "test:browser:ui": "playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}

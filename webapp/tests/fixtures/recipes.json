@@ -1,0 +1,98 @@
+{
+  "status": "OK",
+  "value": [
+    {
+      "name": "Руанда Суса в Эспрессо",
+      "device": {
+        "manufacturer": "Victoria Arduino",
+        "model": "E1 Prima",
+        "kind": "ESPRESSO"
+      },
+      "grinder": {
+        "manufacturer": "Mahlkönig",
+        "model": "EK43 ICON (coffee) Диск 1-16"
+      },
+      "steps": [],
+      "grind_step": 5,
+      "grind_sub_step": 0,
+      "water": 43,
+      "time": "28s",
+      "temperature": 93.5,
+      "load": 18.5,
+      "tds": 0,
+      "notes": ""
+    },
+    {
+      "name": "Руанда Суса в Воронке Hario",
+      "device": {
+        "manufacturer": "Hario",
+        "model": "V60",
+        "kind": "DRIPPER"
+      },
+      "grinder": {
+        "manufacturer": "Mahlkönig",
+        "model": "EK43 ICON (coffee) Диск 1-16"
+      },
+      "steps": [
+        {
+          "id": "00fe8bec-a471-8dcb-178d-339f91ed198c",
+          "recipe_id": "74877bed-784c-cade-b0b6-6b20887bd073",
+          "seq_num": 0,
+          "instruction": "Предсмачивание ",
+          "water": 50,
+          "temperature": 98,
+          "start": "s",
+          "stop": "15s"
+        },
+        {
+          "id": "527574b2-fb1c-b20f-4454-2fc0d6c02484",
+          "recipe_id": "74877bed-784c-cade-b0b6-6b20887bd073",
+          "seq_num": 4,
+          "instruction": "Вливание",
+          "water": 50,
+          "temperature": 98,
+          "start": "2ms",
+          "stop": "2m15s"
+        },
+        {
+          "id": "5fca5678-0dce-e11e-5a85-788122b03e2c",
+          "recipe_id": "74877bed-784c-cade-b0b6-6b20887bd073",
+          "seq_num": 1,
+          "instruction": "Вливание",
+          "water": 50,
+          "temperature": 98,
+          "start": "30s",
+          "stop": "45s"
+        },
+        {
+          "id": "79886213-8f88-8e19-bfa1-32ab02ca0414",
+          "recipe_id": "74877bed-784c-cade-b0b6-6b20887bd073",
+          "seq_num": 3,
+          "instruction": "Вливание",
+          "water": 50,
+          "temperature": 0,
+          "start": "1m30s",
+          "stop": "1m45s"
+        },
+        {
+          "id": "ff2a8500-56ba-01dd-57b4-6113a673a836",
+          "recipe_id": "74877bed-784c-cade-b0b6-6b20887bd073",
+          "seq_num": 2,
+          "instruction": "Вливание",
+          "water": 50,
+          "temperature": 98,
+          "start": "1ms",
+          "stop": "1m15s"
+        }
+      ],
+      "grind_step": 11,
+      "grind_sub_step": 5,
+      "water": 250,
+      "time": "2m55s",
+      "temperature": 98,
+      "load": 15,
+      "tds": 1.3,
+      "notes": "Все вливания круговыми движениями"
+    }
+  ]
+}
