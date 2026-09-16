@@ -6,8 +6,8 @@ import socket
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
-from pourpour import CoffeeService, SourceError
-from label_ocr import MAX_IMAGE_BYTES, OCRError, extract, status as ocr_status
+from pourpour import CoffeeService, SourceError, scan_label
+from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel
 
 ROOT = Path(__file__).parent / 'static'
@@ -62,7 +62,7 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         url = urlsplit(self.path)
         try:
-            if url.path not in ('/api/label', '/api/recommend'):
+            if url.path not in ('/api/label', '/api/scan', '/api/recommend'):
                 return self.send_json(404, {'error': 'Страница не найдена.'})
             origin = self.headers.get('Origin')
             if origin and origin != 'http://' + self.headers.get('Host', ''):
@@ -70,25 +70,28 @@ class Handler(BaseHTTPRequestHandler):
             if self.headers.get('Transfer-Encoding'):
                 return self.send_json(400, {'error': 'The request must include Content-Length.'})
             length = int(self.headers.get('Content-Length', '0'))
-            maximum = MAX_IMAGE_BYTES if url.path == '/api/label' else 60000
+            is_photo = url.path in ('/api/label', '/api/scan')
+            maximum = MAX_IMAGE_BYTES if is_photo else 60000
             if length <= 0 or length > maximum:
                 return self.send_json(413, {'error': 'The request is too large or empty.'})
             content_type = self.headers.get('Content-Type', '').split(';')[0]
-            allowed = ('image/jpeg', 'image/png') if url.path == '/api/label' else ('application/json',)
+            allowed = ('image/jpeg', 'image/png') if is_photo else ('application/json',)
             if content_type not in allowed:
                 return self.send_json(415, {'error': 'Unsupported request format.'})
             self.connection.settimeout(35)
             payload = self.rfile.read(length)
             if len(payload) != length:
                 raise ValueError('The upload was incomplete.')
-            if url.path == '/api/label':
-                ocr = extract(payload)
+            if is_photo:
+                scan = scan_label(payload, content_type)
+                ocr = scan['ocr']
                 recommendation = get_model().recommend(ocr['text'])
                 # Low-confidence OCR is editable, but should not automatically prepare a recipe.
                 if ocr['needs_review']:
                     recommendation.update(kind='review_label', recipe_data=None,
                                           message='Review the label text and select Prepare recipe.')
-                return self.send_json(200, {'ocr': ocr, 'recommendation': recommendation})
+                return self.send_json(200, {**scan, 'candidates': recommendation['candidates'],
+                                            'message': recommendation['message'], 'recommendation': recommendation})
             body = json.loads(payload)
             if not isinstance(body, dict) or not isinstance(body.get('text'), str):
                 raise ValueError('Label text is required.')
@@ -126,5 +129,5 @@ if __name__ == '__main__':
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8000)
     args = parser.parse_args()
-    print(f'PourPour: http://{args.host}:{args.port}', flush=True)
+    print(f'First Brew: http://{args.host}:{args.port}', flush=True)
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()

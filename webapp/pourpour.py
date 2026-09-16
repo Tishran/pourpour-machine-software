@@ -40,7 +40,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 def download(url):
     if not safe_url(url):
         raise SourceError('Недопустимый адрес источника.')
-    request = urllib.request.Request(url, headers={'User-Agent': 'PourPour/0.1 (coffee recipe lookup)',
+    request = urllib.request.Request(url, headers={'User-Agent': 'FirstBrew/0.1 (coffee recipe lookup)',
                                                   'Accept': 'application/json, application/xml, text/html'})
     try:
         with urllib.request.build_opener(NoRedirect).open(request, timeout=15) as response:
@@ -237,6 +237,20 @@ def parse_recipes(body):
         if recipe not in recipes:
             recipes.append(recipe)
     return recipes
+
+
+def scan_label(image_bytes, content_type):
+    """Recognize a package locally; retain the scan endpoint's response contract."""
+    if content_type.split(';')[0] not in ('image/jpeg', 'image/png'):
+        raise ValueError('A JPEG or PNG photo is required.')
+    if __package__:
+        from .label_ocr import extract
+    else:
+        from label_ocr import extract
+    ocr = extract(image_bytes)
+    return {'status': 'needs_confirmation' if ocr['needs_review'] else 'ok',
+            'text': ocr['text'], 'candidates': [], 'ocr': ocr,
+            'message': 'Review the recognized label before preparing a recipe.'}
 
 
 class CoffeeService:

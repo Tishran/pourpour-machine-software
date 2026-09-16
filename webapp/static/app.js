@@ -93,7 +93,7 @@ async function selectProduct(product) {
     } else renderRecipe(0);
   } catch (error) {
     if (error.name === 'AbortError') return;
-    $('recipe-content').innerHTML = `<div class="empty"><h2>Could not<br>load the recipe.</h2><p role="alert">${escape(error.message)}</p><button type="button" class="retry" id="retry">Try again</button><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">Coffee page ↗</a></div>`;
+    $('recipe-content').innerHTML = `<div class="empty"><h2>Could not<br>load the recipe.</h2><p role="alert">${escape(error.message)}</p><button type="button" class="retry" id="retry">Try again</button><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
     $('retry').addEventListener('click', () => selectProduct(product));
   } finally {
     if (recipeRequest === request) $('recipe-panel').setAttribute('aria-busy', 'false');
@@ -105,7 +105,6 @@ function renderRecipe(index) {
   const recipe = currentRecipe = currentData.recipes[index];
   const metrics = [[recipe.coffee_g,'g','Coffee'],[recipe.water_g,'g','Water'],[recipe.temperature_c,'°C','Temperature'],[clock(recipe.duration_seconds),'','Total time']];
   const variant = currentData.recipes.length > 1 ? `<label class="variant-label" for="recipe-variant">Recipe variant</label><select class="variant-select" id="recipe-variant">${currentData.recipes.map((r, i) => `<option value="${i}" ${i === index ? 'selected' : ''}>${escape(r.device)} · ${format(r.coffee_g)} g · ${escape(r.grinder || 'Grind not specified')} (${i+1})</option>`).join('')}</select>` : '';
-  const timestamp = new Date(currentData.source.fetched_at).toLocaleString('en-GB', {dateStyle:'short',timeStyle:'short'});
   const steps = recipe.steps.map((step, i) => {
     const water = step.water_g == null ? '—' : '+' + format(step.water_g) + ' g';
     return `<div class="step" id="step-${i}" data-state="upcoming">
@@ -121,7 +120,7 @@ function renderRecipe(index) {
     ${currentData.recommendation_kind === 'suggested_reference' ? '<p class="warning">A starting recipe. The roaster tested it on a different coffee; taste has not been evaluated on yours.</p>' : ''}
     ${currentData.recommendation_kind === 'catalog_match' ? '<p class="recipe-notes">Check the roaster, harvest and filter roast on your bag: different lots may share a name.</p>' : ''}
     ${variant}
-    ${currentData.stale ? '<p class="warning">The source is temporarily unavailable. Showing saved data; the recipe fetch date is below.</p>' : ''}
+    ${currentData.stale ? '<p class="warning">The source is temporarily unavailable. Showing saved data.</p>' : ''}
     ${recipe.warnings.map(w => `<p class="warning">${escape(w)}</p>`).join('')}
     <div class="specs">${metrics.map(([value,unit,label]) => `<div><span class="spec-value">${escape(format(value))}<small>${unit}</small></span><span class="spec-name">${label}</span></div>`).join('')}</div>
     <div class="detail-line"><span>Coffee-to-water ratio</span><strong>${recipe.ratio ? '1 : '+format(recipe.ratio) : 'Not specified'}</strong></div>
@@ -140,8 +139,7 @@ function renderRecipe(index) {
     </div>
     <p class="timer-caption" id="timer-caption" role="status">Prepare your coffee and hot water, then start the timer.</p>
     ${recipe.notes ? `<p class="recipe-notes">${escape(recipe.notes)}</p>` : ''}
-    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a><a href="${escape(currentData.source_url)}" target="_blank" rel="noopener noreferrer">Original recipe ↗</a></div>
-    <p class="source-time">DATA FETCHED ${escape(timestamp)} · BROWSER TIME ZONE</p>`;
+    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
   $('recipe-variant')?.addEventListener('change', event => renderRecipe(Number(event.target.value)));
   $('timer-toggle').addEventListener('click', toggleTimer);
   $('timer-reset').addEventListener('click', resetTimer);
@@ -276,6 +274,9 @@ function updateTimer() {
     : !running ? 'Timer paused.' : '';
   setText('timer-caption', caption);
 }
+
+// The package-scan shortcut uses the same real OCR and review flow.
+$('scan-button').addEventListener('click', () => $('label-photo').click());
 
 $('search-form').addEventListener('submit', event => {event.preventDefault(); search($('coffee-query').value.trim());});
 document.querySelectorAll('[data-query]').forEach(button => button.addEventListener('click', () => {

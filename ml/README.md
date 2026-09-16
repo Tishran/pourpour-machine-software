@@ -25,7 +25,8 @@ dataset. No API key or cloud image upload is required.
    transfers one intact reference recipe, including the original equipment,
    grind setting and pour schedule. The UI explicitly calls this a starting
    recipe for a similar coffee; it does not claim that the roaster tested it on
-   the user's new coffee. The reference and source links remain visible.
+   the user's new coffee. The reference coffee link remains visible; full
+   source provenance is retained in the API response and dataset.
 5. **Abstention:** missing country/base processing, unsupported origins/processes,
    new decafs, espresso/dark roast or low similarity produce no automatic
    recommendation. The two malformed source recipes remain excluded. Poor OCR
@@ -116,6 +117,8 @@ evaluate recommendations by coffee/farm/harvest groups plus real brewing outcome
 - `GET /api/model`: model version, snapshot, OCR setup status.
 - `POST /api/label`: raw JPEG/PNG body → OCR text and recommendation. No image URL
   fetching; 8 MB/16 MP bounds, one OCR process group at a time, 30-second OCR budget.
+- `POST /api/scan`: compatibility alias for the same real OCR flow, with `status`,
+  `text` and `candidates` fields; the First Brew scan button uses the shared photo UI.
 - `POST /api/recommend`: JSON `{"text":"Country: Rwanda\nProcessing: washed"}`.
   An optional `selected_coffee_id` confirms a catalog candidate; unknown IDs fail.
 
