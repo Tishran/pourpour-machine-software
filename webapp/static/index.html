@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f1e9">
+  <meta name="description" content="Найдите рецепт воронки для вашего кофе от The Welder Catherine.">
+  <title>PourPour — ваш кофе, его рецепт</title>
+  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+</head>
+<body>
+  <header class="header"><a href="/" class="logo" aria-label="PourPour — главная">pour<span>pour</span><i>↘</i></a><span class="edition">COFFEE RECIPE FINDER <b>01 / V60</b></span></header>
+  <main>
+    <section class="hero">
+      <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> МАЛЕНЬКИЙ РИТУАЛ. БОЛЬШОЙ ВКУС.</p>
+      <h1>Ваш кофе.<br>Его <em>рецепт.</em></h1>
+      <p class="intro">Найдите рецепт воронки от обжарщика.<br>От первого вливания до последней капли.</p>
+      <a href="#search" class="hero-link">Начнём с названия кофе <span>↓</span></a></div>
+      <div class="illustration" aria-hidden="true">
+        <span class="diagram-label label-top">THE POUR-OVER RITUAL</span>
+        <svg viewBox="0 0 430 340" fill="none"><defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" stroke="#ddd7cb" stroke-width=".7"/></pattern></defs>
+        <rect x="0" y="0" width="430" height="340" fill="url(#grid)"/>
+        <ellipse cx="226" cy="291" rx="101" ry="14" fill="#e8e2d6"/>
+        <path d="M162 205H277L289 278Q289 289 274 290H162Q148 287 150 278Z" fill="#f9f7f1" stroke="#282b27" stroke-width="2"/>
+        <path d="M281 220H295Q325 220 319 246Q316 260 286 260" stroke="#282b27" stroke-width="3"/>
+        <path d="M155 256Q219 266 284 256L288 278Q288 286 274 286H165Q153 286 153 278Z" fill="#bd6c3e"/>
+        <ellipse cx="220" cy="256" rx="65" ry="8" fill="#402e24"/>
+        <path d="M130 128H305L239 212H197Z" fill="#ed7145" stroke="#282b27" stroke-width="2"/>
+        <path d="M146 128L205 203M174 128L214 206M204 128L223 206M234 128L230 206M266 128L237 200M291 128L245 190" stroke="#a84225" stroke-width="1.4"/>
+        <path d="M191 212H245M178 216H258" stroke="#282b27" stroke-width="3" stroke-linecap="round"/>
+        <ellipse cx="218" cy="128" rx="87" ry="19" fill="#fffaf0" stroke="#282b27" stroke-width="2"/>
+        <ellipse cx="218" cy="130" rx="58" ry="11" fill="#503429"/>
+        <path d="M180 56C163 76 239 84 218 119" stroke="#6e8b83" stroke-width="3" stroke-linecap="round" stroke-dasharray="4 7"/>
+        <path d="M294 98H349M105 232H154" stroke="#888b7f"/>
+        <circle cx="294" cy="98" r="3" fill="#282b27"/><circle cx="154" cy="232" r="3" fill="#282b27"/>
+        <text x="337" y="88" fill="#686d61" font-size="11" font-family="monospace">V60</text><text x="74" y="224" fill="#686d61" font-size="11" font-family="monospace">SLOW</text>
+        </svg><span class="diagram-label label-bottom">ХОРОШАЯ ЧАШКА НАЧИНАЕТСЯ С ДЕТАЛЕЙ</span>
+      </div>
+    </section>
+    <section class="workspace" id="search" aria-label="Поиск рецепта">
+      <div class="search-panel">
+        <div class="section-heading"><span class="eyebrow">01 / НАЙТИ КОФЕ</span><span class="tag">The Welder Catherine</span></div>
+        <form id="search-form"><label for="coffee-query">Что сегодня завариваем?</label><div class="search-row"><input id="coffee-query" type="search" maxlength="120" placeholder="Название кофе, например Руанда Суса" autocomplete="off"><button type="submit" id="search-button">Найти <span>↗</span></button></div></form>
+        <div class="suggestions"><span>Попробуйте:</span><button type="button" data-query="Руанда">Руанда</button><button type="button" data-query="Эфиопия">Эфиопия</button><button type="button" data-query="Колумбия">Колумбия</button></div>
+        <div class="results-heading"><h2 id="results-title">Кофе под фильтр</h2><span id="count"></span></div>
+        <p id="catalog-status" class="status" role="status" aria-live="polite">Загружаем каталог обжарщика…</p>
+        <div id="results" class="results"></div>
+        <p class="catalog-footnote">Поиск по текущей выгрузке кофе под фильтр. Архивные лоты могут отсутствовать. Рецепт проверяется после выбора кофе.</p>
+      </div>
+      <aside class="recipe-panel" id="recipe-panel" aria-label="Рецепт кофе" aria-busy="false">
+        <div id="recipe-empty" class="empty"><span class="eyebrow">02 / ЗАВАРИТЬ</span><div class="empty-icon">↘</div><h2>У каждой пачки<br>свой подход.</h2><p>Выберите кофе слева — здесь появится<br>его рецепт для воронки.</p><div class="empty-specs"><span>Граммы</span><span>Градусы</span><span>Секунды</span></div></div>
+        <div id="recipe-content" hidden></div>
+      </aside>
+    </section>
+    <section class="how"><div><span>01</span><h3>Найдите свой кофе</h3><p>Введите название с пачки.<br>Можно часть названия или латиницей.</p></div><div><span>02</span><h3>Откройте рецепт</h3><p>Параметры конкретного лота<br>от The Welder Catherine.</p></div><div><span>03</span><h3>Поймайте свой вкус</h3><p>Следуйте вливаниям и таймеру.<br>Наслаждайтесь каждой чашкой.</p></div></section>
+  </main>
+  <footer><a href="/" class="logo small">pour<span>pour</span>↘</a><p>С заботой о вашей следующей чашке.</p><a href="https://theweldercatherine.ru/" target="_blank" rel="noopener noreferrer">Источник: The Welder Catherine ↗</a></footer>
+</body>
+</html>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE yml_catalog SYSTEM "shops.dtd">
+<yml_catalog><shop><offers><offer id="33337" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_lalisa2/</url>
+<name>Эфиопия Лалиса (под фильтр/1 кг)</name>
+<param name="Регион">Иргачифф</param>
+</offer>
+<offer id="33338" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_lalisa2/</url>
+<name>Эфиопия Лалиса (под фильтр/250 гр)</name>
+<param name="Регион">Иргачифф</param>
+</offer>
+<offer id="33339" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_lalisa2/</url>
+<name>Эфиопия Лалиса (под эспрессо/1 кг)</name>
+<param name="Регион">Иргачифф</param>
+</offer>
+<offer id="33340" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/efiopiya_lalisa2/</url>
+<name>Эфиопия Лалиса (под эспрессо/250 гр)</name>
+<param name="Регион">Иргачифф</param>
+</offer>
+<offer id="55669" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_susa/</url>
+<name>Руанда Суса (под фильтр/1 кг)</name>
+<param name="Регион">Ньямашеке</param>
+</offer>
+<offer id="55670" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_susa/</url>
+<name>Руанда Суса (под фильтр/250 гр)</name>
+<param name="Регион">Ньямашеке</param>
+</offer>
+<offer id="55671" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_susa/</url>
+<name>Руанда Суса (под эспрессо/1 кг)</name>
+<param name="Регион">Ньямашеке</param>
+</offer>
+<offer id="55672" available="true">
+<url>https://theweldercatherine.ru/catalog/dlya_filtra/ruanda_susa/</url>
+<name>Руанда Суса (под эспрессо/250 гр)</name>
+<param name="Регион">Ньямашеке</param>
+</offer>
+</offers></shop></yml_catalog>
