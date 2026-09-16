@@ -47,14 +47,6 @@
           <p id="photo-help" class="photo-help">Take a close, straight photo without glare. Photos are processed locally and are not saved.</p>
           <img id="label-preview" hidden alt="Selected coffee label">
           <p id="photo-status" role="status" aria-live="polite" class="status">Checking photo recognition…</p>
-          <details id="label-editor">
-            <summary>Review the label or enter text manually</summary>
-            <label for="label-text">Text on the bag</label>
-            <textarea id="label-text" rows="7" maxlength="10000" placeholder="Roaster: The Welder Catherine&#10;Coffee: Руанда Суса&#10;Country: Rwanda&#10;Processing: washed, anaerobic&#10;Variety: red bourbon"></textarea>
-            <p class="photo-help">For a new coffee, include country and processing. Variety, region and tasting notes help too. Russian and English are supported.</p>
-            <button id="prepare-recipe" type="button">Prepare recipe ↗</button>
-          </details>
-          <div id="label-candidates" class="label-candidates"></div>
         </section>
         <form id="search-form"><label for="coffee-query">What are we brewing today?</label><div class="search-row"><input id="coffee-query" type="search" maxlength="120" placeholder="Coffee name, e.g. Rwanda Susa" autocomplete="off"><button type="submit" id="search-button">Search <span>↗</span></button></div></form>
         <div class="suggestions"><span>Try:</span><button type="button" data-query="Rwanda">Rwanda</button><button type="button" data-query="Efiopiya">Ethiopia</button><button type="button" data-query="Kolumbiya">Colombia</button></div>

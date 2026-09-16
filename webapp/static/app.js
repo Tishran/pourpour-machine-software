@@ -275,7 +275,7 @@ function updateTimer() {
   setText('timer-caption', caption);
 }
 
-// The package-scan shortcut uses the same real OCR and review flow.
+// The package-scan shortcut opens the same photo picker and OCR flow.
 $('scan-button').addEventListener('click', () => $('label-photo').click());
 
 $('search-form').addEventListener('submit', event => {event.preventDefault(); search($('coffee-query').value.trim());});
@@ -288,7 +288,6 @@ function cancelPhotoRequests() {
   photoGeneration++;
   photoRequest?.abort();
   photoRequest = null;
-  $('prepare-recipe').disabled = false;
 }
 
 function startPhotoRequest(message) {
@@ -303,10 +302,8 @@ function startPhotoRequest(message) {
   $('recipe-content').hidden = true;
   $('recipe-empty').hidden = false;
   $('recipe-panel').setAttribute('aria-busy', 'false');
-  $('label-candidates').replaceChildren();
   $('photo-status').className = 'status loading';
   $('photo-status').textContent = message;
-  $('prepare-recipe').disabled = true;
   photoRequest = new AbortController();
   return {generation: photoGeneration, controller: photoRequest};
 }
@@ -318,10 +315,12 @@ async function post(path, body, type, signal) {
   return data;
 }
 
+// The recipe is prepared straight from the photo — there is no step asking the
+// user to confirm the OCR reading. A matched coffee shows its saved recipe; an
+// unknown one falls back to the closest catalog recipe automatically.
 function showRecommendation(data) {
   $('photo-status').className = 'status';
   $('photo-status').textContent = data.message;
-  $('label-candidates').replaceChildren();
   if (data.recipe_data) {
     currentData = data.recipe_data;
     currentProduct = currentData.product;
@@ -329,22 +328,6 @@ function showRecommendation(data) {
     $('recipe-content').hidden = false;
     renderRecipe(0);
     if (window.matchMedia('(max-width: 620px)').matches) $('recipe-panel').scrollIntoView({behavior:'smooth'});
-  }
-}
-
-async function prepareRecipe(selected) {
-  const request = startPhotoRequest('Finding a recipe from the label…');
-  try {
-    const data = await post('/api/recommend', JSON.stringify({text:$('label-text').value, selected_coffee_id:selected || null}), 'application/json', request.controller.signal);
-    if (request.generation !== photoGeneration) return;
-    showRecommendation(data);
-  } catch (error) {
-    if (error.name !== 'AbortError' && request.generation === photoGeneration) {
-      $('photo-status').className = 'status error';
-      $('photo-status').textContent = error.message;
-    }
-  } finally {
-    if (request.generation === photoGeneration) $('prepare-recipe').disabled = false;
   }
 }
 
@@ -372,31 +355,25 @@ $('label-photo').addEventListener('change', async event => {
   const file = event.target.files[0];
   if (!file) return;
   const request = startPhotoRequest('Reading the label in your photo…');
-  $('label-text').value = '';
   $('label-preview').hidden = true;
   try {
     const body = await photoBlob(file);
     if (request.generation !== photoGeneration) return;
     const data = await post('/api/label', body, 'image/jpeg', request.controller.signal);
     if (request.generation !== photoGeneration) return;
-    $('label-text').value = data.ocr.text;
-    $('label-editor').open = true;
     showRecommendation(data.recommendation);
   } catch (error) {
     if (error.name !== 'AbortError' && request.generation === photoGeneration) {
       $('photo-status').className = 'status error';
       $('photo-status').textContent = error.message;
-      $('label-editor').open = true;
     }
   } finally {
-    if (request.generation === photoGeneration) $('prepare-recipe').disabled = false;
     event.target.value = '';
   }
 });
-$('prepare-recipe').addEventListener('click', () => prepareRecipe());
 api('/api/model').then(data => {
   if (photoGeneration) return;
-  $('photo-status').textContent = data.ocr.available ? `${data.coffees} coffees in the saved dataset · Russian and English` : data.ocr.message;
+  $('photo-status').textContent = data.ocr.available ? `${data.coffees} coffees in the saved dataset · point the camera at your bag` : data.ocr.message;
 }).catch(() => {
   if (!photoGeneration) $('photo-status').textContent = 'Model unavailable. Check the server setup.';
 });
