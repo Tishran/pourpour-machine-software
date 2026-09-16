@@ -23,13 +23,12 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(recipe['duration_seconds'], 175)
         self.assertEqual(sum(s['water_g'] for s in recipe['steps']), 250)
 
-    def test_brand_missing_or_other_roaster_requires_confirmation(self):
+    def test_name_match_is_used_without_confirmation(self):
+        # A confident name match now yields a recipe directly, with no confirmation step.
         for text in ['Руанда Суса', 'Roaster: Someone Else\nРуанда Суса']:
             r = self.model.recommend(text)
-            self.assertEqual(r['kind'], 'confirm_match')
-            self.assertIsNone(r['recipe_data'])
-            selected = self.model.recommend(text, r['candidates'][0]['coffee_id'])
-            self.assertEqual(selected['kind'], 'catalog_match')
+            self.assertEqual(r['kind'], 'catalog_match')
+            self.assertEqual(r['recipe_data']['product']['name'], 'Руанда Суса')
 
     def test_ocr_mixed_cyrillic_latin_letters(self):
         result = self.model.recommend('The Welder Catherine\nРуанда Cyca')
@@ -41,9 +40,9 @@ class ModelTests(unittest.TestCase):
             r = self.model.recommend('The Welder Catherine\n' + row['coffee']['name'])
             self.assertEqual(r['kind'], 'catalog_match' if row['usable'] else 'source_needs_review', row['coffee']['name'])
 
-    def test_unseen_supported_coffee_gets_intact_reference(self):
+    def test_unseen_coffee_gets_closest_intact_reference(self):
         r = self.model.recommend('Coffee: New Lot\nCountry: Rwanda\nProcessing: washed\nVariety: red bourbon')
-        self.assertEqual(r['kind'], 'suggested_reference')
+        self.assertEqual(r['kind'], 'closest_reference')
         reference = r['recipe_data']['reference_name']
         row = next(row for row in self.model.rows if row['coffee']['name'] == reference)
         recipe = r['recipe_data']['recipes'][0]
@@ -51,14 +50,23 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(sum(s['water_g'] for s in recipe['steps']), recipe['water_g'])
         self.assertEqual(r['recipe_data']['product']['name'], 'New Lot')
 
-    def test_insufficient_and_out_of_domain_labels_abstain(self):
-        for text in ['', 'Coffee', 'Country: Rwanda', 'Country: Brazil\nProcessing: natural',
+    def test_only_unreadable_labels_abstain(self):
+        # Too little text to act on: still abstain, no recipe.
+        for text in ['', 'ab']:
+            r = self.model.recommend(text)
+            self.assertEqual(r['kind'], 'insufficient_data', text)
+            self.assertIsNone(r['recipe_data'])
+
+    def test_out_of_catalog_labels_get_closest_recipe(self):
+        # Anything readable that is not in the catalog now gets the closest recipe,
+        # including espresso/dark, decaf and partial labels, instead of a dead end.
+        for text in ['Coffee', 'Country: Rwanda', 'Country: Brazil\nProcessing: natural',
                      'Country: Rwanda\nProcessing: washed\nEspresso',
                      'Country: Colombia\nProcessing: washed\nDecaf',
                      'Country: Kenya\nProcessing: honey']:
             r = self.model.recommend(text)
-            self.assertEqual(r['kind'], 'insufficient_data', text)
-            self.assertIsNone(r['recipe_data'])
+            self.assertEqual(r['kind'], 'closest_reference', text)
+            self.assertIsNotNone(r['recipe_data'], text)
 
     def test_bad_source_is_not_repaired(self):
         for name in ['Перу Valle Sagrado из бочки', 'Колумбия Рэйнбоу декаф']:

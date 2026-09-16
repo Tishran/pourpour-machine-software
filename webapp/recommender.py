@@ -227,9 +227,11 @@ class RecipeModel:
         selected = self.by_id.get(selected_coffee_id) if selected_coffee_id else None
         if selected_coffee_id and not selected:
             raise ValueError('The selected coffee is not in the model.')
-        # Name-only matches must be confirmed unless the source brand is also visible.
-        if not selected and len(exact) == 1 and profile['welder_brand_present'] and not profile['espresso_or_dark']:
-            selected = self.by_id[exact[0]['coffee_id']]
+        # A confident name match is used directly. The user is no longer asked to
+        # confirm that the OCR reading is correct; the catalog coffee is chosen
+        # automatically, and the label editor stays available to correct a misread.
+        if not selected and candidates and (exact or candidates[0]['name_similarity'] >= .86):
+            selected = self.by_id[(exact[0] if exact else candidates[0])['coffee_id']]
         if selected:
             if not selected['usable']:
                 result.update(kind='source_needs_review', message='Coffee found, but its source recipe contains errors and cannot be used automatically.')
@@ -237,31 +239,45 @@ class RecipeModel:
             result.update(kind='catalog_match', message='Matched the saved catalog. Check the lot, harvest and filter roast on your bag.')
             result['recipe_data'] = self.response_recipe(selected, result['kind'], selected['coffee']['name'])
             return result
-        if candidates and (exact or candidates[0]['name_similarity'] >= .86):
-            result.update(kind='confirm_match', message='This looks like a catalog coffee. Confirm its name and roaster, or correct the label text.')
+        # No catalog match: fall back to the closest Welder Catherine recipe. The
+        # final choice will come from a neural model that is still in development;
+        # until then closest_reference() picks the nearest reference by similarity.
+        reference, score, neighbors = self.closest_reference(profile)
+        result['neighbors'] = neighbors
+        if reference is None:
+            result['message'] = 'No recipe is available in the dataset yet.'
             return result
-        if profile['espresso_or_dark']:
-            result['message'] = 'This dataset covers filter roasts. Espresso and dark roasts are not supported yet.'
-            return result
-        if profile['decaf']:
-            result['message'] = 'There are not enough checked recipes to recommend one for a new decaf.'
-            return result
-        if not profile['country'] or not (set(profile['processing']) & {'washed', 'natural', 'honey'}):
-            result['message'] = 'For a new coffee, include its country and base processing: washed, natural or honey.'
-            return result
-        ranked = rank(profile, [r for r in self.rows if r['usable']], self.model['idf'])
-        result['neighbors'] = [{'name': row['coffee']['name'], 'coffee_id': row['coffee']['coffee_id'],
-                                'url': row['coffee']['url'], 'similarity': round(score, 4)} for score, row in ranked[:3]]
-        # Choose only a supported neighbor, not an unrelated best-scoring recipe.
-        eligible = [(s, r) for s, r in ranked if supported(profile, r['profile'], s)]
-        if not eligible:
-            result['message'] = 'No sufficiently similar coffee with this country and processing is in the dataset.'
-            return result
-        score, reference = eligible[0]
-        result.update(kind='suggested_reference', similarity=round(score, 4),
-                      message='A starting recipe from a similar coffee. Taste is untested on your coffee; the grind setting applies only to the listed grinder.')
-        result['recipe_data'] = self.response_recipe(reference, result['kind'], profile['name'] or 'Your coffee')
+        result.update(kind='closest_reference', similarity=round(score, 4),
+                      message='This coffee is not in The Welder Catherine catalog. Showing the closest '
+                              'recipe Catherine has, chosen automatically. A neural model for this match '
+                              'is in development, so treat it as a starting point.')
+        title = profile['name'] or (candidates[0]['name'] if candidates else 'Your coffee')
+        result['recipe_data'] = self.response_recipe(reference, result['kind'], title)
         return result
+
+    def closest_reference(self, profile):
+        """Placeholder for the neural closest-recipe selector (in development).
+
+        The production model will pick the nearest Welder Catherine recipe for a
+        coffee that is not in the catalog. Until it ships, rank usable recipes by
+        the fitted TF-IDF feature similarity and return the closest one. The return
+        contract (reference row, score, top neighbors) is stable, so only this body
+        changes when the neural model lands.
+        """
+        idf = self.model['idf']
+        rows = [r for r in self.rows if r['usable']]
+        ranked = rank(profile, rows, idf)
+        if not ranked:
+            # Relax the decaf/caffeine guard so a closest recipe is always offered.
+            query = vector(profile, idf)
+            ranked = sorted(((sum(v * vector(r['profile'], idf).get(k, 0) for k, v in query.items()), r)
+                             for r in rows), key=lambda x: (-x[0], x[1]['coffee']['coffee_id']))
+        neighbors = [{'name': row['coffee']['name'], 'coffee_id': row['coffee']['coffee_id'],
+                      'url': row['coffee']['url'], 'similarity': round(score, 4)} for score, row in ranked[:3]]
+        if not ranked:
+            return None, 0.0, neighbors
+        score, reference = ranked[0]
+        return reference, score, neighbors
 
     def response_recipe(self, row, kind, title):
         recipe = row['recipe']
@@ -272,7 +288,7 @@ class RecipeModel:
             'source_url': recipe['source']['url'], 'recommendation_kind': kind,
             'reference_name': c['name'], 'snapshot': self.model['dataset_snapshot'],
             'recipe_subtitle': ('Saved recipe from The Welder Catherine' if kind == 'catalog_match'
-                                else 'Suggested reference recipe: ' + c['name']),
+                                else 'Closest Welder Catherine recipe: ' + c['name']),
         }
 
 

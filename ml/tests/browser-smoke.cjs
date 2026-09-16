@@ -35,21 +35,23 @@ const assert = require('node:assert/strict');
     await page.locator('#label-text').fill('Coffee: New Lot\nCountry: Rwanda\nProcessing: washed\nVariety: red bourbon');
     await page.locator('#prepare-recipe').click();
     await page.waitForFunction(() => document.querySelector('.recipe-title')?.textContent === 'New Lot');
-    assert.match(await page.locator('.recipe-subtitle').textContent(), /Suggested/);
+    assert.match(await page.locator('.recipe-subtitle').textContent(), /Closest/);
     assert.match(await page.locator('.warning').first().textContent(), /different coffee/);
     const sum = await page.locator('.step-water').allTextContents();
     assert.equal(sum.reduce((total, x) => total + Number(x.replace(/[^\d.]/g, '')), 0), 250);
 
+    // Out-of-catalog label: no dead end — the closest recipe is shown automatically.
     await page.locator('#label-text').fill('Country: Brazil\nProcessing: natural');
     await page.locator('#prepare-recipe').click();
-    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('No sufficiently similar'));
-    assert.equal(await page.locator('#recipe-content').isVisible(), false);
+    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('closest'));
+    await page.waitForFunction(() => document.querySelector('.recipe-title')?.textContent === 'Your coffee');
+    assert.equal(await page.locator('#recipe-content').isVisible(), true);
 
+    // Name match is used directly, without a confirmation step or candidate buttons.
     await page.locator('#label-text').fill('Руанда Суса');
     await page.locator('#prepare-recipe').click();
-    await page.locator('#label-candidates button').first().waitFor();
-    await page.locator('#label-candidates button').first().click();
     await page.waitForFunction(() => document.querySelector('.recipe-title')?.textContent === 'Руанда Суса');
+    assert.equal(await page.locator('#label-candidates button').count(), 0);
 
     const invalid = await page.request.post('/api/label', {headers: {'Content-Type':'image/png'}, data: Buffer.from('not an image')});
     assert.equal(invalid.status(), 400);
@@ -65,7 +67,7 @@ const assert = require('node:assert/strict');
     await page.setViewportSize({width: 390, height: 844});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
     await page.screenshot({path: process.env.POURPOUR_SCREENSHOT || '/tmp/pourpour-photo-mobile.png', fullPage:true});
-    console.log('PASS: photo OCR → exact recipe; unknown coffee → reference; abstention; confirmation; timer; invalid upload; same-origin; mobile layout; no JS errors.');
+    console.log('PASS: photo OCR → catalog recipe (no confirmation); out-of-catalog → closest reference; timer; invalid upload; same-origin; mobile layout; no JS errors.');
   } finally {
     await browser.close();
   }

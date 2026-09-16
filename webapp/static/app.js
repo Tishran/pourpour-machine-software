@@ -93,7 +93,7 @@ async function selectProduct(product) {
     } else renderRecipe(0);
   } catch (error) {
     if (error.name === 'AbortError') return;
-    $('recipe-content').innerHTML = `<div class="empty"><h2>Could not<br>load the recipe.</h2><p role="alert">${escape(error.message)}</p><button type="button" class="retry" id="retry">Try again</button><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
+    $('recipe-content').innerHTML = `<div class="empty"><h2>Could not<br>load the recipe.</h2><p role="alert">${escape(error.message)}</p><button type="button" class="retry" id="retry">Try again</button><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'closest_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
     $('retry').addEventListener('click', () => selectProduct(product));
   } finally {
     if (recipeRequest === request) $('recipe-panel').setAttribute('aria-busy', 'false');
@@ -117,7 +117,7 @@ function renderRecipe(index) {
     <div class="recipe-top"><span class="eyebrow">02 / YOUR RECIPE</span><span class="tag">${escape(recipe.device)}</span></div>
     <h2 class="recipe-title" tabindex="-1">${escape(currentData.product.name)}</h2>
     <p class="recipe-subtitle">${escape(currentData.recipe_subtitle || 'Recipe by The Welder Catherine · filter roast')}</p>
-    ${currentData.recommendation_kind === 'suggested_reference' ? '<p class="warning">A starting recipe. The roaster tested it on a different coffee; taste has not been evaluated on yours.</p>' : ''}
+    ${currentData.recommendation_kind === 'closest_reference' ? '<p class="warning">Closest recipe in the catalog, chosen automatically. The roaster tested it on a different coffee, and a neural match model is still in development — treat it as a starting point.</p>' : ''}
     ${currentData.recommendation_kind === 'catalog_match' ? '<p class="recipe-notes">Check the roaster, harvest and filter roast on your bag: different lots may share a name.</p>' : ''}
     ${variant}
     ${currentData.stale ? '<p class="warning">The source is temporarily unavailable. Showing saved data.</p>' : ''}
@@ -139,7 +139,7 @@ function renderRecipe(index) {
     </div>
     <p class="timer-caption" id="timer-caption" role="status">Prepare your coffee and hot water, then start the timer.</p>
     ${recipe.notes ? `<p class="recipe-notes">${escape(recipe.notes)}</p>` : ''}
-    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
+    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'closest_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
   $('recipe-variant')?.addEventListener('change', event => renderRecipe(Number(event.target.value)));
   $('timer-toggle').addEventListener('click', toggleTimer);
   $('timer-reset').addEventListener('click', resetTimer);
@@ -322,15 +322,6 @@ function showRecommendation(data) {
   $('photo-status').className = 'status';
   $('photo-status').textContent = data.message;
   $('label-candidates').replaceChildren();
-  if (data.kind === 'confirm_match') {
-    data.candidates.forEach(candidate => {
-      const button = document.createElement('button');
-      button.type = 'button';
-      button.textContent = `Yes, ${candidate.name} by The Welder Catherine, filter roast`;
-      button.addEventListener('click', () => prepareRecipe(candidate.coffee_id));
-      $('label-candidates').append(button);
-    });
-  }
   if (data.recipe_data) {
     currentData = data.recipe_data;
     currentProduct = currentData.product;
