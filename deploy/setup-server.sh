@@ -26,6 +26,10 @@ mkdir -p "$APP_DIR/webapp/.cache"
 
 echo "==> permissions"
 chown -R root:root "$APP_DIR"
+chmod 755 "$APP_DIR"
+find "$APP_DIR" -type d -exec chmod 755 {} +
+find "$APP_DIR" -type f -exec chmod 644 {} +
+chmod +x "$APP_DIR/deploy"/*.sh
 chown -R "$SERVICE_USER:$SERVICE_USER" "$APP_DIR/webapp/.cache"
 
 echo "==> systemd"

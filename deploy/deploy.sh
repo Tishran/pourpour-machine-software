@@ -18,6 +18,11 @@ work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 git archive "$REF" | tar -x -C "$work"
 
+# mktemp gives a private (0700) directory; rsync -a would copy that mode onto
+# /opt/firstbrew and the service user could no longer enter it.
+chmod 755 "$work"
+chmod -R a+rX "$work"
+
 rsync -az --delete \
   --exclude 'data/' --exclude 'docs/screens/' --exclude 'firmware/' --exclude '.github/' \
   --exclude '.venv/' --exclude 'webapp/.cache/' --exclude '**/__pycache__/' \
