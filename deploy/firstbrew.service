@@ -1,0 +1,37 @@
+# First Brew web app. The Python standard-library server listens on localhost only;
+# nginx terminates TLS and proxies to it. Install to /etc/systemd/system/firstbrew.service.
+[Unit]
+Description=First Brew web app
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=firstbrew
+Group=firstbrew
+WorkingDirectory=/opt/firstbrew/webapp
+ExecStart=/opt/firstbrew/.venv/bin/python server.py --host 127.0.0.1 --port 8011 --machine none
+Restart=always
+RestartSec=2
+Environment=PYTHONUNBUFFERED=1
+
+# The server only needs to write its source cache (catalog, product ids, recipes).
+NoNewPrivileges=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+RestrictRealtime=yes
+LockPersonality=yes
+MemoryDenyWriteExecute=no
+ReadWritePaths=/opt/firstbrew/webapp/.cache
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+LimitNOFILE=4096
+
+[Install]
+WantedBy=multi-user.target
