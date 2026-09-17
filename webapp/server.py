@@ -2,6 +2,7 @@
 import argparse
 import json
 import logging
+import queue
 import socket
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -9,6 +10,7 @@ from urllib.parse import parse_qs, urlsplit
 from pourpour import CoffeeService, SourceError, scan_label
 from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel, RECOMMENDATION_POLICY
+from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
 
 ROOT = Path(__file__).parent / 'static'
 STATIC_FILES = {
@@ -23,6 +25,26 @@ STATIC_FILES = {
 }
 service = CoffeeService()
 model = None
+machine = None  # set by set_machine(); None means `--machine none`
+MACHINE_COMMANDS = ('start', 'pause', 'resume', 'abort', 'tare')
+
+
+def set_machine(instance):
+    """Install the machine bridge (SimulatedMachine, SerialMachine or None)."""
+    global machine
+    if machine is not None and machine is not instance:
+        machine.close()
+    machine = instance
+    if machine is not None:
+        machine.start_pinger()
+    return machine
+
+
+def machine_status():
+    if machine is None:
+        return {'enabled': False, 'connected': False, 'state': None, 'firmware': None, 'mode': None, 'telemetry': None}
+    return {'enabled': True, 'connected': machine.connected, 'state': machine.state,
+            'firmware': machine.info.get('fw'), 'mode': machine.info.get('mode'), 'telemetry': machine.latest}
 
 
 def get_model():
@@ -38,6 +60,10 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if url.path == '/api/health':
                 return self.send_json(200, {'status': 'ok'})
+            if url.path == '/api/machine':
+                return self.send_json(200, machine_status())
+            if url.path == '/api/machine/events':
+                return self.stream_machine_events()
             if url.path == '/api/model':
                 fitted = get_model()
                 return self.send_json(200, {'version': fitted.model['version'],
@@ -71,6 +97,8 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         url = urlsplit(self.path)
         try:
+            if url.path.startswith('/api/machine/'):
+                return self.machine_post(url.path.removeprefix('/api/machine/'))
             if url.path not in ('/api/label', '/api/scan', '/api/recommend'):
                 return self.send_json(404, {'error': 'Страница не найдена.'})
             origin = self.headers.get('Origin')
@@ -122,6 +150,75 @@ class Handler(BaseHTTPRequestHandler):
             logging.exception('Photo/recommendation request failed')
             self.send_json(500, {'error': 'Could not prepare a recipe. Check the model setup.'})
 
+    # -- machine bridge ---------------------------------------------------
+    def machine_post(self, action):
+        origin = self.headers.get('Origin')
+        if origin and origin != 'http://' + self.headers.get('Host', ''):
+            return self.send_json(403, {'error': 'The request must come from this application.'})
+        if action not in ('recipe',) + MACHINE_COMMANDS:
+            return self.send_json(404, {'error': 'Страница не найдена.'})
+        if machine is None:
+            return self.send_json(404, {'error': 'No machine is configured on this server.', 'code': 'no_machine'})
+        length = int(self.headers.get('Content-Length', '0') or 0)
+        if length > 60000:
+            return self.send_json(413, {'error': 'The request is too large.'})
+        payload = self.rfile.read(length) if length else b''
+        try:
+            if not machine.connected:
+                raise MachineError('disconnected')
+            if action == 'recipe':
+                try:
+                    body = json.loads(payload or b'{}')
+                except ValueError:
+                    return self.send_json(400, {'error': 'Invalid JSON.', 'code': 'bad_params'})
+                recipe = body.get('recipe') if isinstance(body, dict) else None
+                if machine.state in BUSY_STATES:
+                    raise MachineError('busy')
+                command = recipe_to_machine(recipe)
+                if machine.state not in ('IDLE', 'READY', 'DONE', None):
+                    machine.command('abort')  # clear a finished/failed session before loading
+                machine.command('load_recipe', **command)
+            else:
+                machine.command(action)
+            return self.send_json(200, {'ok': True, 'state': machine.state, 'telemetry': machine.latest})
+        except MachineError as exc:
+            return self.send_json(exc.status, {'error': exc.message, 'code': exc.code, 'state': machine.state})
+        except (BrokenPipeError, ConnectionResetError, socket.timeout):
+            pass
+        except Exception:
+            logging.exception('Machine request failed')
+            self.send_json(500, {'error': 'Could not talk to the machine.', 'code': 'internal'})
+
+    def stream_machine_events(self):
+        if machine is None:
+            return self.send_json(404, {'error': 'No machine is configured on this server.', 'code': 'no_machine'})
+        self.send_response(200)
+        self.send_header('Content-Type', 'text/event-stream; charset=utf-8')
+        self.send_header('Cache-Control', 'no-store')
+        self.send_header('X-Accel-Buffering', 'no')
+        self.end_headers()
+        events = machine.subscribe()
+        try:
+            self.write_event('link', {'connected': machine.connected, 'info': machine.info})
+            if machine.latest:
+                self.write_event('state', machine.latest)
+            while True:
+                try:
+                    event = events.get(timeout=15)
+                except queue.Empty:
+                    self.wfile.write(b': keep-alive\n\n')
+                    self.wfile.flush()
+                    continue
+                self.write_event(event.get('ev', 'state'), event)
+        except (BrokenPipeError, ConnectionResetError, socket.timeout, OSError):
+            pass
+        finally:
+            machine.unsubscribe(events)
+
+    def write_event(self, name, data):
+        self.wfile.write(f'event: {name}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n'.encode())
+        self.wfile.flush()
+
     def send_json(self, code, body):
         self.respond(code, json.dumps(body, ensure_ascii=False).encode(), 'application/json; charset=utf-8')
 
@@ -141,6 +238,11 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', default='127.0.0.1')
     parser.add_argument('--port', type=int, default=8000)
+    parser.add_argument('--machine', default='none',
+                        help='none (default), sim, serial (autodetect the USB port) or serial:/dev/tty...')
+    parser.add_argument('--sim-speed', type=float, default=1.0, help='simulator time scale, e.g. 20 for fast tests')
+    parser.add_argument('--sim-faults', action='store_true', help='simulator injects random faults')
     args = parser.parse_args()
-    print(f'First Brew: http://{args.host}:{args.port}', flush=True)
+    set_machine(create_machine(args.machine, sim_speed=args.sim_speed, sim_faults=args.sim_faults))
+    print(f'First Brew: http://{args.host}:{args.port} · machine: {args.machine}', flush=True)
     ThreadingHTTPServer((args.host, args.port), Handler).serve_forever()
