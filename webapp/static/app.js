@@ -89,6 +89,26 @@ const STRINGS = {
     done_text: 'Let the water finish draining. Enjoy your cup.',
     brew_again: 'Brew again',
     another_coffee: 'Find another coffee',
+    machine_button: 'Brew on the machine',
+    machine_sending: 'Sending the recipe to the machine…',
+    machine_start: 'Start pouring',
+    machine_stop: 'Stop',
+    machine_retry: 'Try again',
+    machine_check: 'Check machine',
+    phase_heating: 'Heating water',
+    phase_machine_ready: 'Ready',
+    phase_paused: 'Paused',
+    phase_error: 'Machine stopped',
+    phase_offline: 'No connection',
+    phase_stopped: 'Stopped',
+    action_heating: (from, to) => `Heating water, ${from} → ${to}`,
+    action_machine_ready: 'Water is ready. Place the dripper on the scale.',
+    action_paused: 'Pour paused',
+    action_offline: 'Connection to the machine lost',
+    action_stopped: 'The brew was stopped',
+    scale_line: (g, temp) => `${g} on the scale${NBSP}· ${temp}`,
+    machine_done_text: 'The machine has finished. Let the water drain and enjoy your cup.',
+    machine_errors: {watchdog: 'The link to the machine was lost during the brew.', dry_run: 'The pump ran but the weight did not change. Check the water tank.', no_temp_sensor: 'No reading from the temperature sensor.', overheat: 'The water got too hot; the heater was switched off.', estop: 'The emergency stop is engaged. Restart the machine.'},
     err_photo_size: 'Choose a photo smaller than 20 MB.',
     err_photo_open: 'Could not open the photo. Save it as JPEG and try again.',
     err_generic: 'Could not load data. Please try again.',
@@ -175,6 +195,26 @@ const STRINGS = {
     done_text: 'Убедитесь, что вода стекла. Приятного кофе!',
     brew_again: 'Заварить ещё',
     another_coffee: 'Найти другой кофе',
+    machine_button: 'Заварить на машине',
+    machine_sending: 'Передаём рецепт на машину…',
+    machine_start: 'Начать вливания',
+    machine_stop: 'Стоп',
+    machine_retry: 'Повторить',
+    machine_check: 'Проверить машину',
+    phase_heating: 'Греем воду',
+    phase_machine_ready: 'Готово',
+    phase_paused: 'Пауза',
+    phase_error: 'Машина остановлена',
+    phase_offline: 'Нет связи',
+    phase_stopped: 'Остановлено',
+    action_heating: (from, to) => `Греем воду, ${from} → ${to}`,
+    action_machine_ready: 'Вода готова. Поставьте воронку на весы.',
+    action_paused: 'Вливание на паузе',
+    action_offline: 'Связь с машиной потеряна',
+    action_stopped: 'Заваривание остановлено',
+    scale_line: (g, temp) => `${g} на весах${NBSP}· ${temp}`,
+    machine_done_text: 'Машина закончила. Дайте воде стечь и наслаждайтесь.',
+    machine_errors: {watchdog: 'Связь с машиной прервалась во время заваривания.', dry_run: 'Помпа работала, а вес не менялся. Проверьте бак с водой.', no_temp_sensor: 'Нет показаний датчика температуры.', overheat: 'Вода перегрелась, нагрев выключен.', estop: 'Нажата аварийная кнопка. Перезапустите машину.'},
     err_photo_size: 'Выберите фото меньше 20 МБ.',
     err_photo_open: 'Не удалось открыть фото. Сохраните его как JPEG и попробуйте снова.',
     err_generic: 'Не удалось загрузить данные. Попробуйте ещё раз.',
@@ -194,6 +234,7 @@ const $ = (id) => document.getElementById(id);
 const escape = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const num = (value) => value == null ? '—' : String(value).replace('.', t('decimal'));
 const grams = (value) => value == null ? '—' : `${num(value)}${NBSP}${t('unit_g')}`;
+const celsius = (value) => value == null ? '—' : `${num(value)}${NBSP}${t('unit_c')}`;
 const clock = (seconds) => seconds == null ? '—' : `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
 const secondsText = (seconds) => `${Math.max(0, Math.ceil(seconds))}${NBSP}${t('unit_s')}`;
 const countdown = (seconds) => seconds >= 60 ? clock(Math.max(0, seconds)) : secondsText(seconds);
@@ -211,6 +252,10 @@ let searchRequest, recipeRequest, photoRequest, photoGeneration = 0;
 let currentProduct = null, currentData = null, currentRecipe = null, recipeLoading = false;
 let timerInterval, running = false, elapsed = 0, startedAt = 0, lastActiveStep = -1, finished = false;
 let wakeLock = null, audio = null;
+// Machine mode: the brew screen mirrors telemetry from the machine instead of the local timer.
+let brewMode = 'local', machineInfo = null, machineState = null, machineOnline = false, machineEvents = null;
+let machineHeatStart = null, machineLastStep = -1, machineStopped = false;
+const MACHINE_ACTIVE = ['PREHEAT', 'READY', 'BREWING', 'PAUSED'];
 const prefs = {vibrate: true, sound: true};
 
 function loadPrefs() {
@@ -235,6 +280,8 @@ function show(screen, {push = true} = {}) {
   if (screen !== 'find' && !currentData && !recipeLoading) screen = 'find';
   if (screen === 'brew' && !currentRecipe) screen = currentData ? 'recipe' : 'find';
   document.body.dataset.screen = screen;
+  if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
+  if (screen === 'brew' && brewMode === 'machine') renderMachine();
   if (push && history.state?.screen !== screen) {
     history.pushState({screen}, '', screen === 'find' ? location.pathname : `#${screen}`);
   }
@@ -359,6 +406,7 @@ async function selectProduct(product) {
 }
 
 function renderRecipe(index) {
+  if (brewMode === 'machine') leaveMachineMode();
   resetTimer();
   const recipe = currentRecipe = currentData.recipes[index];
   const kind = currentData.recommendation_kind;
@@ -404,6 +452,18 @@ function renderRecipe(index) {
 
 function updateBrewStartLabel() {
   $('brew-start').textContent = (running || elapsed > 0) && !finished ? t('continue_brew') : t('start_brew');
+  updateCtaBar();
+}
+
+function machineConnected() {
+  return Boolean(machineInfo?.enabled && machineOnline);
+}
+
+function updateCtaBar() {
+  const available = machineConnected() && Boolean(currentRecipe?.duration_seconds);
+  $('machine-start').hidden = !available;
+  $('machine-start').textContent = t('machine_button');
+  $('recipe-cta').dataset.machine = String(available);
 }
 
 // ---------------------------------------------------------------------------
@@ -517,7 +577,7 @@ function setText(id, value) {
 }
 
 function updateTimer() {
-  if (!currentRecipe) return;
+  if (!currentRecipe || brewMode === 'machine') return;
   const steps = currentRecipe.steps, duration = currentRecipe.duration_seconds;
   let seconds = elapsed + (running ? (performance.now() - startedAt) / 1000 : 0);
   if (duration && seconds >= duration) {
@@ -582,6 +642,203 @@ function updateTimer() {
   $('brew-controls').hidden = finished;
   $('brew-done').hidden = !finished;
   $('brew-done-controls').hidden = !finished;
+}
+
+
+// ---------------------------------------------------------------------------
+// Machine mode (First Brew machine through the server, see docs/PROTOCOL.md)
+// ---------------------------------------------------------------------------
+async function machineRequest(action, body) {
+  const response = await fetch(`/api/machine/${action}`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: body ? JSON.stringify(body) : '',
+  });
+  const data = await response.json();
+  if (!response.ok) { const error = new Error(data.error || t('err_generic')); error.code = data.code; throw error; }
+  return data;
+}
+
+async function refreshMachine() {
+  try {
+    machineInfo = await api('/api/machine');
+    machineOnline = Boolean(machineInfo.connected);
+    if (machineInfo.telemetry) machineState = machineInfo.telemetry;
+    if (machineInfo.enabled && !machineEvents) connectMachineEvents();
+  } catch (error) {
+    machineInfo = null;
+    machineOnline = false;
+  }
+  updateCtaBar();
+  if (brewMode === 'machine') renderMachine();
+}
+
+function connectMachineEvents() {
+  if (machineEvents || typeof EventSource === 'undefined') return;
+  machineEvents = new EventSource('/api/machine/events');
+  machineEvents.addEventListener('state', event => {
+    const previous = machineState;
+    machineState = JSON.parse(event.data);
+    machineOnline = true;
+    onMachineState(previous, machineState);
+  });
+  machineEvents.addEventListener('link', event => {
+    const link = JSON.parse(event.data);
+    machineOnline = Boolean(link.connected);
+    if (link.info) machineInfo = {...(machineInfo || {enabled: true}), firmware: link.info.fw, mode: link.info.mode};
+    updateCtaBar();
+    if (brewMode === 'machine') renderMachine();
+  });
+  machineEvents.onerror = () => {
+    machineOnline = false;
+    updateCtaBar();
+    if (brewMode === 'machine') renderMachine();
+  };
+}
+
+function onMachineState(previous, state) {
+  if (state.state === 'PREHEAT' && (previous?.state !== 'PREHEAT' || machineHeatStart == null)) machineHeatStart = state.temp_c;
+  if (brewMode === 'machine') {
+    if (state.state === 'BREWING' && state.step >= 0 && state.step !== machineLastStep) notify(1);
+    if (state.state === 'DONE' && previous?.state !== 'DONE') notify(2);
+    keepAwake(MACHINE_ACTIVE.includes(state.state) && currentScreen() === 'brew');
+    renderMachine();
+  }
+  machineLastStep = state.state === 'BREWING' ? state.step : -1;
+  updateCtaBar();
+}
+
+async function startMachineBrew() {
+  if (!currentRecipe?.duration_seconds) return;
+  resetTimer();
+  brewMode = 'machine';
+  machineStopped = false;
+  machineHeatStart = null;
+  setStatus('cta-status', t('machine_sending'));
+  $('machine-start').disabled = true;
+  try {
+    const reply = await machineRequest('recipe', {recipe: currentRecipe});
+    if (reply.telemetry) machineState = reply.telemetry;
+    setStatus('cta-status', '');
+    show('brew');
+    renderMachine();
+  } catch (error) {
+    brewMode = 'local';
+    setStatus('cta-status', error.message, true);
+  } finally {
+    $('machine-start').disabled = false;
+    updateCtaBar();
+  }
+}
+
+async function machineCommand(action) {
+  try {
+    const reply = await machineRequest(action);
+    if (reply.telemetry) { const previous = machineState; machineState = reply.telemetry; onMachineState(previous, machineState); }
+  } catch (error) {
+    setText('brew-countdown', error.message);
+  }
+}
+
+// What the brew screen shows in machine mode, from the latest telemetry.
+function renderMachine() {
+  if (currentScreen() !== 'brew' && brewMode === 'machine' && !machineState) return;
+  const state = machineState || {};
+  const status = machineStopped ? 'STOPPED' : !machineOnline ? 'OFFLINE' : (state.state || 'IDLE');
+  const steps = currentRecipe?.steps || [];
+  const duration = currentRecipe?.duration_seconds || 0;
+  let phase = '', clockText = '', action = '', line = '', progress = 0, nextText = '', toggle = '', toggleDisabled = false;
+  const clockNode = $('brew-clock');
+  clockNode.classList.toggle('small', ['PREHEAT', 'READY', 'IDLE'].includes(status));
+  if (status === 'PREHEAT' || status === 'IDLE') {
+    phase = t('phase_heating');
+    clockText = celsius(state.temp_c);
+    action = t('action_heating', celsius(state.temp_c), celsius(state.target_temp_c ?? currentRecipe?.temperature_c));
+    const from = machineHeatStart ?? state.temp_c ?? 0, to = state.target_temp_c ?? currentRecipe?.temperature_c ?? from + 1;
+    progress = to > from ? ((state.temp_c ?? from) - from) / (to - from) : 0;
+    toggle = t('machine_start'); toggleDisabled = true;
+  } else if (status === 'READY') {
+    phase = t('phase_machine_ready');
+    clockText = celsius(state.temp_c);
+    action = t('action_machine_ready');
+    progress = 1;
+    toggle = t('machine_start');
+  } else if (status === 'BREWING' || status === 'PAUSED') {
+    const seconds = state.t || 0;
+    clockText = clock(seconds);
+    const step = state.step >= 0 ? steps[state.step] : null;
+    const next = steps.find(s => s.start_seconds > seconds && s.total_water_g > (state.poured_g || 0));
+    if (status === 'PAUSED') {
+      phase = t('phase_paused'); action = t('action_paused');
+    } else if (step) {
+      phase = t('phase_step', stepName(step.instruction), state.step + 1, steps.length);
+      action = t('action_pour_to', grams(state.target_g));
+    } else if (next) {
+      phase = t('phase_wait'); action = t('action_next_in', countdown(next.start_seconds - seconds));
+    } else {
+      phase = t('phase_drawdown'); action = t('action_drawdown');
+    }
+    line = t('scale_line', grams(state.poured_g), celsius(state.temp_c));
+    progress = duration ? seconds / duration : 0;
+    nextText = next ? t('next_step', clock(next.start_seconds), t('next_pour_to', stepName(next.instruction), grams(next.total_water_g)))
+      : duration ? t('next_done', clock(duration)) : '';
+    toggle = status === 'PAUSED' ? t('resume') : t('pause');
+  } else if (status === 'ERROR' || status === 'ESTOP') {
+    phase = t('phase_error');
+    clockText = clock(state.t || 0);
+    action = STRINGS[LANG].machine_errors[state.err] || state.err || t('err_generic');
+    toggle = t('machine_retry');
+    toggleDisabled = status === 'ESTOP';
+  } else if (status === 'OFFLINE') {
+    phase = t('phase_offline');
+    clockText = clock(state.t || 0);
+    action = t('action_offline');
+    toggle = t('machine_retry');
+  } else if (status === 'STOPPED') {
+    phase = t('phase_stopped');
+    clockText = clock(state.t || 0);
+    action = t('action_stopped');
+    toggle = t('machine_retry');
+  }
+  const done = status === 'DONE';
+  setText('brew-phase', phase);
+  setText('brew-clock', clockText);
+  setText('brew-action', action);
+  setText('brew-countdown', line);
+  setText('brew-next', nextText);
+  $('brew-progress').style.width = `${(Math.max(0, Math.min(1, progress)) * 100).toFixed(1)}%`;
+  setText('brew-toggle', toggle);
+  $('brew-toggle').disabled = toggleDisabled;
+  setText('brew-reset', t('machine_stop'));
+  setText('brew-done-text', t('machine_done_text'));
+  $('brew-face').hidden = done;
+  $('brew-controls').hidden = done;
+  $('brew-done').hidden = !done;
+  $('brew-done-controls').hidden = !done;
+}
+
+function leaveMachineMode() {
+  brewMode = 'local';
+  machineStopped = false;
+  keepAwake(false);
+  $('brew-toggle').disabled = false;
+  setText('brew-reset', t('reset'));
+  setText('brew-done-text', t('done_text'));
+  $('brew-clock').classList.remove('small');
+  updateTimer();
+}
+
+function machineToggle() {
+  const status = machineStopped ? 'STOPPED' : !machineOnline ? 'OFFLINE' : machineState?.state;
+  if (status === 'READY') machineCommand('start');
+  else if (status === 'BREWING') machineCommand('pause');
+  else if (status === 'PAUSED') machineCommand('resume');
+  else if (status === 'ERROR' || status === 'STOPPED') { back('recipe'); startMachineBrew(); }
+  else if (status === 'OFFLINE') { refreshMachine(); }
+}
+
+async function machineStop() {
+  try { await machineRequest('abort'); } catch (error) { /* shown through telemetry */ }
+  machineStopped = true;
+  renderMachine();
 }
 
 // Vibration and a short beep at the start of each pour; both can be switched off.
@@ -702,14 +959,25 @@ function init() {
   $('recipe-back').addEventListener('click', () => back('find'));
   $('brew-start').addEventListener('click', () => {
     if (!currentRecipe?.duration_seconds) return;
+    if (brewMode === 'machine') leaveMachineMode();
     show('brew');
     if (!running && elapsed === 0) toggleTimer();
   });
+  $('machine-start').addEventListener('click', startMachineBrew);
   $('brew-back').addEventListener('click', () => back('recipe'));
-  $('brew-toggle').addEventListener('click', toggleTimer);
-  $('brew-reset').addEventListener('click', () => { resetTimer(); $('brew-toggle').focus({preventScroll: true}); });
-  $('brew-again').addEventListener('click', () => { resetTimer(); back('recipe'); });
+  $('brew-toggle').addEventListener('click', () => brewMode === 'machine' ? machineToggle() : toggleTimer());
+  $('brew-reset').addEventListener('click', () => {
+    if (brewMode === 'machine') { machineStop(); return; }
+    resetTimer();
+    $('brew-toggle').focus({preventScroll: true});
+  });
+  $('brew-again').addEventListener('click', () => {
+    if (brewMode === 'machine') { back('recipe'); startMachineBrew(); return; }
+    resetTimer();
+    back('recipe');
+  });
   $('brew-new').addEventListener('click', () => {
+    if (brewMode === 'machine') { machineRequest('abort').catch(() => {}); leaveMachineMode(); }
     resetTimer();
     currentRecipe = currentData = currentProduct = null;
     markSelected();
@@ -722,6 +990,7 @@ function init() {
   $('brew-vibrate').addEventListener('click', () => { prefs.vibrate = !prefs.vibrate; savePrefs(); setToggle('brew-vibrate', 'vibrate'); });
   $('brew-sound').addEventListener('click', () => { prefs.sound = !prefs.sound; savePrefs(); setToggle('brew-sound', 'sound'); if (prefs.sound) primeAudio(); });
 
+  refreshMachine();
   setStatus('status', t('status_checking'));
   api('/api/model').then(data => {
     if (photoGeneration) return;
@@ -741,7 +1010,7 @@ window.firstBrew = {
     updateTimer();
     updateBrewStartLabel();
   },
-  state: () => ({screen: currentScreen(), running, elapsed, finished}),
+  state: () => ({screen: currentScreen(), running, elapsed, finished, brewMode, machine: machineState, machineOnline}),
 };
 
 init();
