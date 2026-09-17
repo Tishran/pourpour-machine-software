@@ -11,27 +11,28 @@ const assert = require('node:assert/strict');
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(baseURL);
-    assert.match(await page.title(), /First Brew/);
+    assert.equal(await page.title(), 'First Brew');
     const chooser = page.waitForEvent('filechooser');
-    await page.locator('#scan-button').click();
+    await page.locator('#photo-button').click();
     await (await chooser).setFiles(path.join(__dirname, 'fixtures/rwanda-label.png'));
-    await page.locator('.recipe-title').waitFor({timeout: 40000});
-    assert.equal(await page.locator('.recipe-title').textContent(), 'Руанда Суса');
-    assert.match(await page.locator('.specs').textContent(), /250/);
+    await page.locator('#recipe-title').waitFor({timeout: 40000});
+    await page.waitForFunction(() => document.querySelector('.figures'), null, {timeout: 40000});
+    assert.equal(await page.locator('#recipe-title').textContent(), 'Руанда Суса');
+    assert.match(await page.locator('.figures').textContent(), /250/);
     // No manual OCR-confirmation UI: the recipe is prepared straight from the photo.
     assert.equal(await page.locator('#label-editor').count(), 0);
     assert.equal(await page.locator('#prepare-recipe').count(), 0);
-    await page.locator('#timer-toggle').click();
-    assert.equal(await page.locator('#timer-toggle').textContent(), 'Pause');
-    assert.equal(await page.locator('#timer-phase').textContent(), 'BLOOM');
-    assert.equal(await page.locator('#step-0').getAttribute('data-state'), 'active');
-    assert.match(await page.locator('#timer-action').textContent(), /50 g/);
-    await page.evaluate(() => { running = false; clearInterval(timerInterval); elapsed = 16; updateTimer(); });
-    assert.equal(await page.locator('#step-0').getAttribute('data-state'), 'completed');
-    assert.equal(await page.locator('#step-1').getAttribute('data-state'), 'next');
-    assert.equal(await page.locator('#timer-phase').textContent(), 'PAUSE');
-    assert.match(await page.locator('#timer-action').textContent(), /Next pour in 14 sec/);
-    await page.locator('#timer-reset').click();
+    await page.locator('#brew-start').click();
+    assert.equal(await page.evaluate(() => document.body.dataset.screen), 'brew');
+    assert.equal(await page.locator('#brew-toggle').textContent(), 'Pause');
+    assert.match(await page.locator('#brew-phase').textContent(), /^Bloom/);
+    assert.match(await page.locator('#brew-action').textContent(), /Pouring to 50 g/);
+    await page.evaluate(() => window.firstBrew.seek(16));
+    assert.equal(await page.locator('#brew-phase').textContent(), 'Waiting');
+    assert.match(await page.locator('#brew-action').textContent(), /Next pour in 14 s/);
+    await page.locator('#brew-reset').click();
+    await page.locator('#brew-back').click();
+    await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
 
     // Backend contract (no confirmation step): a name match returns the catalog recipe directly.
     const named = await (await page.request.post('/api/recommend', {headers:{'Content-Type':'application/json'}, data:{text:'Руанда Суса'}})).json();
@@ -45,10 +46,10 @@ const assert = require('node:assert/strict');
     assert.ok(closest.recipe_data);
     assert.match(closest.message, /origin is not matched/i);
 
-    await page.locator('#label-photo').setInputFiles(path.join(__dirname, 'fixtures/colombia-label.png'));
-    await page.waitForFunction(() => document.querySelector('.recipe-title')?.textContent === 'Colombia · starting recipe', null, {timeout: 40000});
+    await page.locator('#photo-input').setInputFiles(path.join(__dirname, 'fixtures/colombia-label.png'));
+    await page.waitForFunction(() => document.querySelector('#recipe-title')?.textContent === 'Colombia · starting recipe', null, {timeout: 40000});
     assert.match(await page.locator('.recommendation-basis').textContent(), /Processing is not assumed/);
-    assert.match(await page.locator('.specs').textContent(), /250/);
+    assert.match(await page.locator('.figures').textContent(), /250/);
 
     const blankImage = await page.evaluate(() => {
       const canvas = document.createElement('canvas');
@@ -57,10 +58,10 @@ const assert = require('node:assert/strict');
       context.fillStyle = 'white'; context.fillRect(0, 0, 500, 500);
       return canvas.toDataURL('image/png').split(',')[1];
     });
-    await page.locator('#label-photo').setInputFiles({name:'unreadable.png', mimeType:'image/png', buffer:Buffer.from(blankImage, 'base64')});
-    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('could not be read'), null, {timeout: 40000});
-    assert.equal(await page.locator('#recipe-content').isVisible(), true);
-    assert.equal(await page.locator('.recipe-title').textContent(), 'Your coffee · starting recipe');
+    await page.locator('#photo-input').setInputFiles({name:'unreadable.png', mimeType:'image/png', buffer:Buffer.from(blankImage, 'base64')});
+    await page.waitForFunction(() => document.querySelector('#recipe-title')?.textContent === 'Your coffee · starting recipe', null, {timeout: 40000});
+    assert.equal(await page.evaluate(() => document.body.dataset.screen), 'recipe');
+    assert.match(await page.locator('.recommendation-basis').textContent(), /could not be read/);
     assert.match(await page.locator('.recommendation-basis').textContent(), /general starting recipe/);
 
     const invalid = await page.request.post('/api/label', {headers: {'Content-Type':'image/png'}, data: Buffer.from('not an image')});
@@ -77,7 +78,7 @@ const assert = require('node:assert/strict');
     await page.setViewportSize({width: 390, height: 844});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
     await page.screenshot({path: process.env.POURPOUR_SCREENSHOT || '/tmp/pourpour-photo-mobile.png', fullPage:true});
-    console.log('PASS: photo OCR → catalog recipe with no confirmation UI; country-only photo; unreadable photo → general recipe; unsupported origin → reference; timer; invalid upload; same-origin; mobile layout; no JS errors.');
+    console.log('PASS: photo OCR → catalog recipe with no confirmation UI; country-only photo; unreadable photo → general recipe; unsupported origin → reference; timer screen; invalid upload; same-origin; mobile layout; no JS errors.');
   } finally {
     await browser.close();
   }

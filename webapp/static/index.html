@@ -1,68 +1,87 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f4f1e9">
-  <meta name="description" content="Find the V60 pour-over recipe for your coffee from The Welder Catherine.">
-  <title>First Brew — your coffee, its recipe</title>
-  <link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f4f1e9" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#161613" media="(prefers-color-scheme: dark)">
+  <meta name="description" content="The pour-over recipe for your coffee from The Welder Catherine: photo of the bag or the name, pours and a timer.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="First Brew">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <title>First Brew</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
 </head>
-<body>
-  <header class="header"><a href="/" class="logo" aria-label="First Brew — home">first<span>brew</span><i>↘</i></a><span class="edition">COFFEE RECIPE FINDER <b>01 / V60</b></span></header>
-  <main>
-    <section class="hero">
-      <div class="hero-copy"><p class="eyebrow"><span class="dot"></span> A SMALL RITUAL. A BIG TASTE.</p>
-      <h1>Your coffee.<br>Its <em>recipe.</em></h1>
-      <p class="intro">Find the roaster's pour-over recipe.<br>From the first pour to the last drop.</p>
-      <a href="#search" class="hero-link">Start with your coffee's name <span>↓</span></a></div>
-      <div class="illustration" aria-hidden="true">
-        <span class="diagram-label label-top">THE POUR-OVER RITUAL</span>
-        <svg viewBox="0 0 430 340" fill="none"><defs><pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" stroke="#ddd7cb" stroke-width=".7"/></pattern></defs>
-        <rect x="0" y="0" width="430" height="340" fill="url(#grid)"/>
-        <ellipse cx="226" cy="291" rx="101" ry="14" fill="#e8e2d6"/>
-        <path d="M162 205H277L289 278Q289 289 274 290H162Q148 287 150 278Z" fill="#f9f7f1" stroke="#282b27" stroke-width="2"/>
-        <path d="M281 220H295Q325 220 319 246Q316 260 286 260" stroke="#282b27" stroke-width="3"/>
-        <path d="M155 256Q219 266 284 256L288 278Q288 286 274 286H165Q153 286 153 278Z" fill="#bd6c3e"/>
-        <ellipse cx="220" cy="256" rx="65" ry="8" fill="#402e24"/>
-        <path d="M130 128H305L239 212H197Z" fill="#ed7145" stroke="#282b27" stroke-width="2"/>
-        <path d="M146 128L205 203M174 128L214 206M204 128L223 206M234 128L230 206M266 128L237 200M291 128L245 190" stroke="#a84225" stroke-width="1.4"/>
-        <path d="M191 212H245M178 216H258" stroke="#282b27" stroke-width="3" stroke-linecap="round"/>
-        <ellipse cx="218" cy="128" rx="87" ry="19" fill="#fffaf0" stroke="#282b27" stroke-width="2"/>
-        <ellipse cx="218" cy="130" rx="58" ry="11" fill="#503429"/>
-        <path d="M180 56C163 76 239 84 218 119" stroke="#6e8b83" stroke-width="3" stroke-linecap="round" stroke-dasharray="4 7"/>
-        <path d="M294 98H349M105 232H154" stroke="#888b7f"/>
-        <circle cx="294" cy="98" r="3" fill="#282b27"/><circle cx="154" cy="232" r="3" fill="#282b27"/>
-        <text x="337" y="88" fill="#686d61" font-size="11" font-family="monospace">V60</text><text x="74" y="224" fill="#686d61" font-size="11" font-family="monospace">SLOW</text>
-        </svg><span class="diagram-label label-bottom">A GOOD CUP STARTS WITH THE DETAILS</span>
+<body data-screen="find">
+  <main class="app">
+
+    <section class="screen" id="screen-find" aria-labelledby="find-title">
+      <header class="bar">
+        <h1 class="brand" id="find-title">First Brew</h1>
+      </header>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+      <button type="button" class="button primary big" id="photo-button"></button>
+      <input class="visually-hidden" id="photo-input" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+      <form class="search" id="search-form" role="search">
+        <label class="label" for="query" id="search-label"></label>
+        <div class="search-row">
+          <input id="query" type="search" maxlength="120" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="search">
+          <button type="button" class="button" id="show-all"></button>
+        </div>
+      </form>
+      <p class="status" id="catalog-status" role="status" aria-live="polite"></p>
+      <div class="results" id="results" role="list" hidden></div>
+    </section>
+
+    <section class="screen" id="screen-recipe" aria-labelledby="recipe-title">
+      <header class="bar">
+        <button type="button" class="back" id="recipe-back"></button>
+      </header>
+      <div class="recipe-body" id="recipe-body" aria-busy="false">
+        <p class="placeholder" id="recipe-placeholder"></p>
+      </div>
+      <div class="cta-bar" id="recipe-cta" hidden>
+        <button type="button" class="button primary big" id="brew-start"></button>
       </div>
     </section>
-    <section class="workspace" id="search" aria-label="Recipe search">
-      <div class="search-panel">
-        <div class="section-heading"><span class="eyebrow">01 / FIND COFFEE</span><span class="tag">The Welder Catherine</span></div>
-        <section class="photo-box" aria-labelledby="photo-title">
-          <h2 id="photo-title">Start with a photo of your coffee</h2>
-          <p>Even a country name is enough to start. Get a recipe from our dataset; processing and variety are optional.</p>
-          <label class="photo-pick" for="label-photo">Choose a label photo</label>
-          <input id="label-photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help">
-          <p id="photo-help" class="photo-help">Take a close, straight photo without glare. Photos are processed locally and are not saved.</p>
-          <img id="label-preview" hidden alt="Selected coffee label">
-          <p id="photo-status" role="status" aria-live="polite" class="status">Checking photo recognition…</p>
-        </section>
-        <form id="search-form"><label for="coffee-query">What are we brewing today?</label><div class="search-row"><input id="coffee-query" type="search" maxlength="120" placeholder="Coffee name, e.g. Rwanda Susa" autocomplete="off"><button type="submit" id="search-button">Search <span>↗</span></button></div></form>
-        <div class="suggestions"><span>Try:</span><button type="button" data-query="Rwanda">Rwanda</button><button type="button" data-query="Efiopiya">Ethiopia</button><button type="button" data-query="Kolumbiya">Colombia</button></div>
-        <div class="scan"><button type="button" id="scan-button" class="scan-button">Scan or upload the bag <span aria-hidden="true">▣</span></button></div>
-        <div class="results-heading"><h2 id="results-title">Filter coffees</h2><span id="count"></span></div>
-        <p id="catalog-status" class="status" role="status" aria-live="polite">Loading the roaster's catalog…</p>
-        <div id="results" class="results"></div>
-        <p class="catalog-footnote">Search runs over the current filter-roast export. Archived lots may be missing. The recipe is verified after you pick a coffee.</p>
+
+    <section class="screen screen-brew" id="screen-brew" aria-labelledby="brew-title">
+      <header class="bar">
+        <button type="button" class="back" id="brew-back"></button>
+        <h1 class="visually-hidden" id="brew-title"></h1>
+        <div class="toggles">
+          <button type="button" class="toggle" id="brew-vibrate" aria-pressed="true"></button>
+          <button type="button" class="toggle" id="brew-sound" aria-pressed="true"></button>
+        </div>
+      </header>
+      <div class="brew-face" id="brew-face">
+        <p class="brew-phase" id="brew-phase"></p>
+        <p class="brew-clock" id="brew-clock" role="timer">0:00</p>
+        <p class="brew-action" id="brew-action" role="status" aria-live="polite"></p>
+        <p class="brew-countdown" id="brew-countdown"></p>
+        <div class="brew-progress" aria-hidden="true"><i id="brew-progress"></i></div>
+        <p class="brew-next" id="brew-next"></p>
       </div>
-      <aside class="recipe-panel" id="recipe-panel" aria-label="Coffee recipe" aria-busy="false">
-        <div id="recipe-empty" class="empty"><span class="eyebrow">02 / BREW</span><div class="empty-icon">↘</div><h2>Every bag<br>has its own approach.</h2><p>Pick a coffee on the left —<br>its pour-over recipe appears here.</p><div class="empty-specs"><span>Grams</span><span>Degrees</span><span>Seconds</span></div></div>
-        <div id="recipe-content" hidden></div>
-      </aside>
+      <div class="brew-done" id="brew-done" hidden>
+        <p class="brew-done-title" id="brew-done-title"></p>
+        <p class="brew-done-text" id="brew-done-text"></p>
+      </div>
+      <div class="brew-controls" id="brew-controls">
+        <button type="button" class="button primary big" id="brew-toggle"></button>
+        <button type="button" class="button big" id="brew-reset"></button>
+      </div>
+      <div class="brew-controls" id="brew-done-controls" hidden>
+        <button type="button" class="button primary big" id="brew-again"></button>
+        <button type="button" class="button big" id="brew-new"></button>
+      </div>
     </section>
-    <section class="how"><div><span>01</span><h3>Find your coffee</h3><p>Type the name from the bag.<br>Part of the name or Latin letters work too.</p></div><div><span>02</span><h3>Open the recipe</h3><p>The exact lot's parameters<br>from The Welder Catherine.</p></div><div><span>03</span><h3>Dial in your taste</h3><p>Follow the pours and the timer.<br>Enjoy every cup.</p></div></section>
+
   </main>
-  <footer><a href="/" class="logo small">first<span>brew</span>↘</a><p>Made with care for your next cup.</p><a href="https://theweldercatherine.ru/" target="_blank" rel="noopener noreferrer">Source: The Welder Catherine ↗</a></footer>
 </body>
 </html>

@@ -76,12 +76,14 @@ cd webapp
 .venv/bin/python server.py --port 8002
 ```
 
-Open http://127.0.0.1:8002 and choose a clear, close-up image of the label.
-The browser accepts JPEG/PNG/WebP up to 8 MB, corrects orientation and resizes
-to a maximum side of 2400 pixels before submitting JPEG. HEIC is not supported;
-export to JPEG first. Photos go only to your local server, are held in a temporary
+Open http://127.0.0.1:8002 and take a clear, close-up photo of the label
+(on a phone the button opens the camera directly). The browser accepts any image
+the browser itself can decode (JPEG/PNG/WebP everywhere, HEIC where the browser
+supports it) up to 20 MB, corrects orientation and resizes to a maximum side of
+2400 pixels before submitting JPEG. If the photo cannot be decoded, export it to
+JPEG first. Photos go only to your local server, are held in a temporary
 directory during OCR and deleted afterward. They are not placed in the dataset,
-logs, Git or a cloud service. The UI keeps its preview in memory until navigation.
+logs, Git or a cloud service. The UI keeps no copy of the photo.
 
 The photo/recipe flow works offline after setup; the separate live catalog search
 still requests the roaster's public site. If OCR dependencies are unavailable,
@@ -169,6 +171,8 @@ browser installed, run it against the local server using
 `node ml/tests/browser-smoke.cjs`. Set `POURPOUR_TEST_URL` to change the server,
 or `POURPOUR_BROWSER_CHANNEL=chrome` to use installed Chrome. It checks photo →
 recipe, unknown-coffee suggestions, single-country photos, unreadable photos,
-unsupported origins, immediate name matching, timer, invalid upload, same-origin
-enforcement and mobile overflow. API tests check that uncertain text still returns
+unsupported origins, immediate name matching, the timer screen, invalid upload,
+same-origin enforcement and mobile overflow. `tests/browser-mobile.cjs` runs the
+three-screen phone flow under iPhone 13 and Pixel 5 emulation (see the
+[web app README](../webapp/README.md#мобильный-интерфейс)). API tests check that uncertain text still returns
 a recipe with a caveat and that an empty OCR result returns a general baseline.

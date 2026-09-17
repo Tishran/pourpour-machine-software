@@ -1,71 +1,329 @@
+'use strict';
+// First Brew — three screens: find → recipe → brew. Plain JS, no build step.
+
+// ---------------------------------------------------------------------------
+// Strings. Everything the user reads lives here; add `en` next to `ru` later.
+// ---------------------------------------------------------------------------
+const NBSP = ' ';
+const STRINGS = {
+  // English is the default. Wording is descriptive, not imperative: the machine
+  // (or the person) does the pouring; the app reports what is happening.
+  en: {
+    app: 'First Brew',
+    decimal: '.',
+    unit_g: 'g',
+    unit_c: '°C',
+    unit_s: 's',
+    instructions: {'предсмачивание': 'Bloom', 'смачивание': 'Bloom', 'вливание': 'Pour', 'пролив': 'Pour'},
+    photo_button: 'Take a photo of the bag',
+    search_label: 'Or type the coffee name',
+    search_placeholder: 'e.g. Rwanda Susa',
+    show_all: 'Show all',
+    status_checking: 'Checking photo recognition…',
+    status_ready: (n) => `${n} coffees in the database${NBSP}· point the camera at the bag`,
+    status_no_ocr: 'Photo recognition is unavailable. Type the name instead.',
+    status_model_error: 'The model is unavailable. Check the server setup.',
+    status_reading: 'Reading the label…',
+    catalog_loading: 'Loading the catalog…',
+    catalog_searching: 'Searching the catalog…',
+    catalog_empty: 'Nothing found. Try part of the name or check the spelling.',
+    catalog_stale: 'The roaster’s site is temporarily unavailable. Showing a saved catalog.',
+    catalog_similar: 'No exact match. You might mean:',
+    catalog_count: (n, total) => `Showing ${n} of ${total}`,
+    out_of_stock: 'out of stock',
+    filter_roast: 'Filter roast',
+    back: 'Back',
+    to_recipe: 'Recipe',
+    pick_coffee: 'Pick a coffee on the left and its recipe appears here.',
+    recipe_loading: 'Loading the recipe…',
+    recipe_none: 'The roaster has no pour-over recipe for this coffee.',
+    recipe_error: 'Could not load the recipe.',
+    retry: 'Try again',
+    coffee_page: 'Coffee page',
+    reference_page: 'Reference coffee',
+    recipe_subtitle: 'Recipe by The Welder Catherine · filter roast',
+    starting_recipe: 'A starting recipe. The roaster tested it on a different coffee; taste has not been evaluated on yours.',
+    check_lot: 'Check the roaster, harvest and filter roast on the bag: different lots may share a name.',
+    stale_data: 'The source is temporarily unavailable. Showing saved data.',
+    variant: 'Recipe variant',
+    coffee: 'Coffee',
+    water: 'Water',
+    temperature: 'Temperature',
+    time: 'Time',
+    grind: 'Grind',
+    grind_unknown: 'Grind not specified',
+    grind_setting: (grinder, setting) => `${grinder}${NBSP}· ${setting}`,
+    grinder_unknown: 'Grinder not specified',
+    setting_unknown: 'setting not specified',
+    ratio: 'Ratio',
+    ratio_value: (r) => `1${NBSP}:${NBSP}${r}`,
+    ratio_unknown: 'not specified',
+    pours: 'Pours',
+    no_steps: 'The source lists no steps.',
+    pour_default: 'Pour',
+    target_on_scale: (g) => `${g} on the scale`,
+    start_brew: 'Start brewing',
+    continue_brew: 'Back to brewing',
+    pause: 'Pause',
+    resume: 'Resume',
+    reset: 'Reset',
+    brew_title: 'Brewing',
+    vibrate: 'Vibration',
+    sound: 'Sound',
+    vibrate_hint: (on) => on ? 'Vibration on' : 'Vibration off',
+    sound_hint: (on) => on ? 'Sound on' : 'Sound off',
+    phase_ready: 'Ready',
+    phase_wait: 'Waiting',
+    phase_drawdown: 'Drawdown',
+    phase_step: (name, i, n) => `${name}${NBSP}· ${i} of ${n}`,
+    action_ready: 'Timer not started',
+    action_pour_to: (g) => `Pouring to ${g}`,
+    action_pour: 'Pouring',
+    action_next_in: (t) => `Next pour in ${t}`,
+    action_drawdown: 'Water draining',
+    remaining: (t) => `${t} left`,
+    next_step: (time, text) => `Next${NBSP}· ${time}${NBSP}· ${text}`,
+    next_pour_to: (name, g) => `${name.toLowerCase()} to ${g}`,
+    next_done: (time) => `Done at ${time}`,
+    done_title: 'Done',
+    done_text: 'Let the water finish draining. Enjoy your cup.',
+    brew_again: 'Brew again',
+    another_coffee: 'Find another coffee',
+    err_photo_size: 'Choose a photo smaller than 20 MB.',
+    err_photo_open: 'Could not open the photo. Save it as JPEG and try again.',
+    err_generic: 'Could not load data. Please try again.',
+    err_label: 'Could not process the photo.',
+  },
+  ru: {
+    app: 'First Brew',
+    decimal: ',',
+    unit_g: 'г',
+    unit_c: '°C',
+    unit_s: 'с',
+    instructions: {},
+    photo_button: 'Сфотографировать пачку',
+    search_label: 'Или введите название',
+    search_placeholder: 'Например, Руанда Суса',
+    show_all: 'Показать все',
+    status_checking: 'Проверяем распознавание фото…',
+    status_ready: (n) => `${n} кофе в базе${NBSP}· наведите камеру на пачку`,
+    status_no_ocr: 'Распознавание фото недоступно. Введите название вручную.',
+    status_model_error: 'Модель недоступна. Проверьте запуск сервера.',
+    status_reading: 'Фото распознаётся…',
+    catalog_loading: 'Каталог загружается…',
+    catalog_searching: 'Ищем в каталоге…',
+    catalog_empty: 'Ничего не найдено. Попробуйте часть названия или проверьте написание.',
+    catalog_stale: 'Сайт обжарщика временно недоступен. Показан сохранённый каталог.',
+    catalog_similar: 'Точного совпадения нет. Возможно, вы имели в виду:',
+    catalog_count: (n, total) => `Показано ${n} из ${total}`,
+    out_of_stock: 'нет в наличии',
+    filter_roast: 'Обжарка под фильтр',
+    back: 'Назад',
+    to_recipe: 'К рецепту',
+    pick_coffee: 'Выберите кофе слева, и здесь появится рецепт.',
+    recipe_loading: 'Загружаем рецепт…',
+    recipe_none: 'У обжарщика нет рецепта воронки для этого кофе.',
+    recipe_error: 'Не удалось загрузить рецепт.',
+    retry: 'Повторить',
+    coffee_page: 'Страница кофе',
+    reference_page: 'Кофе-ориентир',
+    recipe_subtitle: 'Рецепт The Welder Catherine · обжарка под фильтр',
+    starting_recipe: 'Стартовый рецепт. Обжарщик проверял его на другом кофе, на вашем вкус не оценивался.',
+    check_lot: 'Проверьте обжарщика, урожай и обжарку под фильтр на пачке: разные лоты могут называться одинаково.',
+    stale_data: 'Источник временно недоступен. Показаны сохранённые данные.',
+    variant: 'Вариант рецепта',
+    coffee: 'Кофе',
+    water: 'Вода',
+    temperature: 'Температура',
+    time: 'Время',
+    grind: 'Помол',
+    grind_unknown: 'Помол не указан',
+    grind_setting: (grinder, setting) => `${grinder}${NBSP}· ${setting}`,
+    grinder_unknown: 'Кофемолка не указана',
+    setting_unknown: 'деление не указано',
+    ratio: 'Соотношение',
+    ratio_value: (r) => `1${NBSP}:${NBSP}${r}`,
+    ratio_unknown: 'не указано',
+    pours: 'Вливания',
+    no_steps: 'В источнике нет шагов.',
+    pour_default: 'Вливание',
+    target_on_scale: (g) => `${g} на весах`,
+    start_brew: 'Начать заваривание',
+    continue_brew: 'Вернуться к завариванию',
+    pause: 'Пауза',
+    resume: 'Продолжить',
+    reset: 'Сброс',
+    brew_title: 'Заваривание',
+    vibrate: 'Вибрация',
+    sound: 'Звук',
+    vibrate_hint: (on) => on ? 'Вибрация включена' : 'Вибрация выключена',
+    sound_hint: (on) => on ? 'Звук включён' : 'Звук выключен',
+    phase_ready: 'Готово к запуску',
+    phase_wait: 'Ожидание',
+    phase_drawdown: 'Стекание',
+    phase_step: (name, i, n) => `${name}${NBSP}· ${i} из ${n}`,
+    action_ready: 'Таймер не запущен',
+    action_pour_to: (g) => `Вливание до ${g}`,
+    action_pour: 'Вливание',
+    action_next_in: (t) => `Следующее вливание через ${t}`,
+    action_drawdown: 'Вода стекает',
+    remaining: (t) => `ещё ${t}`,
+    next_step: (time, text) => `Дальше${NBSP}· ${time}${NBSP}· ${text}`,
+    next_pour_to: (name, g) => `${name.toLowerCase()} до ${g}`,
+    next_done: (time) => `Готово в ${time}`,
+    done_title: 'Готово',
+    done_text: 'Убедитесь, что вода стекла. Приятного кофе!',
+    brew_again: 'Заварить ещё',
+    another_coffee: 'Найти другой кофе',
+    err_photo_size: 'Выберите фото меньше 20 МБ.',
+    err_photo_open: 'Не удалось открыть фото. Сохраните его как JPEG и попробуйте снова.',
+    err_generic: 'Не удалось загрузить данные. Попробуйте ещё раз.',
+    err_label: 'Не удалось обработать фото.',
+  },
+};
+const LANG = 'en';
+const t = (key, ...args) => {
+  const value = STRINGS[LANG][key];
+  return typeof value === 'function' ? value(...args) : value ?? key;
+};
+
+// ---------------------------------------------------------------------------
+// Formatting: Russian typography, non-breaking space before units.
+// ---------------------------------------------------------------------------
 const $ = (id) => document.getElementById(id);
 const escape = (value) => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const format = (value) => value == null ? '—' : String(value).replace('.', ',');
+const num = (value) => value == null ? '—' : String(value).replace('.', t('decimal'));
+const grams = (value) => value == null ? '—' : `${num(value)}${NBSP}${t('unit_g')}`;
 const clock = (seconds) => seconds == null ? '—' : `${Math.floor(seconds / 60)}:${String(Math.floor(seconds % 60)).padStart(2, '0')}`;
-// Countdown to a moment: short "42 sec" under a minute, otherwise m:ss.
-const countdown = (seconds) => {
-  seconds = Math.max(0, seconds);
-  return seconds >= 60 ? clock(seconds) : `${Math.ceil(seconds)} sec`;
+const secondsText = (seconds) => `${Math.max(0, Math.ceil(seconds))}${NBSP}${t('unit_s')}`;
+const countdown = (seconds) => seconds >= 60 ? clock(Math.max(0, seconds)) : secondsText(seconds);
+// Source instructions arrive in Russian; translate the known brewing words, keep the rest as-is.
+const stepName = (instruction) => {
+  const text = String(instruction ?? '').trim();
+  const known = STRINGS[LANG].instructions[text.toLowerCase()];
+  return known || (text ? text[0].toUpperCase() + text.slice(1) : t('pour_default'));
 };
-// Recipe step instructions arrive in Russian from the source; translate the
-// known brewing verbs, keep anything unexpected as-is.
-const INSTRUCTIONS = {'предсмачивание': 'Bloom', 'смачивание': 'Bloom', 'вливание': 'Pour', 'пролив': 'Pour'};
-const stepName = (value) => INSTRUCTIONS[String(value ?? '').trim().toLowerCase()] || (value || 'Pour');
 
-let searchRequest, recipeRequest, currentProduct, currentData, currentRecipe;
-let timerInterval, running = false, elapsed = 0, startedAt = 0, lastActiveStep = -1;
-let photoRequest, photoGeneration = 0;
+// ---------------------------------------------------------------------------
+// State
+// ---------------------------------------------------------------------------
+let searchRequest, recipeRequest, photoRequest, photoGeneration = 0;
+let currentProduct = null, currentData = null, currentRecipe = null, recipeLoading = false;
+let timerInterval, running = false, elapsed = 0, startedAt = 0, lastActiveStep = -1, finished = false;
+let wakeLock = null, audio = null;
+const prefs = {vibrate: true, sound: true};
 
+function loadPrefs() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('firstbrew.prefs') || '{}');
+    if (typeof saved.vibrate === 'boolean') prefs.vibrate = saved.vibrate;
+    if (typeof saved.sound === 'boolean') prefs.sound = saved.sound;
+  } catch (error) { /* private mode or blocked storage: keep defaults */ }
+}
+function savePrefs() {
+  try { localStorage.setItem('firstbrew.prefs', JSON.stringify(prefs)); } catch (error) { /* ignore */ }
+}
+
+// ---------------------------------------------------------------------------
+// Screens and browser history
+// ---------------------------------------------------------------------------
+const SCREENS = ['find', 'recipe', 'brew'];
+function currentScreen() { return document.body.dataset.screen; }
+
+function show(screen, {push = true} = {}) {
+  if (!SCREENS.includes(screen)) screen = 'find';
+  if (screen !== 'find' && !currentData && !recipeLoading) screen = 'find';
+  if (screen === 'brew' && !currentRecipe) screen = currentData ? 'recipe' : 'find';
+  document.body.dataset.screen = screen;
+  if (push && history.state?.screen !== screen) {
+    history.pushState({screen}, '', screen === 'find' ? location.pathname : `#${screen}`);
+  }
+  window.scrollTo(0, 0);
+  const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title') : $('brew-toggle');
+  focusTarget?.focus({preventScroll: true});
+}
+
+function back(target) {
+  const state = history.state?.screen;
+  if (state && state !== 'find' && state === currentScreen()) history.back();
+  else show(target, {push: false});
+}
+
+window.addEventListener('popstate', event => show(event.state?.screen || 'find', {push: false}));
+
+// ---------------------------------------------------------------------------
+// API
+// ---------------------------------------------------------------------------
 async function api(path, signal) {
   const response = await fetch(path, {signal});
   const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Could not load data. Please try again.');
+  if (!response.ok) throw new Error(data.error || t('err_generic'));
   return data;
 }
 
-function resetTimer() {
-  clearInterval(timerInterval);
-  running = false;
-  elapsed = 0;
-  lastActiveStep = -1;
-  updateTimer();
+async function post(path, body, type, signal) {
+  const response = await fetch(path, {method: 'POST', headers: {'Content-Type': type}, body, signal});
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.error || t('err_label'));
+  return data;
+}
+
+// ---------------------------------------------------------------------------
+// Screen 1: find
+// ---------------------------------------------------------------------------
+let searchTimer;
+function setStatus(id, text, error = false) {
+  const node = $(id);
+  node.className = error ? 'status error' : 'status';
+  node.textContent = text;
 }
 
 async function search(query = '') {
   searchRequest?.abort();
   const request = new AbortController();
   searchRequest = request;
-  $('search-button').disabled = true;
-  $('catalog-status').className = 'status loading';
-  $('catalog-status').textContent = 'Searching the roaster’s catalog…';
+  $('show-all').disabled = true;
+  setStatus('catalog-status', query ? t('catalog_searching') : t('catalog_loading'));
   $('results').replaceChildren();
-  $('count').textContent = '';
+  $('results').hidden = true;
   try {
     const data = await api(`/api/search?q=${encodeURIComponent(query)}`, request.signal);
-    $('results-title').textContent = query ? 'Search results' : 'Filter coffees';
-    $('count').textContent = `${data.total} / ${data.catalog_size}`;
-    $('catalog-status').className = 'status';
-    $('catalog-status').textContent = !data.total
-      ? 'No coffee found. Try part of the name or check the spelling. Archived lots may be missing.'
-      : data.source.stale ? 'The source is temporarily unavailable. Showing a saved catalog.'
-      : data.products[0].match === 'similar' ? 'No exact match. You might mean:' : '';
-    data.products.forEach((product, i) => {
+    setStatus('catalog-status', !data.total ? t('catalog_empty')
+      : data.source.stale ? t('catalog_stale')
+      : data.products[0].match === 'similar' ? t('catalog_similar')
+      : t('catalog_count', data.products.length, data.catalog_size));
+    data.products.forEach(product => {
       const button = document.createElement('button');
       button.type = 'button';
-      button.className = `coffee${currentProduct?.id === product.id ? ' active' : ''}`;
+      button.className = 'coffee';
+      button.setAttribute('role', 'listitem');
       button.dataset.id = product.id;
       button.setAttribute('aria-pressed', String(currentProduct?.id === product.id));
-      button.innerHTML = `<span class="number">${String(i + 1).padStart(2, '0')}</span><span class="coffee-copy"><strong>${escape(product.name)}</strong><small>${escape(product.region || 'Filter roast')}${!product.available ? ' · Out of stock' : ''}</small></span><span class="arrow" aria-hidden="true">↗</span>`;
+      button.innerHTML = `<span class="coffee-copy"><strong>${escape(product.name)}</strong><small>${escape(product.region || t('filter_roast'))}${!product.available ? ` · ${t('out_of_stock')}` : ''}</small></span><span class="arrow" aria-hidden="true">→</span>`;
       button.addEventListener('click', () => selectProduct(product));
       $('results').append(button);
     });
+    $('results').hidden = !data.products.length;
   } catch (error) {
     if (error.name === 'AbortError') return;
-    $('catalog-status').className = 'status error';
-    $('catalog-status').textContent = error.message;
+    setStatus('catalog-status', error.message, true);
   } finally {
-    if (searchRequest === request) $('search-button').disabled = false;
+    if (searchRequest === request) $('show-all').disabled = false;
   }
+}
+
+function markSelected() {
+  document.querySelectorAll('.coffee').forEach(button => {
+    button.setAttribute('aria-pressed', String(button.dataset.id === currentProduct?.id));
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Screen 2: recipe
+// ---------------------------------------------------------------------------
+function recipeMessage(html) {
+  $('recipe-body').innerHTML = html;
+  $('recipe-cta').hidden = true;
 }
 
 async function selectProduct(product) {
@@ -75,267 +333,96 @@ async function selectProduct(product) {
   recipeRequest = request;
   resetTimer();
   currentRecipe = null;
+  currentData = null;
   currentProduct = product;
-  document.querySelectorAll('.coffee').forEach(button => {
-    const selected = button.dataset.id === product.id;
-    button.classList.toggle('active', selected);
-    button.setAttribute('aria-pressed', String(selected));
-  });
-  $('recipe-empty').hidden = true;
-  $('recipe-content').hidden = false;
-  $('recipe-panel').setAttribute('aria-busy', 'true');
-  $('recipe-content').innerHTML = `<div class="empty"><span class="eyebrow">02 / BREW</span><h2>${escape(product.name)}</h2><p class="loading" role="status">Fetching the recipe for this coffee…</p></div>`;
-  if (window.matchMedia('(max-width: 620px)').matches) $('recipe-panel').scrollIntoView({behavior:'smooth'});
+  recipeLoading = true;
+  markSelected();
+  $('recipe-body').setAttribute('aria-busy', 'true');
+  recipeMessage(`<h1 class="title" id="recipe-title" tabindex="-1">${escape(product.name)}</h1><p class="status" role="status">${t('recipe_loading')}</p>`);
+  show('recipe');
   try {
-    currentData = await api(`/api/recipes/${encodeURIComponent(product.id)}`, request.signal);
-    if (!currentData.recipes.length) {
-      $('recipe-content').innerHTML = `<div class="empty"><span class="eyebrow">02 / BREW</span><h2>${escape(product.name)}</h2><p>The source has no pour-over<br>recipe for this coffee.</p><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">Open the roaster’s page ↗</a></div>`;
+    const data = await api(`/api/recipes/${encodeURIComponent(product.id)}`, request.signal);
+    currentData = data;
+    if (!data.recipes.length) {
+      recipeMessage(`<h1 class="title" id="recipe-title" tabindex="-1">${escape(product.name)}</h1><p class="note">${t('recipe_none')}</p><p class="source"><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">${t('coffee_page')} ↗</a></p>`);
     } else renderRecipe(0);
   } catch (error) {
     if (error.name === 'AbortError') return;
-    $('recipe-content').innerHTML = `<div class="empty"><h2>Could not<br>load the recipe.</h2><p role="alert">${escape(error.message)}</p><button type="button" class="retry" id="retry">Try again</button><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">Coffee page ↗</a></div>`;
+    recipeMessage(`<h1 class="title" id="recipe-title" tabindex="-1">${escape(product.name)}</h1><p class="note error" role="alert">${t('recipe_error')} ${escape(error.message)}</p><button type="button" class="button retry" id="retry">${t('retry')}</button><p class="source"><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">${t('coffee_page')} ↗</a></p>`);
     $('retry').addEventListener('click', () => selectProduct(product));
   } finally {
-    if (recipeRequest === request) $('recipe-panel').setAttribute('aria-busy', 'false');
+    if (recipeRequest === request) {
+      recipeLoading = false;
+      $('recipe-body').setAttribute('aria-busy', 'false');
+    }
   }
 }
 
 function renderRecipe(index) {
   resetTimer();
   const recipe = currentRecipe = currentData.recipes[index];
-  const metrics = [[recipe.coffee_g,'g','Coffee'],[recipe.water_g,'g','Water'],[recipe.temperature_c,'°C','Temperature'],[clock(recipe.duration_seconds),'','Total time']];
-  const variant = currentData.recipes.length > 1 ? `<label class="variant-label" for="recipe-variant">Recipe variant</label><select class="variant-select" id="recipe-variant">${currentData.recipes.map((r, i) => `<option value="${i}" ${i === index ? 'selected' : ''}>${escape(r.device)} · ${format(r.coffee_g)} g · ${escape(r.grinder || 'Grind not specified')} (${i+1})</option>`).join('')}</select>` : '';
-  const steps = recipe.steps.map((step, i) => {
-    const water = step.water_g == null ? '—' : '+' + format(step.water_g) + ' g';
-    return `<div class="step" id="step-${i}" data-state="upcoming">
-      <span class="step-time">${clock(step.start_seconds)}<small>${clock(step.stop_seconds)}</small></span>
-      <div class="step-body"><span class="step-badge" aria-hidden="true"></span><strong>${escape(stepName(step.instruction))}</strong><small class="step-target"></small><span class="step-count"></span></div>
-      <span class="step-water">${water}</span>
-    </div>`;
-  }).join('') || '<p class="status">The source lists no steps.</p>';
-  $('recipe-content').innerHTML = `
-    <div class="recipe-top"><span class="eyebrow">02 / YOUR RECIPE</span><span class="tag">${escape(recipe.device)}</span></div>
-    <h2 class="recipe-title" tabindex="-1">${escape(currentData.product.name)}</h2>
-    <p class="recipe-subtitle">${escape(currentData.recipe_subtitle || 'Recipe by The Welder Catherine · filter roast')}</p>
-    ${['closest_reference', 'suggested_baseline'].includes(currentData.recommendation_kind) ? '<p class="warning">A starting recipe. The roaster tested it on a different coffee; taste has not been evaluated on yours.</p>' : ''}
-    ${currentData.explanation ? `<p class="recipe-notes recommendation-basis">${escape(currentData.explanation)}</p>` : ''}
-    ${currentData.recommendation_kind === 'catalog_match' ? '<p class="recipe-notes">Check the roaster, harvest and filter roast on your bag: different lots may share a name.</p>' : ''}
-    ${variant}
-    ${currentData.stale ? '<p class="warning">The source is temporarily unavailable. Showing saved data.</p>' : ''}
-    ${recipe.warnings.map(w => `<p class="warning">${escape(w)}</p>`).join('')}
-    <div class="specs">${metrics.map(([value,unit,label]) => `<div><span class="spec-value">${escape(format(value))}<small>${unit}</small></span><span class="spec-name">${label}</span></div>`).join('')}</div>
-    <div class="detail-line"><span>Coffee-to-water ratio</span><strong>${recipe.ratio ? '1 : '+format(recipe.ratio) : 'Not specified'}</strong></div>
-    <div class="detail-line"><span>Grind</span><strong>${escape(recipe.grinder || 'Grinder not specified')}<br>${recipe.grind_setting ? 'Setting '+escape(recipe.grind_setting) : 'Setting not specified'}</strong></div>
-    <div class="steps-header"><h3>Pour schedule</h3><span>TIME FROM START</span></div>
-    <div class="steps">${steps}</div>
-    <div class="timer" id="timer" data-mode="idle">
-      <div class="timer-face">
-        <span class="timer-phase" id="timer-phase" aria-hidden="true"></span>
-        <span id="timer-clock" class="timer-clock" role="timer" aria-label="Elapsed time">0:00</span>
-        <span class="timer-action" id="timer-action"></span>
-        <span class="timer-remaining" id="timer-remaining"></span>
-        <div class="timer-progress" aria-hidden="true"><i id="timer-progress"></i></div>
-      </div>
-      <div class="timer-controls"><button type="button" id="timer-toggle" ${!recipe.duration_seconds ? 'disabled' : ''}>Start brewing</button><button type="button" id="timer-reset" aria-label="Reset timer">↺</button></div>
-    </div>
-    <p class="timer-caption" id="timer-caption" role="status">Prepare your coffee and hot water, then start the timer.</p>
-    ${recipe.notes ? `<p class="recipe-notes">${escape(recipe.notes)}</p>` : ''}
-    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${['closest_reference', 'suggested_baseline'].includes(currentData.recommendation_kind) ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
-  $('recipe-variant')?.addEventListener('change', event => renderRecipe(Number(event.target.value)));
-  $('timer-toggle').addEventListener('click', toggleTimer);
-  $('timer-reset').addEventListener('click', resetTimer);
-  updateTimer();
-  document.querySelector('.recipe-title').focus({preventScroll:true});
+  const kind = currentData.recommendation_kind;
+  const suggested = ['closest_reference', 'suggested_baseline'].includes(kind);
+  const variants = currentData.recipes.length > 1
+    ? `<div class="variants" role="group" aria-label="${t('variant')}">${currentData.recipes.map((r, i) =>
+        `<button type="button" class="chip" data-variant="${i}" aria-pressed="${i === index}">${escape(r.device || 'V60')}${NBSP}· ${grams(r.coffee_g)}</button>`).join('')}</div>`
+    : '';
+  const figures = [[num(recipe.coffee_g), t('unit_g'), t('coffee')], [num(recipe.water_g), t('unit_g'), t('water')],
+                   [num(recipe.temperature_c), t('unit_c'), t('temperature')], [clock(recipe.duration_seconds), '', t('time')]];
+  const steps = recipe.steps.map(step => `<li class="pour">
+      <span class="pour-time">${clock(step.start_seconds)}</span>
+      <span class="pour-what"><strong>${escape(stepName(step.instruction))}</strong>${step.total_water_g != null ? `<small>${t('target_on_scale', grams(step.total_water_g))}</small>` : ''}</span>
+      <span class="pour-add">${step.water_g == null ? '—' : `+${grams(step.water_g)}`}</span>
+    </li>`).join('');
+  const grind = recipe.grinder || recipe.grind_setting
+    ? t('grind_setting', escape(recipe.grinder || t('grinder_unknown')), recipe.grind_setting ? escape(recipe.grind_setting) : t('setting_unknown'))
+    : t('grind_unknown');
+  $('recipe-body').innerHTML = `
+    <h1 class="title" id="recipe-title" tabindex="-1">${escape(currentData.product.name)}</h1>
+    <p class="subtitle">${escape(currentData.recipe_subtitle || t('recipe_subtitle'))}</p>
+    ${variants}
+    ${suggested ? `<p class="note">${t('starting_recipe')}</p>` : ''}
+    ${currentData.explanation ? `<p class="note recommendation-basis">${escape(currentData.explanation)}</p>` : ''}
+    ${kind === 'catalog_match' ? `<p class="note">${t('check_lot')}</p>` : ''}
+    ${currentData.stale ? `<p class="note">${t('stale_data')}</p>` : ''}
+    ${recipe.warnings.map(w => `<p class="note">${escape(w)}</p>`).join('')}
+    <div class="figures">${figures.map(([value, unit, label]) => `<div><b>${value}${unit ? `<small>${NBSP}${unit}</small>` : ''}</b><span>${label}</span></div>`).join('')}</div>
+    <p class="line"><span>${t('grind')}</span><strong>${grind}</strong></p>
+    <p class="line"><span>${t('ratio')}</span><strong>${recipe.ratio ? t('ratio_value', num(recipe.ratio)) : t('ratio_unknown')}</strong></p>
+    <h2 class="section">${t('pours')}</h2>
+    ${steps ? `<ol class="pours">${steps}</ol>` : `<p class="status">${t('no_steps')}</p>`}
+    ${recipe.notes ? `<p class="note">${escape(recipe.notes)}</p>` : ''}
+    <p class="source"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${suggested ? t('reference_page') : t('coffee_page')} ↗</a></p>`;
+  document.querySelectorAll('[data-variant]').forEach(button => button.addEventListener('click', () => {
+    renderRecipe(Number(button.dataset.variant));
+    $('recipe-title').focus({preventScroll: true});
+  }));
+  $('recipe-cta').hidden = false;
+  $('brew-start').disabled = !recipe.duration_seconds;
+  updateBrewStartLabel();
 }
 
-function toggleTimer() {
-  if (!currentRecipe?.duration_seconds) return;
-  if (running) {
-    elapsed += (performance.now() - startedAt) / 1000;
-    running = false;
-    clearInterval(timerInterval);
-  } else {
-    if (elapsed >= currentRecipe.duration_seconds) elapsed = 0;
-    running = true;
-    lastActiveStep = -1;
-    startedAt = performance.now();
-    timerInterval = setInterval(updateTimer, 200);
-  }
-  updateTimer();
+function updateBrewStartLabel() {
+  $('brew-start').textContent = (running || elapsed > 0) && !finished ? t('continue_brew') : t('start_brew');
 }
 
-function setText(id, value) {
-  const node = $(id);
-  if (node && node.textContent !== value) node.textContent = value;
-}
-
-function flash(node) {
-  if (!node) return;
-  node.classList.remove('flash');
-  void node.offsetWidth; // restart the animation
-  node.classList.add('flash');
-}
-
-// Give each step one of: completed / active / next / upcoming.
-function paintStep(i, step, seconds, activeIndex, nextIndex, started) {
-  const row = $('step-' + i);
-  if (!row) return;
-  let state = 'upcoming';
-  if (started) {
-    if (seconds >= step.stop_seconds) state = 'completed';
-    else if (i === activeIndex) state = 'active';
-    else if (i === nextIndex) state = 'next';
-  }
-  row.dataset.state = state;
-  const target = step.total_water_g == null ? '' : format(step.total_water_g) + ' g';
-  const badge = row.querySelector('.step-badge');
-  const note = row.querySelector('.step-target');
-  const count = row.querySelector('.step-count');
-  if (state === 'active') {
-    badge.textContent = `NOW · ${stepName(step.instruction).toUpperCase()}`;
-    note.textContent = target ? `Bring total weight to ${target}` : '';
-    count.textContent = `Until ${clock(step.stop_seconds)} · ${Math.max(0, Math.ceil(step.stop_seconds - seconds))} sec remaining`;
-  } else if (state === 'next') {
-    badge.textContent = `NEXT IN ${countdown(step.start_seconds - seconds).toUpperCase()}`;
-    note.textContent = target ? `Target: ${target}` : '';
-    count.textContent = '';
-  } else {
-    badge.textContent = '';
-    note.textContent = target ? `Target ${target}` : '';
-    count.textContent = '';
-  }
-}
-
-function updateTimer() {
-  if (!$('timer-clock') || !currentRecipe) return;
-  const recipe = currentRecipe, steps = recipe.steps, duration = recipe.duration_seconds;
-  let seconds = elapsed + (running ? (performance.now() - startedAt) / 1000 : 0);
-  const finished = duration && seconds >= duration;
-  if (finished) {
-    seconds = elapsed = duration;
-    running = false;
-    clearInterval(timerInterval);
-  }
-  $('timer-clock').textContent = clock(seconds);
-
-  let activeIndex = -1, nextIndex = -1;
-  for (let i = 0; i < steps.length; i++) {
-    const s = steps[i];
-    if (s.start_seconds != null && s.stop_seconds != null && seconds >= s.start_seconds && seconds < s.stop_seconds) { activeIndex = i; break; }
-  }
-  for (let i = 0; i < steps.length; i++) {
-    if (steps[i].start_seconds != null && steps[i].start_seconds > seconds) { nextIndex = i; break; }
-  }
-  const started = running || seconds > 0;
-  steps.forEach((step, i) => paintStep(i, step, seconds, activeIndex, nextIndex, started));
-
-  // Briefly highlight a step the moment it becomes active.
-  if (running && activeIndex >= 0 && activeIndex !== lastActiveStep) {
-    lastActiveStep = activeIndex;
-    flash($('step-' + activeIndex));
-    flash($('timer-phase'));
-  }
-  if (activeIndex < 0) lastActiveStep = -1;
-
-  // Timer / current-action panel.
-  let mode = 'idle', phase = '', action = '', remaining = '', progress = 0;
-  if (finished) {
-    mode = 'done'; phase = 'DONE'; action = 'Let the water finish draining. Enjoy your cup.'; progress = 1;
-  } else if (!started) {
-    mode = 'idle';
-  } else if (activeIndex >= 0) {
-    const s = steps[activeIndex];
-    mode = 'pour';
-    phase = stepName(s.instruction).toUpperCase();
-    action = s.total_water_g == null ? 'Pour now.' : `Bring total weight to ${format(s.total_water_g)} g`;
-    remaining = `${Math.max(0, Math.ceil(s.stop_seconds - seconds))} sec remaining`;
-    progress = (seconds - s.start_seconds) / ((s.stop_seconds - s.start_seconds) || 1);
-  } else if (nextIndex >= 0) {
-    const s = steps[nextIndex], prevStop = nextIndex > 0 ? steps[nextIndex - 1].stop_seconds : 0;
-    mode = 'pause';
-    phase = 'PAUSE';
-    action = `Next pour in ${countdown(s.start_seconds - seconds)}`;
-    progress = (seconds - prevStop) / ((s.start_seconds - prevStop) || 1);
-  } else {
-    const last = steps[steps.length - 1], from = last ? last.stop_seconds : 0;
-    mode = 'pause';
-    phase = 'DRAWDOWN';
-    action = 'Let the water drain.';
-    progress = duration ? (seconds - from) / ((duration - from) || 1) : 0;
-  }
-  $('timer').dataset.mode = mode;
-  setText('timer-phase', phase);
-  setText('timer-action', action);
-  setText('timer-remaining', remaining);
-  $('timer-progress').style.width = (Math.max(0, Math.min(1, progress)) * 100).toFixed(1) + '%';
-
-  $('timer-toggle').textContent = finished ? 'Brew again' : running ? 'Pause' : seconds > 0 ? 'Resume' : 'Start brewing';
-  const caption = finished ? 'The recipe time is up. Make sure the water has drained. Enjoy!'
-    : !started ? 'Prepare your coffee and hot water, then start the timer.'
-    : !running ? 'Timer paused.' : '';
-  setText('timer-caption', caption);
-}
-
-// The package-scan shortcut opens the same photo picker and OCR flow.
-$('scan-button').addEventListener('click', () => $('label-photo').click());
-
-$('search-form').addEventListener('submit', event => {event.preventDefault(); search($('coffee-query').value.trim());});
-document.querySelectorAll('[data-query]').forEach(button => button.addEventListener('click', () => {
-  $('coffee-query').value = button.dataset.query;
-  search(button.dataset.query);
-}));
-
+// ---------------------------------------------------------------------------
+// Photo → recipe
+// ---------------------------------------------------------------------------
 function cancelPhotoRequests() {
   photoGeneration++;
   photoRequest?.abort();
   photoRequest = null;
 }
 
-function startPhotoRequest(message) {
-  cancelPhotoRequests();
-  recipeRequest?.abort();
-  resetTimer();
-  currentRecipe = currentData = currentProduct = null;
-  document.querySelectorAll('.coffee.active').forEach(button => {
-    button.classList.remove('active');
-    button.setAttribute('aria-pressed', 'false');
-  });
-  $('recipe-content').hidden = true;
-  $('recipe-empty').hidden = false;
-  $('recipe-panel').setAttribute('aria-busy', 'false');
-  $('photo-status').className = 'status loading';
-  $('photo-status').textContent = message;
-  photoRequest = new AbortController();
-  return {generation: photoGeneration, controller: photoRequest};
-}
-
-async function post(path, body, type, signal) {
-  const response = await fetch(path, {method:'POST', headers:{'Content-Type':type}, body, signal});
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || 'Could not process the label.');
-  return data;
-}
-
-// The recipe is prepared straight from the photo — there is no step asking the
-// user to confirm the OCR reading. A matched coffee shows its saved recipe; an
-// unknown one falls back to the closest catalog recipe automatically.
-function showRecommendation(data) {
-  $('photo-status').className = 'status';
-  $('photo-status').textContent = data.message;
-  if (data.recipe_data) {
-    currentData = data.recipe_data;
-    currentProduct = currentData.product;
-    $('recipe-empty').hidden = true;
-    $('recipe-content').hidden = false;
-    renderRecipe(0);
-    if (window.matchMedia('(max-width: 620px)').matches) $('recipe-panel').scrollIntoView({behavior:'smooth'});
-  }
-}
-
 async function photoBlob(file) {
-  if (file.size > 8000000) throw new Error('Choose a photo smaller than 8 MB.');
-  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) throw new Error('Choose a JPEG, PNG or WebP image.');
-  const bitmap = await createImageBitmap(file);
+  if (file.size > 20_000_000) throw new Error(t('err_photo_size'));
+  let bitmap;
+  try {
+    bitmap = await createImageBitmap(file);
+  } catch (error) {
+    throw new Error(t('err_photo_open'));
+  }
   const scale = Math.min(1, 2400 / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(bitmap.width * scale);
@@ -345,37 +432,316 @@ async function photoBlob(file) {
   context.fillRect(0, 0, canvas.width, canvas.height);
   context.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   bitmap.close();
-  $('label-preview').src = canvas.toDataURL('image/jpeg', .92);
-  $('label-preview').hidden = false;
   const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', .92));
-  if (!blob) throw new Error('Could not open the photo. Try exporting it as JPEG.');
+  if (!blob) throw new Error(t('err_photo_open'));
   return blob;
 }
 
-$('label-photo').addEventListener('change', async event => {
-  const file = event.target.files[0];
+function showRecommendation(recommendation) {
+  if (!recommendation.recipe_data) {
+    setStatus('status', recommendation.message, true);
+    return;
+  }
+  currentData = recommendation.recipe_data;
+  currentProduct = currentData.product;
+  // Keep the API's own caveat visible on the recipe screen.
+  if (!currentData.explanation && recommendation.kind !== 'catalog_match') currentData.explanation = recommendation.message;
+  markSelected();
+  setStatus('status', recommendation.message);
+  renderRecipe(0);
+  show('recipe');
+}
+
+async function handlePhoto(file) {
   if (!file) return;
-  const request = startPhotoRequest('Reading the label in your photo…');
-  $('label-preview').hidden = true;
+  cancelPhotoRequests();
+  recipeRequest?.abort();
+  resetTimer();
+  currentRecipe = currentData = currentProduct = null;
+  recipeLoading = false;
+  markSelected();
+  setStatus('status', t('status_reading'));
+  $('photo-button').disabled = true;
+  const generation = photoGeneration;
+  photoRequest = new AbortController();
   try {
     const body = await photoBlob(file);
-    if (request.generation !== photoGeneration) return;
-    const data = await post('/api/label', body, 'image/jpeg', request.controller.signal);
-    if (request.generation !== photoGeneration) return;
+    if (generation !== photoGeneration) return;
+    const data = await post('/api/label', body, 'image/jpeg', photoRequest.signal);
+    if (generation !== photoGeneration) return;
     showRecommendation(data.recommendation);
   } catch (error) {
-    if (error.name !== 'AbortError' && request.generation === photoGeneration) {
-      $('photo-status').className = 'status error';
-      $('photo-status').textContent = error.message;
-    }
+    if (error.name !== 'AbortError' && generation === photoGeneration) setStatus('status', error.message, true);
   } finally {
-    event.target.value = '';
+    if (generation === photoGeneration) $('photo-button').disabled = false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Screen 3: brew timer
+// ---------------------------------------------------------------------------
+function resetTimer() {
+  clearInterval(timerInterval);
+  running = false;
+  elapsed = 0;
+  finished = false;
+  lastActiveStep = -1;
+  keepAwake(false);
+  updateTimer();
+  if ($('brew-start')) updateBrewStartLabel();
+}
+
+function toggleTimer() {
+  if (!currentRecipe?.duration_seconds) return;
+  if (running) {
+    elapsed += (performance.now() - startedAt) / 1000;
+    running = false;
+    clearInterval(timerInterval);
+    keepAwake(false);
+  } else {
+    if (finished || elapsed >= currentRecipe.duration_seconds) { elapsed = 0; finished = false; }
+    running = true;
+    lastActiveStep = -1;
+    startedAt = performance.now();
+    timerInterval = setInterval(updateTimer, 200);
+    primeAudio();
+    keepAwake(true);
+  }
+  updateTimer();
+  updateBrewStartLabel();
+}
+
+function setText(id, value) {
+  const node = $(id);
+  if (node && node.textContent !== value) node.textContent = value;
+}
+
+function updateTimer() {
+  if (!currentRecipe) return;
+  const steps = currentRecipe.steps, duration = currentRecipe.duration_seconds;
+  let seconds = elapsed + (running ? (performance.now() - startedAt) / 1000 : 0);
+  if (duration && seconds >= duration) {
+    seconds = elapsed = duration;
+    if (!finished) {
+      finished = true;
+      running = false;
+      clearInterval(timerInterval);
+      keepAwake(false);
+      notify(2);
+      updateBrewStartLabel();
+    }
+  }
+  const started = running || seconds > 0;
+  let activeIndex = -1, nextIndex = -1;
+  for (let i = 0; i < steps.length; i++) {
+    const s = steps[i];
+    if (s.start_seconds != null && s.stop_seconds != null && seconds >= s.start_seconds && seconds < s.stop_seconds) { activeIndex = i; break; }
+  }
+  for (let i = 0; i < steps.length; i++) {
+    if (steps[i].start_seconds != null && steps[i].start_seconds > seconds) { nextIndex = i; break; }
+  }
+  if (running && activeIndex >= 0 && activeIndex !== lastActiveStep) {
+    lastActiveStep = activeIndex;
+    notify(1);
+  }
+  if (activeIndex < 0) lastActiveStep = -1;
+
+  let phase = '', action = '', remaining = '', progress = duration ? seconds / duration : 0;
+  if (finished) {
+    phase = ''; action = ''; remaining = '';
+  } else if (!started) {
+    phase = t('phase_ready'); action = t('action_ready');
+  } else if (activeIndex >= 0) {
+    const s = steps[activeIndex];
+    phase = t('phase_step', stepName(s.instruction), activeIndex + 1, steps.length);
+    action = s.total_water_g == null ? t('action_pour') : t('action_pour_to', grams(s.total_water_g));
+    remaining = t('remaining', secondsText(s.stop_seconds - seconds));
+  } else if (nextIndex >= 0) {
+    const s = steps[nextIndex];
+    phase = t('phase_wait');
+    action = t('action_next_in', countdown(s.start_seconds - seconds));
+    remaining = '';
+  } else {
+    phase = t('phase_drawdown');
+    action = t('action_drawdown');
+    remaining = duration ? t('remaining', countdown(duration - seconds)) : '';
+  }
+  const next = nextIndex >= 0 ? steps[nextIndex] : null;
+  const nextText = !started || finished ? ''
+    : next ? t('next_step', clock(next.start_seconds), next.total_water_g == null ? stepName(next.instruction).toLowerCase() : t('next_pour_to', stepName(next.instruction), grams(next.total_water_g)))
+    : duration ? t('next_done', clock(duration)) : '';
+
+  setText('brew-clock', clock(seconds));
+  setText('brew-phase', phase);
+  setText('brew-action', action);
+  setText('brew-countdown', remaining);
+  setText('brew-next', nextText);
+  $('brew-progress').style.width = `${(Math.max(0, Math.min(1, progress)) * 100).toFixed(1)}%`;
+  setText('brew-toggle', running ? t('pause') : t('resume'));
+  $('brew-face').hidden = finished;
+  $('brew-controls').hidden = finished;
+  $('brew-done').hidden = !finished;
+  $('brew-done-controls').hidden = !finished;
+}
+
+// Vibration and a short beep at the start of each pour; both can be switched off.
+function notify(times) {
+  if (prefs.vibrate && navigator.vibrate) {
+    try { navigator.vibrate(times === 1 ? 200 : [150, 100, 150]); } catch (error) { /* ignore */ }
+  }
+  if (prefs.sound) beep(times);
+}
+
+function primeAudio() {
+  if (!prefs.sound || audio) return;
+  try {
+    const Context = window.AudioContext || window.webkitAudioContext;
+    if (Context) audio = new Context();
+  } catch (error) { audio = null; }
+}
+
+function beep(times) {
+  primeAudio();
+  if (!audio) return;
+  try {
+    if (audio.state === 'suspended') audio.resume();
+    for (let i = 0; i < times; i++) {
+      const at = audio.currentTime + i * .25;
+      const oscillator = audio.createOscillator();
+      const gain = audio.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 880;
+      gain.gain.setValueAtTime(0.0001, at);
+      gain.gain.exponentialRampToValueAtTime(.2, at + .01);
+      gain.gain.exponentialRampToValueAtTime(.0001, at + .18);
+      oscillator.connect(gain).connect(audio.destination);
+      oscillator.start(at);
+      oscillator.stop(at + .2);
+    }
+  } catch (error) { /* audio is best-effort */ }
+}
+
+// Keep the screen on while brewing; silently degrade where unsupported.
+async function keepAwake(on) {
+  try {
+    if (on && !wakeLock && navigator.wakeLock) {
+      wakeLock = await navigator.wakeLock.request('screen');
+      wakeLock.addEventListener('release', () => { wakeLock = null; });
+    } else if (!on && wakeLock) {
+      const lock = wakeLock;
+      wakeLock = null;
+      await lock.release();
+    }
+  } catch (error) { wakeLock = null; }
+}
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && running) keepAwake(true);
 });
-api('/api/model').then(data => {
-  if (photoGeneration) return;
-  $('photo-status').textContent = data.ocr.available ? `${data.coffees} coffees in the saved dataset · point the camera at your bag` : data.ocr.message;
-}).catch(() => {
-  if (!photoGeneration) $('photo-status').textContent = 'Model unavailable. Check the server setup.';
-});
-search();
+
+function setToggle(id, key) {
+  const button = $(id);
+  button.setAttribute('aria-pressed', String(prefs[key]));
+  button.textContent = t(key);
+  button.setAttribute('aria-label', t(`${key}_hint`, prefs[key]));
+  button.title = t(`${key}_hint`, prefs[key]);
+}
+
+// ---------------------------------------------------------------------------
+// Wiring
+// ---------------------------------------------------------------------------
+function init() {
+  loadPrefs();
+  document.title = t('app');
+  $('photo-button').textContent = t('photo_button');
+  $('search-label').textContent = t('search_label');
+  $('query').placeholder = t('search_placeholder');
+  $('show-all').textContent = t('show_all');
+  $('recipe-back').textContent = t('back');
+  $('recipe-placeholder').textContent = t('pick_coffee');
+  $('recipe-placeholder').classList.add('desktop-only');
+  $('brew-start').textContent = t('start_brew');
+  $('brew-back').textContent = t('to_recipe');
+  $('brew-title').textContent = t('brew_title');
+  $('brew-reset').textContent = t('reset');
+  $('brew-toggle').textContent = t('resume');
+  $('brew-done-title').textContent = t('done_title');
+  $('brew-done-text').textContent = t('done_text');
+  $('brew-again').textContent = t('brew_again');
+  $('brew-new').textContent = t('another_coffee');
+  setToggle('brew-vibrate', 'vibrate');
+  setToggle('brew-sound', 'sound');
+  if (!navigator.vibrate) $('brew-vibrate').hidden = true;
+
+  history.replaceState({screen: 'find'}, '', location.pathname + location.search);
+  document.body.dataset.screen = 'find';
+
+  $('photo-button').addEventListener('click', () => $('photo-input').click());
+  $('photo-input').addEventListener('change', event => {
+    handlePhoto(event.target.files[0]);
+    event.target.value = '';
+  });
+  $('search-form').addEventListener('submit', event => {
+    event.preventDefault();
+    clearTimeout(searchTimer);
+    search($('query').value.trim());
+  });
+  $('query').addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    const query = $('query').value.trim();
+    if (!query) {
+      searchRequest?.abort();
+      $('results').replaceChildren();
+      $('results').hidden = true;
+      setStatus('catalog-status', '');
+      return;
+    }
+    searchTimer = setTimeout(() => search(query), 300);
+  });
+  $('show-all').addEventListener('click', () => { $('query').value = ''; search(''); });
+
+  $('recipe-back').addEventListener('click', () => back('find'));
+  $('brew-start').addEventListener('click', () => {
+    if (!currentRecipe?.duration_seconds) return;
+    show('brew');
+    if (!running && elapsed === 0) toggleTimer();
+  });
+  $('brew-back').addEventListener('click', () => back('recipe'));
+  $('brew-toggle').addEventListener('click', toggleTimer);
+  $('brew-reset').addEventListener('click', () => { resetTimer(); $('brew-toggle').focus({preventScroll: true}); });
+  $('brew-again').addEventListener('click', () => { resetTimer(); back('recipe'); });
+  $('brew-new').addEventListener('click', () => {
+    resetTimer();
+    currentRecipe = currentData = currentProduct = null;
+    markSelected();
+    $('recipe-cta').hidden = true;
+    $('recipe-body').innerHTML = `<p class="placeholder desktop-only" id="recipe-placeholder">${t('pick_coffee')}</p>`;
+    setStatus('status', '');
+    show('find');
+    $('query').focus({preventScroll: true});
+  });
+  $('brew-vibrate').addEventListener('click', () => { prefs.vibrate = !prefs.vibrate; savePrefs(); setToggle('brew-vibrate', 'vibrate'); });
+  $('brew-sound').addEventListener('click', () => { prefs.sound = !prefs.sound; savePrefs(); setToggle('brew-sound', 'sound'); if (prefs.sound) primeAudio(); });
+
+  setStatus('status', t('status_checking'));
+  api('/api/model').then(data => {
+    if (photoGeneration) return;
+    setStatus('status', data.ocr.available ? t('status_ready', data.coffees) : t('status_no_ocr'));
+  }).catch(() => {
+    if (!photoGeneration) setStatus('status', t('status_model_error'), true);
+  });
+}
+
+// Test hook: jump the local timer to a moment (used by the Playwright checks).
+window.firstBrew = {
+  seek(seconds) {
+    if (!currentRecipe) return;
+    clearInterval(timerInterval);
+    running = false;
+    elapsed = seconds;
+    updateTimer();
+    updateBrewStartLabel();
+  },
+  state: () => ({screen: currentScreen(), running, elapsed, finished}),
+};
+
+init();

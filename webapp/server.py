@@ -11,6 +11,16 @@ from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel, RECOMMENDATION_POLICY
 
 ROOT = Path(__file__).parent / 'static'
+STATIC_FILES = {
+    '/': ('index.html', 'text/html; charset=utf-8'),
+    '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
+    '/style.css': ('style.css', 'text/css; charset=utf-8'),
+    '/manifest.webmanifest': ('manifest.webmanifest', 'application/manifest+json; charset=utf-8'),
+    '/icon.svg': ('icon.svg', 'image/svg+xml'),
+    '/icon-192.png': ('icon-192.png', 'image/png'),
+    '/icon-512.png': ('icon-512.png', 'image/png'),
+    '/apple-touch-icon.png': ('apple-touch-icon.png', 'image/png'),
+}
 service = CoffeeService()
 model = None
 
@@ -44,12 +54,10 @@ class Handler(BaseHTTPRequestHandler):
                 if len(key) != 16 or any(c not in '0123456789abcdef' for c in key):
                     return self.send_json(400, {'error': 'Неверный идентификатор кофе.'})
                 return self.send_json(200, service.recipe(key))
-            files = {'/': ('index.html', 'text/html'), '/app.js': ('app.js', 'text/javascript'),
-                     '/style.css': ('style.css', 'text/css')}
-            if url.path not in files:
+            if url.path not in STATIC_FILES:
                 return self.send_json(404, {'error': 'Страница не найдена.'})
-            name, mime = files[url.path]
-            self.respond(200, (ROOT / name).read_bytes(), mime + '; charset=utf-8')
+            name, mime = STATIC_FILES[url.path]
+            self.respond(200, (ROOT / name).read_bytes(), mime)
         except SourceError as exc:
             self.send_json(502, {'error': str(exc)})
         except KeyError:
