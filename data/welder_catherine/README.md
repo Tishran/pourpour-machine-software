@@ -1,6 +1,13 @@
 # Welder Catherine pourover dataset
 
 First snapshot: **2026-09-16**, directory `snapshots/20260916T114435680044Z`.
+For the separate historical archive inventory, see the [archive collector](../../dataset/ARCHIVE.md).
+
+Archive snapshot **2026-09-17**: [quality report](snapshots/20260917T063056514246Z/processed/report.md).
+165 coffee records, 122 pourover recipes, **107 new structurally usable candidates**
+after examining all 87 linked archive pages. The original catalog snapshot remains
+unchanged. Counts and rules below describe that original 2026-09-16 snapshot.
+
 37 filter coffees, 70 packaging offers, 37 pourover recipes, 137 steps. All 37
 catalog coffees have a `DRIPPER` recipe. There were no download or parsing errors.
 This is the current filter catalog, not a historical archive of every coffee the

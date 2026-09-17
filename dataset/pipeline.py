@@ -1,6 +1,7 @@
 """Collect public source snapshots and rebuild JSONL/SQLite offline. Stdlib only."""
 import argparse
 from collections import Counter
+from contextlib import closing
 from datetime import datetime, timezone
 import gzip
 import hashlib
@@ -19,7 +20,7 @@ from webapp.pourpour import API, FEED, SourceError, download, parse_catalog, par
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ROOT = ROOT / 'data' / 'welder_catherine'
 SCHEMA_VERSION = 1
-PARSER_VERSION = '1.0.0'
+PARSER_VERSION = '1.1.0'
 
 
 def utcnow():
@@ -120,6 +121,16 @@ def coffee_features(html, name):
         key, sep, value = item.text().partition(':')
         if sep:
             sensory[key.strip()] = value.strip() or None
+    # Archived pages use a second layout. Flattening this bounded section also
+    # tolerates the source's unclosed <p> tags without swallowing later sections.
+    for block in tree.find(cls='infobox-flavor-profile')[:1]:
+        for match in re.finditer(r'(Аромат|Букет|Послевкусие|Тело):\s*(.*?)(?=\s+(?:Аромат|Букет|Послевкусие|Тело):|$)', block.text()):
+            sensory.setdefault(match[1], match[2].strip() or None)
+    for block in tree.find(cls='infobox-valuer')[:1]:
+        for item in block.find(cls='valuer-value-box'):
+            names, values = item.find(cls='valuer-value-name'), item.find(cls='valuer-value')
+            if names and values and names[0].text() == 'Итоговая оценка':
+                sensory.setdefault('Общая итоговая оценка', values[0].text() or None)
     for block in tree.find(filtrid='filtrRoast'):
         for row in block.find(tag='tr'):
             cells = row.find(tag='td')
@@ -415,7 +426,7 @@ def make_sqlite(path, coffees, recipes, manifest):
     temp = path.with_suffix('.sqlite.tmp')
     if temp.exists():
         temp.unlink()
-    with sqlite3.connect(temp) as db:
+    with closing(sqlite3.connect(temp)) as db, db:
         db.executescript((Path(__file__).parent / 'schema.sql').read_text())
         db.execute('INSERT INTO metadata VALUES (?, ?)', ('manifest', encoded(manifest)))
         db.execute('INSERT INTO metadata VALUES (?, ?)', ('parser_version', PARSER_VERSION))

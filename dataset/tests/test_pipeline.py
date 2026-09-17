@@ -1,4 +1,5 @@
 import copy
+from contextlib import closing
 import gzip
 import json
 from pathlib import Path
@@ -86,6 +87,19 @@ class DatasetTests(unittest.TestCase):
         self.assertIsNone(coffee_features('', 'Unknown')['processing'])
         self.assertIsNone(coffee_features('', 'Unknown')['country_code'])
 
+    def test_archived_sensory_layout_with_unclosed_paragraph(self):
+        html = '''<div class="infobox-flavor-profile"><h3>Вкусовой профиль</h3>
+        <p><span>Аромат:</span> цветы</p><p><span>Букет:</span> яблоко, груша
+        <p><span>Послевкусие:</span> шоколад</p><p><span>Тело:</span> среднее</p></div>
+        <div class="infobox-valuer"><div class="valuer-value-box final">
+        <div class="valuer-value">87.5</div><div class="valuer-value-name">Итоговая<br/>оценка</div>
+        </div></div><div>Unrelated footer</div>'''
+        features = coffee_features(html, 'Перу Лот')
+        self.assertEqual(features['flavor'], 'яблоко, груша')
+        self.assertEqual(features['aftertaste'], 'шоколад')
+        self.assertEqual(features['body'], 'среднее')
+        self.assertEqual(features['roaster_score'], 87.5)
+
     def test_offline_build_coverage_method_filtering_dedup_and_sqlite(self):
         with tempfile.TemporaryDirectory() as d:
             directory = Path(d)
@@ -115,7 +129,7 @@ class DatasetTests(unittest.TestCase):
             initial = (directory / 'processed/recipes.jsonl').read_bytes()
             build(directory)
             self.assertEqual(initial, (directory / 'processed/recipes.jsonl').read_bytes())
-            with sqlite3.connect(directory / 'processed/dataset.sqlite') as db:
+            with closing(sqlite3.connect(directory / 'processed/dataset.sqlite')) as db:
                 self.assertEqual(db.execute('SELECT count(*) FROM steps').fetchone()[0], 5)
                 self.assertEqual(db.execute('SELECT count(*) FROM scalar_training_candidates').fetchone()[0], 1)
                 self.assertEqual(db.execute('PRAGMA integrity_check').fetchone()[0], 'ok')

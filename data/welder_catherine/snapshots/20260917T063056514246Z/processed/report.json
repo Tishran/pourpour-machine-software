@@ -1,0 +1,206 @@
+{
+  "schema_version": 1,
+  "parser_version": "archive-1.0.0",
+  "snapshot_id": "20260917T063056514246Z",
+  "feature_parser_version": "1.1.0",
+  "scope": "archive_inventory",
+  "baseline_snapshot": "20260916T114435680044Z",
+  "coverage_complete": true,
+  "counts": {
+    "listing_pages": 87,
+    "expected_pages": 87,
+    "listed_products": 692,
+    "coffees": 165,
+    "pourover_recipes": 122,
+    "steps": 430,
+    "training_candidates": 107,
+    "training_coffees": 107,
+    "new_training_candidates": 107,
+    "new_training_coffees": 107,
+    "overlapping_coffees": 0,
+    "unchanged_recipes_from_baseline": 0,
+    "unique_usable_programs": 98,
+    "new_usable_programs": 95
+  },
+  "inventory_statuses": {
+    "fetched": 165,
+    "excluded_format": 525,
+    "not_coffee": 2
+  },
+  "coffee_statuses": {
+    "has_pourover": 120,
+    "no_pourover": 43,
+    "roast_unconfirmed": 2
+  },
+  "missing_coffee_features": {
+    "country_code": 2,
+    "region": 2,
+    "variety": 0,
+    "processing": 0,
+    "harvest": 2,
+    "flavor": 0,
+    "filter_roast_color": 40
+  },
+  "quality_issue_counts": {
+    "missing_duration_seconds": 4,
+    "step_water_sum_mismatch": 8,
+    "invalid_step_time": 1,
+    "missing_grind_setting": 1,
+    "missing_step_temperature": 1,
+    "step_temperature_above_100c": 1
+  },
+  "fetch_errors": [],
+  "parse_errors": [],
+  "duplicate_product_aliases": [],
+  "same_name_possible_overlaps": [],
+  "recipes_needing_review": [
+    {
+      "recipe_id": "twc:product:22917:12873373e1bc37a40743bc1f",
+      "name": "Эфиопия Гедеб в Воронке Hario",
+      "issues": [
+        {
+          "code": "missing_duration_seconds",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:29190:462b1d3f09c74d69e3dc2945",
+      "name": "Колумбия Рафаэль Айя Мартинес в Воронке Hario",
+      "issues": [
+        {
+          "code": "missing_duration_seconds",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:30586:144ca6286cd42e23fa3403a1",
+      "name": "Кения Джокиму в Воронке Hario",
+      "issues": [
+        {
+          "code": "missing_duration_seconds",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:30954:968dd9f07337e7da31dc8ed4",
+      "name": "Бразилия Гарсия Арара в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:31623:bda4e23959420cb3c6f80559",
+      "name": "Кения Тириква Гукуюини АВ в Воронке Hario",
+      "issues": [
+        {
+          "code": "missing_duration_seconds",
+          "severity": "error"
+        },
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:40384:4a7da3c8592a06c6db2b8f5c",
+      "name": "Индонезия Сакаро в Воронке Hario",
+      "issues": [
+        {
+          "code": "invalid_step_time",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:46561:f164adb69dabd09b4f866826",
+      "name": "Боливия Самайпата в Воронке Hario",
+      "issues": [
+        {
+          "code": "missing_grind_setting",
+          "severity": "warning"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:47548:5dcbf8c8f4acc066f5b81fa6",
+      "name": "Гондурас Лас Ломас в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:50144:20d7cd18cf84458bfa53c35c",
+      "name": "Руанда Гикумби натуральная в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:53223:bb499bb14867fb09c259e4f7",
+      "name": "Колумбия Vecinos: Фредди Ромеро в Воронке Hario",
+      "issues": [
+        {
+          "code": "missing_step_temperature",
+          "severity": "warning"
+        },
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:53651:6ef9823973cd94499bf6b5b8",
+      "name": "Колумбия Ла Виолета Ява в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:54498:75ac87ba9d2ce7bc506a0244",
+      "name": "Колумбия Ла Виолета Сидра в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:56090:f57d031cde87875e9e46233e",
+      "name": "Коста-Рика Кордео Куатро Виентас в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_water_sum_mismatch",
+          "severity": "error"
+        }
+      ]
+    },
+    {
+      "recipe_id": "twc:product:58266:6298f5862cc29070bfa74a8f",
+      "name": "Коста-Рика Эстебан Замора в Воронке Hario",
+      "issues": [
+        {
+          "code": "step_temperature_above_100c",
+          "severity": "error"
+        }
+      ]
+    }
+  ]
+}
