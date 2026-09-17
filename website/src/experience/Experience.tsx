@@ -7,9 +7,14 @@ import {
   type ReactNode,
 } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { AdaptiveDpr, Environment, Lightformer } from "@react-three/drei";
+import { Environment, Lightformer } from "@react-three/drei";
 import * as THREE from "three";
 import Machine from "./Machine";
+import {
+  RenderingQuality,
+  qualitySettings,
+  useRenderQuality,
+} from "./RenderingQuality";
 import Fallback from "./Fallback";
 import { inspectionCamera, keyframe, story } from "../data/story";
 
@@ -29,6 +34,8 @@ class SceneBoundary extends Component<
 function Stage({ reduced }: { reduced: boolean }) {
   const { size, camera, invalidate } = useThree();
   const mobile = size.width < 620;
+  const quality = useRenderQuality();
+  const settings = qualitySettings[quality];
   const target = useMemoVector();
   const key = useRef<THREE.SpotLight>(null),
     fill = useRef<THREE.DirectionalLight>(null);
@@ -70,21 +77,23 @@ function Stage({ reduced }: { reduced: boolean }) {
       0.05,
     );
     camera.lookAt(target);
-    if (key.current) key.current.intensity = 85 + story.light * 35;
-    if (fill.current) fill.current.intensity = 0.6 + story.light * 1.2;
+    if (key.current) key.current.intensity = 72 + story.light * 25;
+    if (fill.current) fill.current.intensity = 0.7 + story.light * 0.8;
   });
   return (
     <>
-      <ambientLight intensity={0.5} />
+      <ambientLight intensity={0.3} />
       <spotLight
         ref={key}
         position={[-3, 7, 5]}
         angle={0.52}
         penumbra={0.6}
         intensity={100}
-        color="#fff0dc"
+        color="#fff6e9"
         castShadow
-        shadow-mapSize={[1024, 1024]}
+        shadow-mapSize={[settings.shadowSize, settings.shadowSize]}
+        shadow-normalBias={0.018}
+        shadow-radius={2.5}
         shadow-bias={-0.0005}
       />
       <directionalLight
@@ -95,35 +104,48 @@ function Stage({ reduced }: { reduced: boolean }) {
       />
       <spotLight
         position={[2, 5, -4]}
-        intensity={130}
-        color="#dfb18a"
+        intensity={65}
+        color="#f4e8da"
         angle={0.8}
         penumbra={0.65}
       />
-      <Environment resolution={128} frames={1}>
+      <Environment
+        key={settings.environmentSize}
+        resolution={settings.environmentSize}
+        frames={1}
+        background={false}
+      >
+        {/* Only the reflection studio has a background; the page canvas stays transparent. */}
+        <color attach="background" args={["#222420"]} />
         <Lightformer
-          intensity={3}
+          intensity={2.5}
+          color="#fff7eb"
           position={[-4, 4, 3]}
           scale={[3, 7, 1]}
           rotation={[0, Math.PI / 3, 0]}
         />
         <Lightformer
-          intensity={2}
+          intensity={1.5}
+          color="#eff4f5"
           position={[4, 3, -2]}
           scale={[2, 5, 1]}
           rotation={[0, -Math.PI / 3, 0]}
         />
         <Lightformer
-          intensity={1.5}
+          intensity={1}
           position={[0, 7, 0]}
           scale={[6, 3, 1]}
           rotation={[Math.PI / 2, 0, 0]}
+        />
+        <Lightformer
+          intensity={0.7}
+          position={[0, 2, 5]}
+          scale={[0.65, 4.5, 1]}
         />
       </Environment>
       <Suspense fallback={null}>
         <Machine />
       </Suspense>
-      <AdaptiveDpr pixelated />
     </>
   );
 }
@@ -152,6 +174,9 @@ export default function Experience({ reduced }: { reduced: boolean }) {
           fallback={<Fallback />}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
+            gl.toneMapping = THREE.AgXToneMapping;
+            gl.toneMappingExposure = 1.2;
+            gl.shadowMap.type = THREE.PCFSoftShadowMap;
             gl.domElement.addEventListener(
               "webglcontextlost",
               () => setLost(true),
@@ -159,7 +184,9 @@ export default function Experience({ reduced }: { reduced: boolean }) {
             );
           }}
         >
-          <Stage reduced={reduced} />
+          <RenderingQuality>
+            <Stage reduced={reduced} />
+          </RenderingQuality>
         </Canvas>
       )}
     </SceneBoundary>

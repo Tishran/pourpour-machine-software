@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { brewAt, brewProgress, clamp, story } from "../data/story";
-import { Finish, Glass, useSurfaceMaps } from "./Materials";
+import { Finish } from "./Materials";
 import {
   BED_RADIUS,
   BED_Y,
@@ -17,9 +17,27 @@ import {
 
 function CoffeeBed() {
   const grains = useRef<THREE.InstancedMesh>(null);
+  const grainFinish = useRef<THREE.MeshStandardMaterial>(null);
+  const bedFinish = useRef<THREE.MeshStandardMaterial>(null);
+  const dryBed = useMemo(() => new THREE.Color("#342217"), []);
+  const wetBed = useMemo(() => new THREE.Color("#21130e"), []);
+  useFrame(() => {
+    const wet = clamp(brewAt(brewProgress(story.stage)).volume / 75);
+    if (grainFinish.current) {
+      grainFinish.current.roughness = 0.94 - wet * 0.23;
+      grainFinish.current.color.setScalar(1 - wet * 0.22);
+    }
+    if (bedFinish.current) {
+      bedFinish.current.color.copy(dryBed).lerp(wetBed, wet);
+      bedFinish.current.roughness = 0.95 - wet * 0.22;
+    }
+  });
   useEffect(() => {
     if (!grains.current) return;
     const dummy = new THREE.Object3D();
+    const shades = ["#50321f", "#382318", "#61412a", "#452919", "#2c1b13"].map(
+      (c) => new THREE.Color(c),
+    );
     for (let i = 0; i < 850; i++) {
       const r = Math.sqrt((i + 0.5) / 850) * (BED_RADIUS - 0.008),
         a = i * 2.399963;
@@ -29,13 +47,15 @@ function CoffeeBed() {
         Math.sin(a) * r,
       );
       dummy.rotation.set(i, i * 0.7, i * 0.2);
-      dummy.scale.setScalar(0.6 + (Math.sin(i * 3.7) + 1) * 0.3);
+      const scale = 0.6 + (Math.sin(i * 3.7) + 1) * 0.3;
+      dummy.scale.set(
+        scale * (0.85 + 0.2 * Math.cos(i)),
+        scale * 0.65,
+        scale * (1.05 + 0.15 * Math.sin(i)),
+      );
       dummy.updateMatrix();
       grains.current.setMatrixAt(i, dummy.matrix);
-      grains.current.setColorAt(
-        i,
-        new THREE.Color(i % 4 === 0 ? "#6d4630" : "#382318"),
-      );
+      grains.current.setColorAt(i, shades[i % shades.length]);
     }
     grains.current.instanceMatrix.needsUpdate = true;
     if (grains.current.instanceColor)
@@ -43,20 +63,23 @@ function CoffeeBed() {
   }, []);
   return (
     <group position={[0, BED_Y, CENTER_Z]}>
-      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+      <mesh rotation={[-Math.PI / 2, 0, 0]} receiveShadow>
         <circleGeometry args={[BED_RADIUS, 64]} />
-        <meshStandardMaterial color="#342217" roughness={0.94} />
+        <meshStandardMaterial
+          ref={bedFinish}
+          color="#342217"
+          roughness={0.95}
+        />
       </mesh>
       <instancedMesh ref={grains} args={[undefined, undefined, 850]}>
         <icosahedronGeometry args={[0.012, 0]} />
-        <meshStandardMaterial roughness={0.92} />
+        <meshStandardMaterial ref={grainFinish} roughness={0.94} />
       </instancedMesh>
     </group>
   );
 }
 
 function PaperFilter() {
-  const maps = useSurfaceMaps();
   const geometry = useMemo(filterGeometry, []);
   useEffect(() => () => geometry.dispose(), [geometry]);
   const seam = useMemo(
@@ -71,14 +94,7 @@ function PaperFilter() {
   return (
     <group position={[0, 0, CENTER_Z]}>
       <mesh geometry={geometry}>
-        <meshStandardMaterial
-          color="#f1dfb9"
-          map={maps.paperColor}
-          normalMap={maps.paperNormal}
-          normalScale={[0.2, 0.2]}
-          roughness={0.94}
-          side={THREE.DoubleSide}
-        />
+        <Finish surface="filterPaper" uvScale={[3.1, 0.68]} />
       </mesh>
       <mesh>
         <tubeGeometry args={[seam, 20, 0.005, 5, false]} />
@@ -128,17 +144,17 @@ export function Dripper() {
       <group position={[0, 0, CENTER_Z]}>
         <mesh castShadow receiveShadow>
           <latheGeometry args={[dripperProfile, 96]} />
-          <Finish color="#e6e0d3" part="dripper" />
+          <Finish surface="ceramic" uvScale={[3.2, 0.7]} part="dripper" />
         </mesh>
         {ribs.map((curve, i) => (
           <mesh key={i}>
             <tubeGeometry args={[curve, 12, 0.008, 6, false]} />
-            <Finish color="#e6e0d3" part="dripper" />
+            <Finish surface="ceramic" uvScale={[3.2, 0.7]} part="dripper" />
           </mesh>
         ))}
         <mesh castShadow>
           <tubeGeometry args={[handle, 48, 0.038, 12, false]} />
-          <Finish color="#e6e0d3" part="dripper" />
+          <Finish surface="ceramic" uvScale={[3.2, 0.7]} part="dripper" />
         </mesh>
         {[
           [0.475, 1.99, 0],
@@ -150,12 +166,12 @@ export function Dripper() {
             scale={[0.055, 0.047, 0.043]}
           >
             <sphereGeometry args={[1, 16, 12]} />
-            <Finish color="#e6e0d3" part="dripper" />
+            <Finish surface="ceramic" uvScale={[3.2, 0.7]} part="dripper" />
           </mesh>
         ))}
         <mesh>
           <latheGeometry args={[foot, 64]} />
-          <Finish color="#e6e0d3" part="dripper" />
+          <Finish surface="ceramic" uvScale={[3.2, 0.7]} part="dripper" />
         </mesh>
       </group>
       <PaperFilter />
@@ -181,11 +197,11 @@ export function Carafe() {
     <group>
       <mesh position={[0, CARAFE_BOTTOM, CENTER_Z]} renderOrder={2}>
         <latheGeometry args={[carafeProfile, 96]} />
-        <Glass />
+        <Finish surface="glass" />
       </mesh>
       <mesh position={[0, 0, CENTER_Z]} renderOrder={3}>
         <tubeGeometry args={[handle, 48, 0.039, 12, false]} />
-        <Glass handle />
+        <Finish surface="glass" thickness={0.055} cheap />
       </mesh>
       {[
         [0.305, 1.14, CENTER_Z],
@@ -198,16 +214,12 @@ export function Carafe() {
           renderOrder={3}
         >
           <sphereGeometry args={[1, 16, 12]} />
-          <Glass handle />
+          <Finish surface="glass" thickness={0.055} cheap />
         </mesh>
       ))}
       <mesh ref={liquid} position={[0, 0.412, CENTER_Z]}>
         <cylinderGeometry args={[0.43, 0.415, 1, 64]} />
-        <meshStandardMaterial
-          color="#422014"
-          roughness={0.22}
-          metalness={0.04}
-        />
+        <meshStandardMaterial color="#422014" roughness={0.22} metalness={0} />
       </mesh>
       <mesh
         ref={meniscus}

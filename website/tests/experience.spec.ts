@@ -1,6 +1,67 @@
 import { test, expect } from "@playwright/test";
 import { acts } from "../src/data/story";
 
+test("classic view renders high-quality optics without shader errors", async ({
+  page,
+}, testInfo) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
+  await page.setViewportSize({ width: 1100, height: 800 });
+  await page.goto("/?view=classic&quality=high");
+  await expect(page.locator("canvas").first()).toHaveAttribute(
+    "data-quality",
+    "high",
+    { timeout: 20000 },
+  );
+  await page.waitForTimeout(2200);
+  await expect(page.locator(".fallback-note")).not.toBeVisible();
+  await page.screenshot({ path: testInfo.outputPath("classic-high-hero.png") });
+  await page.evaluate(() =>
+    document
+      .getElementById("engineering")!
+      .scrollIntoView({ behavior: "instant" }),
+  );
+  await expect(page.locator(".app")).toHaveAttribute("data-act", "3");
+  await page.waitForTimeout(1000);
+  await page.screenshot({
+    path: testInfo.outputPath("classic-high-inspection.png"),
+  });
+  expect(errors).toEqual([]);
+});
+
+test("classic mobile defaults to low quality and a DPR of one", async ({
+  page,
+}, testInfo) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/?view=classic");
+  const canvas = page.locator("canvas").first();
+  await expect(canvas).toHaveAttribute("data-quality", "low");
+  await page.waitForTimeout(1200);
+  await expect(page.locator(".fallback-note")).not.toBeVisible();
+  for (const id of ["object", "brew", "engineering"]) {
+    await page.evaluate(
+      (id) =>
+        document.getElementById(id)!.scrollIntoView({ behavior: "instant" }),
+      id,
+    );
+    await page.waitForTimeout(600);
+    const ratio = await canvas.evaluate(
+      (c: HTMLCanvasElement) => c.width / c.clientWidth,
+    );
+    expect(ratio).toBeLessThanOrEqual(1.01);
+  }
+  await page.screenshot({ path: testInfo.outputPath("classic-mobile.png") });
+  await page.getByRole("button", { name: "GET NOTIFIED AT LAUNCH" }).click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  await page.waitForTimeout(300);
+  expect(
+    await canvas.evaluate((c: HTMLCanvasElement) => c.width / c.clientWidth),
+  ).toBeLessThanOrEqual(1.01);
+});
+
 test("join heading uses the story typography at desktop and mobile sizes", async ({
   page,
 }) => {

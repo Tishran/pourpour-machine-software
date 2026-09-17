@@ -1,10 +1,18 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  type ReactNode,
+} from "react";
 import { useFrame } from "@react-three/fiber";
 import { ContactShadows, Html, Line, RoundedBox } from "@react-three/drei";
 import * as THREE from "three";
 import { Finish, SurfaceProvider } from "./Materials";
 import { Dripper, Carafe } from "./Vessels";
-import { CENTER_Z, BED_Y } from "./vesselGeometry";
+import { scaleBoxUVs, type SurfaceType } from "./materialPresets";
+import { useRenderQuality } from "./RenderingQuality";
+import { CENTER_Z, BED_Y, reservoirProfile } from "./vesselGeometry";
 import {
   brewAt,
   nozzlePose,
@@ -17,28 +25,32 @@ import {
   type Part,
 } from "../data/story";
 
-const CERAMIC = "#dedbd1",
-  METAL = "#a4aaa8",
-  RUBBER = "#252723",
-  COPPER = "#b87542";
+const COPPER = "#b87542";
 
 function Block({
   position,
   size,
   color,
-  metal,
+  surface = "powderCoat",
+  axial = false,
   part,
   radius = 0.035,
 }: {
   position: [number, number, number];
   size: [number, number, number];
   color?: string;
-  metal?: number;
+  surface?: SurfaceType;
+  axial?: boolean;
   part?: Part;
   radius?: number;
 }) {
+  const mesh = useRef<THREE.Mesh>(null);
+  useLayoutEffect(() => {
+    if (mesh.current) scaleBoxUVs(mesh.current.geometry, size);
+  }, [size]);
   return (
     <RoundedBox
+      ref={mesh}
       args={size}
       radius={radius}
       smoothness={3}
@@ -46,7 +58,7 @@ function Block({
       castShadow
       receiveShadow
     >
-      <Finish color={color} metal={metal} part={part} />
+      <Finish surface={surface} color={color} axial={axial} part={part} />
     </RoundedBox>
   );
 }
@@ -136,22 +148,31 @@ export function MachineBase() {
   return (
     <group>
       <Block position={[0, 0.17, 0]} size={[2.55, 0.25, 2.03]} radius={0.08} />
-      <Block position={[0, 0.055, 0]} size={[2.35, 0.1, 1.83]} color={RUBBER} />
+      <Block
+        position={[0, 0.055, 0]}
+        size={[2.35, 0.1, 1.83]}
+        surface="rubber"
+      />
       {[-0.9, 0.9].flatMap((x) =>
         [-0.6, 0.6].map((z) => (
           <mesh key={`${x}${z}`} position={[x, -0.005, z]}>
             <cylinderGeometry args={[0.1, 0.1, 0.08, 16]} />
-            <Finish color={RUBBER} />
+            <Finish surface="rubber" uvScale={[0.63, 0.08]} />
           </mesh>
         )),
       )}
       <mesh position={[0, 0.31, CENTER_Z]} receiveShadow>
         <cylinderGeometry args={[0.65, 0.65, 0.045, 64]} />
-        <Finish color={METAL} metal={0.8} part="scale" />
+        <Finish surface="brushedSteel" uvScale={[1.3, 1.3]} part="scale" />
       </mesh>
       <mesh position={[0, 0.339, CENTER_Z]}>
         <cylinderGeometry args={[0.55, 0.55, 0.012, 64]} />
-        <Finish color="#383a34" part="scale" />
+        <Finish
+          surface="rubber"
+          color="#383a34"
+          uvScale={[1.1, 1.1]}
+          part="scale"
+        />
       </mesh>
       <Inscription
         text="FIRST BREW"
@@ -177,13 +198,13 @@ export function Column() {
       <Block
         position={[0.53, 1.86, -0.58]}
         size={[0.08, 2.75, 0.41]}
-        color={METAL}
-        metal={0.85}
+        surface="brushedSteel"
+        axial
       />
       <Block
         position={[0.865, 2.75, -0.28]}
         size={[0.39, 0.45, 0.025]}
-        color={RUBBER}
+        surface="abs"
         part="heater"
       />
       <Inscription
@@ -216,7 +237,7 @@ export function Arm() {
       <Block
         position={[0, 3.268, 0.03]}
         size={[2.13, 0.065, 1.06]}
-        color={RUBBER}
+        surface="abs"
       />
       <Inscription
         text="first brew"
@@ -240,8 +261,8 @@ export function Arm() {
       </mesh>
       {[-0.28, 0.55].map((z) => (
         <mesh key={z} position={[0, 3.2, z]} rotation={[0, 0, Math.PI / 2]}>
-          <cylinderGeometry args={[0.025, 0.025, 2.08, 16]} />
-          <Finish color={METAL} metal={0.9} />
+          <cylinderGeometry args={[0.025, 0.025, 2.08, 24]} />
+          <Finish surface="brushedSteel" axial uvScale={[0.157, 2.08]} />
         </mesh>
       ))}
       <Annotation position={[1, 3.32, 0.5]}>03 / FLOW CONTROL</Annotation>
@@ -255,20 +276,20 @@ export function Nozzle() {
       <Block
         position={[0, 0.08, 0]}
         size={[0.27, 0.14, 0.72]}
-        color={RUBBER}
+        surface="abs"
         part="nozzle"
       />
       <mesh position={[0, -0.1, 0]}>
         <cylinderGeometry args={[0.1, 0.1, 0.25, 24]} />
-        <Finish color={METAL} metal={0.88} rough={0.22} part="nozzle" />
+        <Finish surface="machinedSteel" uvScale={[0.63, 0.25]} part="nozzle" />
       </mesh>
       <mesh position={[0, -0.24, 0]}>
         <cylinderGeometry args={[0.082, 0.038, 0.08, 24]} />
-        <Finish color={COPPER} metal={0.7} part="nozzle" />
+        <Finish surface="copper" uvScale={[0.4, 0.08]} part="nozzle" />
       </mesh>
       <mesh position={[0, -0.286, 0]}>
         <cylinderGeometry args={[0.024, 0.024, 0.025, 16]} />
-        <Finish color={RUBBER} />
+        <Finish surface="polishedSteel" uvScale={[0.15, 0.025]} />
       </mesh>
       <Inscription
         text="NOZZLE"
@@ -285,33 +306,19 @@ export function Reservoir() {
   return (
     <group>
       <mesh position={[-0.76, 1.87, -0.65]}>
-        <cylinderGeometry args={[0.37, 0.37, 2.8, 48, 1, true]} />
-        <meshPhysicalMaterial
-          color="#a8b5a9"
-          transparent
-          opacity={0.24}
-          roughness={0.12}
-          metalness={0.1}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
+        <latheGeometry args={[reservoirProfile, 64]} />
+        <Finish surface="acrylic" part="reservoir" />
       </mesh>
       <mesh position={[-0.76, 1.57, -0.65]}>
         <cylinderGeometry args={[0.344, 0.344, 2.1, 48]} />
-        <meshPhysicalMaterial
-          color="#859b90"
-          transparent
-          opacity={0.2}
-          roughness={0.08}
-          depthWrite={false}
-        />
+        <Finish surface="water" cheap />
       </mesh>
       {[0.43, 3.3].map((y) => (
         <mesh key={y} position={[-0.76, y, -0.65]}>
           <cylinderGeometry args={[0.385, 0.385, 0.11, 48]} />
           <Finish
-            color={y > 1 ? CERAMIC : METAL}
-            metal={y > 1 ? 0 : 0.7}
+            surface={y > 1 ? "powderCoat" : "machinedSteel"}
+            uvScale={[2.4, 0.11]}
             part="reservoir"
           />
         </mesh>
@@ -321,6 +328,7 @@ export function Reservoir() {
           key={i}
           position={[-0.77, 0.8 + i * 0.22, -0.274]}
           size={[i % 3 === 0 ? 0.12 : 0.06, 0.009, 0.008]}
+          surface="abs"
           color="#727a6d"
           radius={0.001}
         />
@@ -373,14 +381,7 @@ export function WaterStream({
     <>
       <mesh ref={water}>
         <cylinderGeometry args={[0.008, 0.013, 1, 10]} />
-        <meshStandardMaterial
-          color="#d7e9e1"
-          transparent
-          opacity={0.76}
-          roughness={0.12}
-          emissive="#a4bcbb"
-          emissiveIntensity={0.3}
-        />
+        <Finish surface="water" cheap />
       </mesh>
       <mesh
         ref={drop}
@@ -422,18 +423,20 @@ function Bag() {
       <Block
         position={[0, 0.78, 0]}
         size={[0.8, 1.45, 0.38]}
-        color="#997656"
+        surface="kraftPaper"
         radius={0.05}
       />
       <Block
         position={[0, 1.53, 0]}
         size={[0.84, 0.07, 0.3]}
+        surface="kraftPaper"
         color="#775738"
         radius={0.009}
       />
       <Block
         position={[0, 0.76, 0.198]}
         size={[0.61, 0.94, 0.009]}
+        surface="filterPaper"
         color="#ddd8b8"
         radius={0.002}
       />
@@ -514,16 +517,21 @@ function WaterSystem() {
     <group>
       <mesh>
         <tubeGeometry args={[curve, 48, 0.022, 8, false]} />
-        <Finish color="#343a34" rough={0.65} part="flow" />
+        <Finish
+          surface="rubber"
+          color="#343a34"
+          uvScale={[3.8, 0.14]}
+          part="flow"
+        />
       </mesh>
       <mesh position={[0.61, 2.35, -0.35]}>
         <cylinderGeometry args={[0.12, 0.12, 0.55, 24]} />
-        <Finish color={COPPER} metal={0.75} part="heater" />
+        <Finish surface="copper" uvScale={[0.75, 0.55]} part="heater" />
       </mesh>
       <Block
         position={[0.61, 2.83, -0.36]}
         size={[0.27, 0.22, 0.26]}
-        color={RUBBER}
+        surface="abs"
         part="flow"
       />
     </group>
@@ -615,16 +623,17 @@ function MachineModel() {
 }
 
 export default function Machine() {
+  const quality = useRenderQuality();
   return (
     <SurfaceProvider>
       <MachineModel />
       <ContactShadows
-        position={[0, -0.09, 0]}
-        opacity={0.3}
+        position={[0, -0.047, 0]}
+        opacity={0.38}
         scale={7}
-        blur={2.5}
+        blur={2.2}
         far={5}
-        resolution={256}
+        resolution={quality === "low" ? 256 : 512}
         frames={1}
       />
     </SurfaceProvider>

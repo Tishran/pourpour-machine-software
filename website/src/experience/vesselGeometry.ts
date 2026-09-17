@@ -5,6 +5,19 @@ export const BED_Y = 1.94;
 export const BED_RADIUS = 0.34;
 export const CARAFE_BOTTOM = 0.36;
 
+// Same reservoir silhouette, now with a thin wall and rounded lip to catch
+// grazing highlights. The old open cylinder was an infinitely thin sheet.
+export const reservoirProfile = [
+  [0.352, -1.4],
+  [0.365, -1.4],
+  [0.37, -1.395],
+  [0.37, 1.395],
+  [0.365, 1.4],
+  [0.357, 1.4],
+  [0.352, 1.395],
+  [0.352, -1.4],
+].map(([r, y]) => new THREE.Vector2(r, y));
+
 export const dripperProfile = [
   [0.088, 1.405],
   [0.122, 1.405],
