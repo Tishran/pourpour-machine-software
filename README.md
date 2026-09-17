@@ -7,3 +7,6 @@
   reproducible snapshots, and overlap with the current-catalog dataset.
 - [Photo-to-recipe model](ml/README.md): local Russian/English OCR, sparse labels,
   catalog matching, an experimental nearest-reference model, and evaluation results.
+- [Machine protocol](docs/PROTOCOL.md): JSON lines over USB serial between the server and the
+  First Brew machine, states, safety rules, example exchange.
+- [Machine firmware](firmware/README.md): ESP32 PlatformIO project, pins, calibration, dry checks.
