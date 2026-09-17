@@ -1,6 +1,6 @@
 # First Brew / Prototype 01
 
-A continuous, five-act product experience for the Pour Pour project. React, TypeScript, Vite, Three.js, React Three Fiber, Drei, and GSAP ScrollTrigger. All copy is English. The machine geometry, inscriptions, and scan demonstration are constructed locally. CC0 material maps from ambientCG are optimized and hosted with the site; no paid models, remote photography, or external font requests.
+A continuous, five-act product experience for the First Brew project. React, TypeScript, Vite, Three.js, React Three Fiber, Drei, and GSAP ScrollTrigger. All copy is English. The machine geometry, inscriptions, and scan demonstration are constructed locally. CC0 material maps from ambientCG are optimized and hosted with the site; no paid models, remote photography, or external font requests.
 
 ## Run
 

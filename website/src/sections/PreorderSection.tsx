@@ -82,7 +82,7 @@ export default function PreorderSection() {
       </form>
       <footer className="join-footer mono">
         <span>
-          © {new Date().getFullYear()} FIRST BREW / A POUR POUR PROJECT
+          © {new Date().getFullYear()} FIRST BREW
         </span>
         <button onClick={() => goToAct(0)}>BACK TO THE OBJECT ↑</button>
       </footer>
