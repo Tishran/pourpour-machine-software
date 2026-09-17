@@ -1,0 +1,38 @@
+import { chromium } from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true,...(process.env.CHROME_PATH?{executablePath:process.env.CHROME_PATH}:{})});
+try {
+ const page=await browser.newPage({viewport:{width:1440,height:1000}});
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:5173/?mode=manual');
+ await page.waitForFunction(()=>window.duoDiagnostics?.().previewHeld,{timeout:30000});
+ const closed=await page.evaluate(()=>window.duoDiagnostics());
+ assert.equal(closed.videoCount,1);assert.ok(closed.currentTime>=3.8&&closed.currentTime<4.2);
+ assert.equal(closed.hardware.openWidth,164.6);assert.equal(closed.hardware.height,117.8);
+ assert.ok(Math.abs(closed.outerAspect-1398/2034)<1e-10);
+ await page.screenshot({path:'/tmp/duo-closed.png'});
+ await page.evaluate(()=>{window.foldSeeks=0;document.querySelector('video').addEventListener('seeking',()=>window.foldSeeks++);});
+ await page.getByRole('button',{name:'Fully open',exact:true}).click();
+ await page.waitForFunction(()=>window.duoDiagnostics().angle===180);
+ const open=await page.evaluate(()=>window.duoDiagnostics());
+ assert.ok(open.opened&&open.currentTime>closed.currentTime);assert.equal(await page.evaluate(()=>window.foldSeeks),0);
+ assert.deepEqual(open.hardware,closed.hardware);
+ assert.ok(Math.abs(open.innerAspect-2670/1878)<1e-10);
+ assert.ok(Math.abs(open.portraitRotation+Math.PI/2+0.035)<1e-10);
+ await page.screenshot({path:'/tmp/duo-open.png'});
+ await page.getByRole('button',{name:'Halfway',exact:true}).click();
+ await page.waitForFunction(()=>window.duoDiagnostics().angle===90);
+ await page.screenshot({path:'/tmp/duo-half.png'});
+ await page.getByRole('button',{name:'Closed',exact:true}).click();
+ await page.waitForFunction(()=>window.duoDiagnostics().angle===0);
+ assert.equal(await page.evaluate(()=>window.foldSeeks),0);
+ await page.setViewportSize({width:390,height:844});
+ await page.screenshot({path:'/tmp/duo-mobile.png',fullPage:true});
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true);
+ await page.locator('#file').setInputFiles('public/coffee-demo.mp4');
+ await page.waitForFunction(()=>window.duoDiagnostics().previewHeld);
+ assert.equal(await page.locator('video').count(),1);
+ assert.deepEqual(await page.evaluate(()=>window.duoDiagnostics().hardware),closed.hardware);
+ assert.deepEqual(errors,[]);
+ console.log(JSON.stringify({closed,open,browserErrors:errors,checks:'preview hold, continuous handoff, zero fold seeks, mobile layout, replacement upload'},null,2));
+}finally{await browser.close();}

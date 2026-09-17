@@ -1,0 +1,39 @@
+{
+  "layout": {
+    "width": 1440,
+    "height": 2048,
+    "sourceWidth": 1290,
+    "sourceHeight": 2796,
+    "scale": 0.6666666666666666,
+    "x": 290,
+    "y": 92
+  },
+  "taps": [
+    {
+      "label": "Take a photo",
+      "time": 4.42,
+      "x": 645,
+      "y": 555
+    },
+    {
+      "label": "Shutter",
+      "time": 5.78,
+      "x": 645,
+      "y": 2340
+    },
+    {
+      "label": "Use Photo",
+      "time": 6.96,
+      "x": 1150,
+      "y": 2590
+    },
+    {
+      "label": "Start brewing",
+      "time": 23.12,
+      "x": 645,
+      "y": 2370
+    }
+  ],
+  "preservesFullTimeline": true,
+  "preservesFullFrame": true
+}

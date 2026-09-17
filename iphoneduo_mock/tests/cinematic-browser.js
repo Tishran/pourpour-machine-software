@@ -1,0 +1,31 @@
+import {chromium} from '@playwright/test';
+import assert from 'node:assert/strict';
+const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME_PATH});
+try{
+ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ await page.goto('http://127.0.0.1:5173');
+ await page.waitForFunction(()=>window.duoDiagnostics?.().ready);
+ await page.screenshot({path:'/tmp/duo-film-logo.png'});
+ await page.evaluate(()=>{window.filmSeeks=0;document.querySelector('video').addEventListener('seeking',()=>window.filmSeeks++);});
+ await page.getByRole('button',{name:'Pause animation',exact:true}).click();
+ const paused=await page.evaluate(()=>window.duoDiagnostics());
+ await page.waitForTimeout(700);
+ assert.equal((await page.evaluate(()=>window.duoDiagnostics())).film.intro,paused.film.intro);
+ await page.getByRole('button',{name:'Play animation',exact:true}).click();
+ await page.waitForFunction(()=>window.duoDiagnostics().currentTime>0.5,null,{timeout:30000});
+ await page.screenshot({path:'/tmp/duo-film-opening.png'});
+ await page.getByRole('button',{name:'Pause animation',exact:true}).click();
+ const frozen=await page.evaluate(()=>window.duoDiagnostics());await page.waitForTimeout(700);
+ const still=await page.evaluate(()=>window.duoDiagnostics());assert.ok(Math.abs(still.currentTime-frozen.currentTime)<0.08);assert.ok(Math.abs(still.angle-frozen.angle)<0.1);
+ await page.getByRole('button',{name:'Play animation',exact:true}).click();
+ console.log('Rear-logo reveal, smooth opening, and synchronized pause/resume passed; playing the full recording.');
+ await page.waitForFunction(()=>document.querySelector('video').ended,null,{timeout:65000});
+ const end=await page.evaluate(()=>window.duoDiagnostics());
+ assert.equal(end.angle,180);assert.equal(end.videoCount,1);assert.equal(end.previewHeld,false);
+ assert.ok(end.currentTime>39);assert.equal(await page.evaluate(()=>window.filmSeeks),0);
+ await page.screenshot({path:'/tmp/duo-film-end.png'});
+ await page.getByRole('button',{name:'Replay animation',exact:true}).click();
+ await page.waitForFunction(()=>window.duoDiagnostics().currentTime<0.1&&window.duoDiagnostics().film.intro<1);
+ assert.deepEqual(errors,[]);console.log({fullDuration:end.currentTime,angle:end.angle,errors});
+}finally{await browser.close();}
