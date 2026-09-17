@@ -30,6 +30,12 @@ const STRINGS = {
     catalog_stale: 'The roaster’s site is temporarily unavailable. Showing a saved catalog.',
     catalog_similar: 'No exact match. You might mean:',
     catalog_count: (n, total) => `Showing ${n} of ${total}`,
+    recents_title: 'Recently brewed',
+    scan_caption: 'Scanning your photo…',
+    scan_complete: 'Uploaded photo',
+    photo_alt: 'Uploaded coffee bag',
+    recent_opened: 'Opened a recipe from this device.',
+    recent_copy: 'Your previously used recipe, saved on this device.',
     out_of_stock: 'out of stock',
     filter_roast: 'Filter roast',
     back: 'Back',
@@ -43,7 +49,6 @@ const STRINGS = {
     reference_page: 'Reference coffee',
     recipe_subtitle: 'Recipe by The Welder Catherine · filter roast',
     starting_recipe: 'A starting recipe. The roaster tested it on a different coffee; taste has not been evaluated on yours.',
-    check_lot: 'Check the roaster, harvest and filter roast on the bag: different lots may share a name.',
     stale_data: 'The source is temporarily unavailable. Showing saved data.',
     variant: 'Recipe variant',
     coffee: 'Coffee',
@@ -60,9 +65,28 @@ const STRINGS = {
     ratio_unknown: 'not specified',
     pours: 'Pours',
     no_steps: 'The source lists no steps.',
+    source_note_original: 'Additional instructions are available on the source coffee page.',
+    source_warning: 'Some source recipe details may be incomplete. Check the reference page.',
     pour_default: 'Pour',
     target_on_scale: (g) => `${g} on the scale`,
     start_brew: 'Start brewing',
+    edit_recipe: 'Edit recipe',
+    edit_intro: 'The saved reference recipe is your starting point. Adjust it for your coffee before brewing.',
+    edit_review_reason: 'The photo was not read confidently, so please review these recipe values before brewing.',
+    edited_recipe: 'Edited for this brew. The saved reference recipe has not changed.',
+    edit_pours_hint: 'Changing water or time scales the pours automatically. You can fine-tune each step below.',
+    duration_seconds: 'Total time (seconds)',
+    grinder: 'Grinder',
+    grind_setting_label: 'Grind setting',
+    pour_step: (n) => `Pour ${n}`,
+    instruction: 'Action',
+    pour_water: 'Water added (g)',
+    start_seconds: 'Start (seconds)',
+    stop_seconds: 'Stop (seconds)',
+    save_recipe: 'Apply changes',
+    use_recipe: 'Use this recipe',
+    cancel_edit: 'Cancel',
+    edit_error: 'Check the pour times and amounts. Pours must add up to the total water, and each step must end after it starts within the total time.',
     continue_brew: 'Back to brewing',
     pause: 'Pause',
     resume: 'Resume',
@@ -136,6 +160,12 @@ const STRINGS = {
     catalog_stale: 'Сайт обжарщика временно недоступен. Показан сохранённый каталог.',
     catalog_similar: 'Точного совпадения нет. Возможно, вы имели в виду:',
     catalog_count: (n, total) => `Показано ${n} из ${total}`,
+    recents_title: 'Недавние заваривания',
+    scan_caption: 'Сканируем фото…',
+    scan_complete: 'Загруженное фото',
+    photo_alt: 'Загруженная пачка кофе',
+    recent_opened: 'Открыт рецепт с этого устройства.',
+    recent_copy: 'Ранее использованный рецепт с этого устройства.',
     out_of_stock: 'нет в наличии',
     filter_roast: 'Обжарка под фильтр',
     back: 'Назад',
@@ -149,7 +179,6 @@ const STRINGS = {
     reference_page: 'Кофе-ориентир',
     recipe_subtitle: 'Рецепт The Welder Catherine · обжарка под фильтр',
     starting_recipe: 'Стартовый рецепт. Обжарщик проверял его на другом кофе, на вашем вкус не оценивался.',
-    check_lot: 'Проверьте обжарщика, урожай и обжарку под фильтр на пачке: разные лоты могут называться одинаково.',
     stale_data: 'Источник временно недоступен. Показаны сохранённые данные.',
     variant: 'Вариант рецепта',
     coffee: 'Кофе',
@@ -166,9 +195,28 @@ const STRINGS = {
     ratio_unknown: 'не указано',
     pours: 'Вливания',
     no_steps: 'В источнике нет шагов.',
+    source_note_original: 'Дополнительные инструкции доступны на странице кофе.',
+    source_warning: 'Некоторые параметры исходного рецепта могут быть неполными. Проверьте страницу кофе.',
     pour_default: 'Вливание',
     target_on_scale: (g) => `${g} на весах`,
     start_brew: 'Начать заваривание',
+    edit_recipe: 'Изменить рецепт',
+    edit_intro: 'За основу взят ближайший сохранённый рецепт. Настройте его для своего кофе перед завариванием.',
+    edit_review_reason: 'Фото распознано неуверенно, поэтому проверьте параметры рецепта перед завариванием.',
+    edited_recipe: 'Изменения действуют только для этого заваривания. Исходный рецепт не изменён.',
+    edit_pours_hint: 'При изменении воды или времени вливания масштабируются автоматически. Каждый шаг можно настроить отдельно.',
+    duration_seconds: 'Общее время (секунды)',
+    grinder: 'Кофемолка',
+    grind_setting_label: 'Настройка помола',
+    pour_step: (n) => `Вливание ${n}`,
+    instruction: 'Действие',
+    pour_water: 'Вода (г)',
+    start_seconds: 'Начало (секунды)',
+    stop_seconds: 'Конец (секунды)',
+    save_recipe: 'Применить изменения',
+    use_recipe: 'Использовать этот рецепт',
+    cancel_edit: 'Отмена',
+    edit_error: 'Проверьте время и объём вливаний. Сумма должна совпадать с общим объёмом воды, а каждый шаг — завершаться после начала в пределах общего времени.',
     continue_brew: 'Вернуться к завариванию',
     pause: 'Пауза',
     resume: 'Продолжить',
@@ -242,7 +290,18 @@ const countdown = (seconds) => seconds >= 60 ? clock(Math.max(0, seconds)) : sec
 const stepName = (instruction) => {
   const text = String(instruction ?? '').trim();
   const known = STRINGS[LANG].instructions[text.toLowerCase()];
-  return known || (text ? text[0].toUpperCase() + text.slice(1) : t('pour_default'));
+  return known || (/[А-Яа-яЁё]/.test(text) ? t('pour_default') : text ? text[0].toUpperCase() + text.slice(1) : t('pour_default'));
+};
+const sourceWarnings = {
+  'В источнике не заполнена часть параметров рецепта.': 'Some recipe parameters are missing from the source.',
+  'Сумма вливаний в источнике отличается от общего количества воды.': 'The source pour amounts do not add up to the total water.',
+  'В источнике есть неполное или некорректное время вливаний.': 'Some source pour times are missing or invalid.',
+};
+const sourceWarning = (value) => sourceWarnings[value] || (/[А-Яа-яЁё]/.test(value) ? t('source_warning') : value);
+const sourceNote = (value) => {
+  const note = String(value || '').trim();
+  if (note === 'Все вливания круговыми движениями') return 'Pour in circles for every step.';
+  return /[А-Яа-яЁё]/.test(note) ? t('source_note_original') : note;
 };
 
 // ---------------------------------------------------------------------------
@@ -267,6 +326,86 @@ function loadPrefs() {
 }
 function savePrefs() {
   try { localStorage.setItem('firstbrew.prefs', JSON.stringify(prefs)); } catch (error) { /* ignore */ }
+}
+
+// Only a small recipe snapshot is kept locally; scans and OCR text are never stored.
+const RECENTS_KEY = 'firstbrew.recentRecipes.v1';
+const MAX_RECENTS = 8;
+function safeRecentUrl(value) {
+  try {
+    const url = new URL(value);
+    return url.protocol === 'https:' && url.hostname === 'theweldercatherine.ru' && !url.port &&
+      !url.username && !url.password &&
+      url.pathname.startsWith('/catalog/');
+  } catch (error) { return false; }
+}
+function validRecent(entry) {
+  const product = entry?.product, recipe = entry?.recipe;
+  return Number.isFinite(entry?.usedAt) && entry.usedAt > 0 && entry.usedAt <= Date.now() + 86400000 &&
+    typeof product?.name === 'string' && product.name.length > 0 && product.name.length <= 180 &&
+    safeRecentUrl(product.url) && Number.isFinite(recipe?.duration_seconds) && recipe.duration_seconds > 0 &&
+    Array.isArray(recipe.steps) && recipe.steps.length > 0 && recipe.steps.length <= 30 &&
+    recipe.steps.every(step => typeof step.instruction === 'string' &&
+      (step.start_seconds == null || Number.isFinite(step.start_seconds)) &&
+      (step.stop_seconds == null || Number.isFinite(step.stop_seconds))) &&
+    Array.isArray(recipe.warnings) && typeof recipe.notes === 'string';
+}
+function recentKey(product, recipe) {
+  return [product.url, product.name, recipe.name || '', recipe.device || ''].join('|');
+}
+function loadRecents() {
+  try {
+    const entries = JSON.parse(localStorage.getItem(RECENTS_KEY) || '[]');
+    return Array.isArray(entries) ? entries.filter(validRecent).sort((a, b) => b.usedAt - a.usedAt).slice(0, MAX_RECENTS) : [];
+  } catch (error) { return []; }
+}
+function renderRecents() {
+  const entries = loadRecents();
+  const list = $('recent-list');
+  list.replaceChildren();
+  entries.forEach(entry => {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'coffee recent-coffee';
+    button.setAttribute('role', 'listitem');
+    const date = new Intl.DateTimeFormat('en', {month: 'short', day: 'numeric'}).format(entry.usedAt);
+    button.innerHTML = `<span class="coffee-copy"><strong>${escape(entry.product.name)}</strong><small>${grams(entry.recipe.coffee_g)} · ${grams(entry.recipe.water_g)} · ${date}</small></span><span class="arrow" aria-hidden="true">→</span>`;
+    button.addEventListener('click', () => selectRecent(entry));
+    list.append(button);
+  });
+  $('recents').hidden = !entries.length || !!$('query').value.trim();
+}
+function saveRecent() {
+  const product = {id: currentProduct?.id || null, name: currentData.product.name, url: currentData.product.url};
+  const recipe = currentRecipe;
+  if (!safeRecentUrl(product.url)) return;
+  const snapshot = {usedAt: Date.now(), product, recipe: {
+    name: recipe.name || '', device: recipe.device || '', grinder: recipe.grinder || '',
+    grind_setting: recipe.grind_setting || '', coffee_g: recipe.coffee_g, water_g: recipe.water_g,
+    temperature_c: recipe.temperature_c, duration_seconds: recipe.duration_seconds, ratio: recipe.ratio,
+    steps: recipe.steps.map(step => ({instruction: step.instruction, water_g: step.water_g,
+      total_water_g: step.total_water_g, start_seconds: step.start_seconds, stop_seconds: step.stop_seconds})),
+    notes: recipe.notes || '', warnings: recipe.warnings || [], edited: !!recipe.edited,
+  }, recommendationKind: currentData.recommendation_kind || null,
+    recipeSubtitle: currentData.recipe_subtitle || ''};
+  if (!validRecent(snapshot)) return;
+  const key = recentKey(product, recipe);
+  const entries = [snapshot, ...loadRecents().filter(entry => recentKey(entry.product, entry.recipe) !== key)].slice(0, MAX_RECENTS);
+  try { localStorage.setItem(RECENTS_KEY, JSON.stringify(entries)); } catch (error) { /* storage may be unavailable */ }
+  renderRecents();
+}
+function selectRecent(entry) {
+  cancelPhotoRequests();
+  recipeRequest?.abort();
+  resetTimer();
+  currentProduct = entry.product;
+  currentData = {product: entry.product, recipes: [entry.recipe], recommendation_kind: entry.recommendationKind,
+    recipe_subtitle: entry.recipeSubtitle, from_recent: true, stale: false};
+  recipeLoading = false;
+  markSelected();
+  setStatus('status', t('recent_opened'));
+  renderRecipe(0);
+  show('recipe');
 }
 
 // ---------------------------------------------------------------------------
@@ -297,6 +436,7 @@ function back(target) {
 }
 
 window.addEventListener('popstate', event => show(event.state?.screen || 'find', {push: false}));
+window.addEventListener('storage', event => { if (event.key === RECENTS_KEY) renderRecents(); });
 
 // ---------------------------------------------------------------------------
 // API
@@ -360,7 +500,7 @@ async function search(query = '') {
 }
 
 function markSelected() {
-  document.querySelectorAll('.coffee').forEach(button => {
+  document.querySelectorAll('#results .coffee').forEach(button => {
     button.setAttribute('aria-pressed', String(button.dataset.id === currentProduct?.id));
   });
 }
@@ -405,10 +545,10 @@ async function selectProduct(product) {
   }
 }
 
-function renderRecipe(index) {
+function renderRecipe(index, editedRecipe = null) {
   if (brewMode === 'machine') leaveMachineMode();
   resetTimer();
-  const recipe = currentRecipe = currentData.recipes[index];
+  const recipe = currentRecipe = editedRecipe || currentData.recipes[index];
   const kind = currentData.recommendation_kind;
   const suggested = ['closest_reference', 'suggested_baseline'].includes(kind);
   const variants = currentData.recipes.length > 1
@@ -430,24 +570,124 @@ function renderRecipe(index) {
     <p class="subtitle">${escape(currentData.recipe_subtitle || t('recipe_subtitle'))}</p>
     ${variants}
     ${suggested ? `<p class="note">${t('starting_recipe')}</p>` : ''}
-    ${currentData.explanation ? `<p class="note recommendation-basis">${escape(currentData.explanation)}</p>` : ''}
-    ${kind === 'catalog_match' ? `<p class="note">${t('check_lot')}</p>` : ''}
+    ${currentData.from_recent ? `<p class="note">${t('recent_copy')}</p>` : ''}
     ${currentData.stale ? `<p class="note">${t('stale_data')}</p>` : ''}
-    ${recipe.warnings.map(w => `<p class="note">${escape(w)}</p>`).join('')}
+    ${recipe.edited ? `<p class="note">${t('edited_recipe')}</p>` : ''}
+    ${recipe.warnings.map(w => `<p class="note">${escape(sourceWarning(w))}</p>`).join('')}
+    <button type="button" class="button edit-trigger" id="edit-recipe">${t('edit_recipe')}</button>
+    <div id="recipe-editor" hidden></div>
+    <div id="recipe-summary">
     <div class="figures">${figures.map(([value, unit, label]) => `<div><b>${value}${unit ? `<small>${NBSP}${unit}</small>` : ''}</b><span>${label}</span></div>`).join('')}</div>
     <p class="line"><span>${t('grind')}</span><strong>${grind}</strong></p>
     <p class="line"><span>${t('ratio')}</span><strong>${recipe.ratio ? t('ratio_value', num(recipe.ratio)) : t('ratio_unknown')}</strong></p>
     <h2 class="section">${t('pours')}</h2>
     ${steps ? `<ol class="pours">${steps}</ol>` : `<p class="status">${t('no_steps')}</p>`}
-    ${recipe.notes ? `<p class="note">${escape(recipe.notes)}</p>` : ''}
-    <p class="source"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${suggested ? t('reference_page') : t('coffee_page')} ↗</a></p>`;
+    ${recipe.notes ? `<p class="note">${escape(sourceNote(recipe.notes))}</p>` : ''}
+    <p class="source"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${suggested ? t('reference_page') : t('coffee_page')} ↗</a></p></div>`;
   document.querySelectorAll('[data-variant]').forEach(button => button.addEventListener('click', () => {
     renderRecipe(Number(button.dataset.variant));
     $('recipe-title').focus({preventScroll: true});
   }));
+  $('edit-recipe').addEventListener('click', () => openRecipeEditor(index));
   $('recipe-cta').hidden = false;
   $('brew-start').disabled = !recipe.duration_seconds;
   updateBrewStartLabel();
+}
+
+function openRecipeEditor(index, {uncertain = false} = {}) {
+  const source = currentRecipe;
+  const steps = source.steps.length ? source.steps : [{instruction: t('pour_default'), water_g: source.water_g,
+    start_seconds: 0, stop_seconds: source.duration_seconds}];
+  const field = (id, label, value, options = '') => `<label class="edit-field" for="${id}"><span>${label}</span><input id="${id}" name="${id}" value="${escape(value ?? '')}" ${options}></label>`;
+  const number = (id, label, value, min, max, step = '1') => field(id, label, value,
+    `type="number" inputmode="decimal" required min="${min}" max="${max}" step="${step}"`);
+  $('recipe-editor').innerHTML = `<form id="recipe-form" class="recipe-form">
+    ${uncertain ? `<p class="note review-reason">${t('edit_review_reason')}</p>` : ''}
+    <p class="note">${t('edit_intro')}</p>
+    <div class="edit-grid">
+      ${number('edit-coffee', `${t('coffee')} (${t('unit_g')})`, source.coffee_g, 1, 100, '0.1')}
+      ${number('edit-water', `${t('water')} (${t('unit_g')})`, source.water_g, 10, 2000, '0.1')}
+      ${number('edit-temperature', `${t('temperature')} (${t('unit_c')})`, source.temperature_c, 70, 100, '0.5')}
+      ${number('edit-duration', t('duration_seconds'), source.duration_seconds, 30, 1800)}
+      ${field('edit-grinder', t('grinder'), source.grinder, 'type="text" maxlength="80"')}
+      ${field('edit-grind', t('grind_setting_label'), source.grind_setting, 'type="text" maxlength="40"')}
+    </div>
+    <h2 class="section">${t('pours')}</h2>
+    <p class="edit-hint">${t('edit_pours_hint')}</p>
+    ${steps.map((step, i) => `<fieldset class="edit-step"><legend>${t('pour_step', i + 1)}</legend>
+      <div class="edit-grid">
+        ${field(`edit-action-${i}`, t('instruction'), stepName(step.instruction), 'type="text" maxlength="80" required')}
+        ${number(`edit-pour-${i}`, t('pour_water'), step.water_g, 0.1, 2000, '0.1')}
+        ${number(`edit-start-${i}`, t('start_seconds'), step.start_seconds, 0, 1800)}
+        ${number(`edit-stop-${i}`, t('stop_seconds'), step.stop_seconds, 1, 1800)}
+      </div></fieldset>`).join('')}
+    <p class="note error" id="edit-error" role="alert" hidden>${t('edit_error')}</p>
+    <div class="edit-actions${uncertain ? ' single' : ''}">
+      <button type="submit" class="button primary${uncertain ? ' big' : ''}">${t(uncertain ? 'use_recipe' : 'save_recipe')}</button>
+      ${uncertain ? '' : `<button type="button" class="button" id="cancel-edit">${t('cancel_edit')}</button>`}</div>
+  </form>`;
+  $('recipe-editor').hidden = false;
+  $('recipe-summary').hidden = true;
+  $('edit-recipe').hidden = true;
+  $('recipe-cta').hidden = true;
+  const form = $('recipe-form');
+  const initialFields = JSON.stringify([...new FormData(form)]);
+  const close = () => {
+    $('recipe-editor').hidden = true;
+    $('recipe-summary').hidden = false;
+    $('edit-recipe').hidden = false;
+    $('recipe-cta').hidden = false;
+    $('edit-recipe').focus({preventScroll: true});
+  };
+  $('cancel-edit')?.addEventListener('click', close);
+  $('edit-water').addEventListener('input', () => {
+    const total = Number($('edit-water').value);
+    const original = steps.reduce((sum, step) => sum + Number(step.water_g || 0), 0);
+    if (!total || !original) return;
+    let assigned = 0;
+    steps.forEach((step, i) => {
+      const amount = i === steps.length - 1 ? Math.round((total - assigned) * 10) / 10
+        : Math.round(total * Number(step.water_g || 0) / original * 10) / 10;
+      $('edit-pour-' + i).value = String(amount);
+      assigned += amount;
+    });
+  });
+  $('edit-duration').addEventListener('input', () => {
+    const duration = Number($('edit-duration').value);
+    if (!duration || !source.duration_seconds) return;
+    steps.forEach((step, i) => {
+      $('edit-start-' + i).value = String(Math.round(Number(step.start_seconds || 0) * duration / source.duration_seconds));
+      $('edit-stop-' + i).value = String(Math.round(Number(step.stop_seconds || 0) * duration / source.duration_seconds));
+    });
+  });
+  form.addEventListener('submit', event => {
+    event.preventDefault();
+    if (!form.reportValidity()) return;
+    const value = id => Number($(id).value);
+    const editedSteps = steps.map((step, i) => ({...step,
+      instruction: $('edit-action-' + i).value.trim(), water_g: value('edit-pour-' + i),
+      start_seconds: value('edit-start-' + i), stop_seconds: value('edit-stop-' + i)}));
+    const total = value('edit-water'), duration = value('edit-duration');
+    let cumulative = 0;
+    editedSteps.forEach(step => { cumulative += step.water_g; step.total_water_g = Math.round(cumulative * 10) / 10; });
+    const valid = Math.abs(cumulative - total) < 0.11 && editedSteps.every((step, i) =>
+      step.instruction && step.stop_seconds > step.start_seconds && step.stop_seconds <= duration &&
+      (i === 0 || step.start_seconds >= editedSteps[i - 1].start_seconds));
+    $('edit-error').hidden = valid;
+    if (!valid) { $('edit-error').scrollIntoView({block: 'nearest'}); return; }
+    if (JSON.stringify([...new FormData(form)]) === initialFields) {
+      renderRecipe(index, source);
+      $('edit-recipe').focus({preventScroll: true});
+      return;
+    }
+    const coffee = value('edit-coffee');
+    const edited = {...source, coffee_g: coffee, water_g: total, temperature_c: value('edit-temperature'),
+      duration_seconds: duration, grinder: $('edit-grinder').value.trim(), grind_setting: $('edit-grind').value.trim(),
+      ratio: Math.round(total / coffee * 10) / 10, steps: editedSteps, edited: true};
+    renderRecipe(index, edited);
+    $('edit-recipe').focus({preventScroll: true});
+  });
+  $('edit-coffee').focus({preventScroll: true});
 }
 
 function updateBrewStartLabel() {
@@ -469,10 +709,41 @@ function updateCtaBar() {
 // ---------------------------------------------------------------------------
 // Photo → recipe
 // ---------------------------------------------------------------------------
+let photoPreviewData = null;
+function clearPhotoPreview() {
+  $('scan-preview').hidden = true;
+  $('scan-preview').dataset.scanning = 'false';
+  $('recipe-photo').hidden = true;
+  $('scan-image').removeAttribute('src');
+  $('recipe-photo-image').removeAttribute('src');
+  photoPreviewData = null;
+}
+function previewDataUrl(blob) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = () => reject(new Error(t('err_photo_open')));
+    reader.readAsDataURL(blob);
+  });
+}
+function showPhotoPreview(dataUrl) {
+  photoPreviewData = dataUrl;
+  $('scan-image').src = dataUrl;
+  $('recipe-photo-image').src = dataUrl;
+  $('scan-preview').hidden = false;
+  $('scan-preview').dataset.scanning = 'true';
+  $('scan-caption').textContent = t('scan_caption');
+}
+function finishPhotoScan() {
+  $('scan-preview').dataset.scanning = 'false';
+  $('scan-caption').textContent = t('scan_complete');
+}
 function cancelPhotoRequests() {
   photoGeneration++;
   photoRequest?.abort();
   photoRequest = null;
+  clearPhotoPreview();
+  $('photo-button').disabled = false;
 }
 
 async function photoBlob(file) {
@@ -504,12 +775,13 @@ function showRecommendation(recommendation) {
   }
   currentData = recommendation.recipe_data;
   currentProduct = currentData.product;
-  // Keep the API's own caveat visible on the recipe screen.
-  if (!currentData.explanation && recommendation.kind !== 'catalog_match') currentData.explanation = recommendation.message;
+  // The detailed recognition message stays in the find panel on desktop.
   markSelected();
   setStatus('status', recommendation.message);
   renderRecipe(0);
+  $('recipe-photo').hidden = !photoPreviewData;
   show('recipe');
+  if (recommendation.ocr_uncertain === true) openRecipeEditor(0, {uncertain: true});
 }
 
 async function handlePhoto(file) {
@@ -527,13 +799,19 @@ async function handlePhoto(file) {
   try {
     const body = await photoBlob(file);
     if (generation !== photoGeneration) return;
+    const preview = await previewDataUrl(body);
+    if (generation !== photoGeneration) return;
+    showPhotoPreview(preview);
     const data = await post('/api/label', body, 'image/jpeg', photoRequest.signal);
     if (generation !== photoGeneration) return;
     showRecommendation(data.recommendation);
   } catch (error) {
     if (error.name !== 'AbortError' && generation === photoGeneration) setStatus('status', error.message, true);
   } finally {
-    if (generation === photoGeneration) $('photo-button').disabled = false;
+    if (generation === photoGeneration) {
+      finishPhotoScan();
+      $('photo-button').disabled = false;
+    }
   }
 }
 
@@ -717,6 +995,7 @@ async function startMachineBrew() {
   try {
     const reply = await machineRequest('recipe', {recipe: currentRecipe});
     if (reply.telemetry) machineState = reply.telemetry;
+    saveRecent();
     setStatus('cta-status', '');
     show('brew');
     renderMachine();
@@ -910,9 +1189,14 @@ function init() {
   loadPrefs();
   document.title = t('app');
   $('photo-button').textContent = t('photo_button');
+  $('scan-image').alt = t('photo_alt');
+  $('recipe-photo-image').alt = t('photo_alt');
+  $('recipe-photo-label').textContent = t('scan_complete');
   $('search-label').textContent = t('search_label');
   $('query').placeholder = t('search_placeholder');
   $('show-all').textContent = t('show_all');
+  $('recents-title').textContent = t('recents_title');
+  renderRecents();
   $('recipe-back').textContent = t('back');
   $('recipe-placeholder').textContent = t('pick_coffee');
   $('recipe-placeholder').classList.add('desktop-only');
@@ -945,6 +1229,7 @@ function init() {
   $('query').addEventListener('input', () => {
     clearTimeout(searchTimer);
     const query = $('query').value.trim();
+    $('recents').hidden = !!query || !$('recent-list').children.length;
     if (!query) {
       searchRequest?.abort();
       $('results').replaceChildren();
@@ -954,14 +1239,14 @@ function init() {
     }
     searchTimer = setTimeout(() => search(query), 300);
   });
-  $('show-all').addEventListener('click', () => { $('query').value = ''; search(''); });
+  $('show-all').addEventListener('click', () => { $('query').value = ''; renderRecents(); search(''); });
 
   $('recipe-back').addEventListener('click', () => back('find'));
   $('brew-start').addEventListener('click', () => {
     if (!currentRecipe?.duration_seconds) return;
     if (brewMode === 'machine') leaveMachineMode();
     show('brew');
-    if (!running && elapsed === 0) toggleTimer();
+    if (!running && elapsed === 0) { saveRecent(); toggleTimer(); }
   });
   $('machine-start').addEventListener('click', startMachineBrew);
   $('brew-back').addEventListener('click', () => back('recipe'));
@@ -979,6 +1264,7 @@ function init() {
   $('brew-new').addEventListener('click', () => {
     if (brewMode === 'machine') { machineRequest('abort').catch(() => {}); leaveMachineMode(); }
     resetTimer();
+    cancelPhotoRequests();
     currentRecipe = currentData = currentProduct = null;
     markSelected();
     $('recipe-cta').hidden = true;

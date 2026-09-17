@@ -34,22 +34,22 @@ def safe_url(url):
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        raise SourceError('Источник перенаправил запрос. Попробуйте позже.')
+        raise SourceError('The source redirected the request. Try again later.')
 
 
 def download(url):
     if not safe_url(url):
-        raise SourceError('Недопустимый адрес источника.')
+        raise SourceError('Invalid source address.')
     request = urllib.request.Request(url, headers={'User-Agent': 'FirstBrew/0.1 (coffee recipe lookup)',
                                                   'Accept': 'application/json, application/xml, text/html'})
     try:
         with urllib.request.build_opener(NoRedirect).open(request, timeout=15) as response:
             data = response.read(8_000_001)
             if len(data) > 8_000_000:
-                raise SourceError('Ответ источника слишком большой.')
+                raise SourceError('The source response is too large.')
             return data.decode('utf-8-sig')
     except (urllib.error.URLError, TimeoutError, OSError, UnicodeError) as exc:
-        raise SourceError('Сайт Welder Catherine сейчас недоступен. Попробуйте ещё раз позже.') from exc
+        raise SourceError('The Welder Catherine site is unavailable. Try again later.') from exc
 
 
 class SourceCache:
@@ -87,7 +87,7 @@ class SourceCache:
             except (SourceError, ValueError, TypeError, KeyError, ET.ParseError) as exc:
                 if saved and time.time() - saved['fetched_at'] <= 7 * 86400:
                     return saved['value'], self.meta(saved, True)
-                raise SourceError('Не удалось получить данные Welder Catherine. Попробуйте позже.') from exc
+                raise SourceError('Could not load data from The Welder Catherine. Try again later.') from exc
 
     @staticmethod
     def meta(saved, stale):
@@ -97,7 +97,7 @@ class SourceCache:
 
 def parse_catalog(xml):
     if '<!ENTITY' in xml.upper() or re.search(r'<!DOCTYPE[^>]*\[', xml, re.I):
-        raise SourceError('Неподдерживаемый формат каталога.')
+        raise SourceError('Unsupported catalog format.')
     # YML includes an external shops.dtd declaration. ElementTree does not
     # load it; remove the declaration and reject internal entity definitions.
     xml = re.sub(r'<!DOCTYPE[^>]*>', '', xml, flags=re.I)
@@ -120,7 +120,7 @@ def parse_catalog(xml):
         product['region'] = next((p.text or '' for p in offer.findall('param')
                                   if p.get('name') == 'Регион'), product['region'])
     if not products:
-        raise SourceError('Структура каталога изменилась.')
+        raise SourceError('The catalog format has changed.')
     return sorted(products.values(), key=lambda p: p['name'])
 
 
@@ -169,7 +169,7 @@ def parse_product(html):
     parser = ProductParser()
     parser.feed(html)
     if not parser.product_id:
-        raise SourceError('На странице кофе не найден блок рецептов.')
+        raise SourceError('No recipe section was found on the coffee page.')
     return parser.product_id
 
 
@@ -190,14 +190,14 @@ def positive(value):
 def parse_recipes(body):
     response = json.loads(body)
     if not isinstance(response, dict) or response.get('status') != 'OK' or not isinstance(response.get('value'), list):
-        raise SourceError('Неожиданный ответ сервиса рецептов.')
+        raise SourceError('Unexpected response from the recipe service.')
     recipes = []
     for raw in response['value']:
         if not isinstance(raw, dict):
-            raise SourceError('Неожиданный формат рецепта.')
+            raise SourceError('Unexpected recipe format.')
         device = raw.get('device') or {}
         if not isinstance(device, dict):
-            raise SourceError('Неожиданный формат оборудования.')
+            raise SourceError('Unexpected equipment format.')
         if device.get('kind') != 'DRIPPER':
             continue
         steps, cumulative = [], 0
@@ -205,7 +205,7 @@ def parse_recipes(body):
         raw_steps = raw.get('steps') or []
         if not isinstance(raw_steps, list) or any(not isinstance(s, dict) or
                 not isinstance(s.get('seq_num'), (int, float)) for s in raw_steps):
-            raise SourceError('Неожиданный формат шагов рецепта.')
+            raise SourceError('Unexpected recipe-step format.')
         for step in sorted(raw_steps, key=lambda s: s['seq_num']):
             water = positive(step.get('water'))
             cumulative = cumulative + water if cumulative is not None and water is not None else None
@@ -216,15 +216,15 @@ def parse_recipes(body):
         dose, water, temp = (positive(raw.get(k)) for k in ('load', 'water', 'temperature'))
         duration = seconds(raw.get('time')) or None
         if not all((dose, water, temp, duration)) or not steps:
-            warnings.append('В источнике не заполнена часть параметров рецепта.')
+            warnings.append('Some recipe parameters are missing from the source.')
         if steps and water and cumulative is not None and abs(cumulative - water) > .5:
-            warnings.append('Сумма вливаний в источнике отличается от общего количества воды.')
+            warnings.append('The source pour amounts do not add up to the total water.')
         if any(s['start_seconds'] is None or s['stop_seconds'] is None or
                s['stop_seconds'] < s['start_seconds'] for s in steps):
-            warnings.append('В источнике есть неполное или некорректное время вливаний.')
+            warnings.append('Some source pour times are missing or invalid.')
         grinder = raw.get('grinder') or {}
         if not isinstance(grinder, dict):
-            raise SourceError('Неожиданный формат кофемолки.')
+            raise SourceError('Unexpected grinder format.')
         setting = raw.get('grind_step')
         sub = raw.get('grind_sub_step')
         recipe = {'name': str(raw.get('name') or ''),
@@ -267,7 +267,7 @@ class CoffeeService:
         products, catalog_meta = self.cache.get(FEED, 6 * 3600, parse_catalog)
         product = next((p for p in products if p['id'] == product_key), None)
         if not product:
-            raise KeyError('Кофе не найден в текущем каталоге.')
+            raise KeyError('Coffee not found in the current catalog.')
         product_id, page_meta = self.cache.get(product['url'], 86400, parse_product)
         source_url = f'{API}?product_id={product_id}&view=true'
         recipes, meta = self.cache.get(source_url, 3600, parse_recipes)

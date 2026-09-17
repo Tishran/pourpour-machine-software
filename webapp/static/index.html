@@ -28,6 +28,10 @@
       <p class="status" id="status" role="status" aria-live="polite"></p>
       <button type="button" class="button primary big" id="photo-button"></button>
       <input class="visually-hidden" id="photo-input" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
+      <figure class="scan-preview" id="scan-preview" data-scanning="false" hidden>
+        <div class="scan-frame"><img id="scan-image" alt=""></div>
+        <figcaption id="scan-caption"></figcaption>
+      </figure>
       <form class="search" id="search-form" role="search">
         <label class="label" for="query" id="search-label"></label>
         <div class="search-row">
@@ -36,6 +40,10 @@
         </div>
       </form>
       <p class="status" id="catalog-status" role="status" aria-live="polite"></p>
+      <section class="recents" id="recents" aria-labelledby="recents-title" hidden>
+        <h2 class="section" id="recents-title"></h2>
+        <div class="results" id="recent-list" role="list"></div>
+      </section>
       <div class="results" id="results" role="list" hidden></div>
     </section>
 
@@ -43,6 +51,10 @@
       <header class="bar">
         <button type="button" class="back" id="recipe-back"></button>
       </header>
+      <div class="recipe-photo" id="recipe-photo" hidden>
+        <img id="recipe-photo-image" alt="">
+        <span id="recipe-photo-label"></span>
+      </div>
       <div class="recipe-body" id="recipe-body" aria-busy="false">
         <p class="placeholder" id="recipe-placeholder"></p>
       </div>

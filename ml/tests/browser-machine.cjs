@@ -30,6 +30,8 @@ const machineState = (page) => page.evaluate(() => window.firstBrew.state().mach
 
     // Preheat with progress, then ready.
     await page.waitForFunction(() => document.body.dataset.screen === 'brew');
+    assert.equal(await page.evaluate(() => JSON.parse(localStorage.getItem('firstbrew.recentRecipes.v1') || '[]').length), 1,
+      'a machine brew is saved in recent recipes');
     await page.waitForFunction(() => document.getElementById('brew-phase').textContent === 'Heating water', null, {timeout: 10000});
     assert.match(await text(page, '#brew-action'), /^Heating water, .+°C → 98 °C$/);
     assert.equal(await page.locator('#brew-toggle').isDisabled(), true);

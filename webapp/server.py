@@ -73,26 +73,26 @@ class Handler(BaseHTTPRequestHandler):
             if url.path == '/api/search':
                 query = parse_qs(url.query).get('q', [''])[0].strip()
                 if len(query) > 120:
-                    return self.send_json(400, {'error': 'Введите не больше 120 символов.'})
+                    return self.send_json(400, {'error': 'Enter no more than 120 characters.'})
                 return self.send_json(200, service.search(query))
             if url.path.startswith('/api/recipes/'):
                 key = url.path.removeprefix('/api/recipes/')
                 if len(key) != 16 or any(c not in '0123456789abcdef' for c in key):
-                    return self.send_json(400, {'error': 'Неверный идентификатор кофе.'})
+                    return self.send_json(400, {'error': 'Invalid coffee identifier.'})
                 return self.send_json(200, service.recipe(key))
             if url.path not in STATIC_FILES:
-                return self.send_json(404, {'error': 'Страница не найдена.'})
+                return self.send_json(404, {'error': 'Page not found.'})
             name, mime = STATIC_FILES[url.path]
             self.respond(200, (ROOT / name).read_bytes(), mime)
         except SourceError as exc:
             self.send_json(502, {'error': str(exc)})
         except KeyError:
-            self.send_json(404, {'error': 'Кофе не найден. Обновите поиск.'})
+            self.send_json(404, {'error': 'Coffee not found. Refresh the search.'})
         except (BrokenPipeError, ConnectionResetError):
             pass
         except Exception:
             logging.exception('Request failed')
-            self.send_json(500, {'error': 'Не удалось обработать запрос. Попробуйте ещё раз.'})
+            self.send_json(500, {'error': 'Could not process the request. Try again.'})
 
     def do_POST(self):
         url = urlsplit(self.path)
@@ -100,7 +100,7 @@ class Handler(BaseHTTPRequestHandler):
             if url.path.startswith('/api/machine/'):
                 return self.machine_post(url.path.removeprefix('/api/machine/'))
             if url.path not in ('/api/label', '/api/scan', '/api/recommend'):
-                return self.send_json(404, {'error': 'Страница не найдена.'})
+                return self.send_json(404, {'error': 'Page not found.'})
             origin = self.headers.get('Origin')
             if origin and origin != 'http://' + self.headers.get('Host', ''):
                 return self.send_json(403, {'error': 'The request must come from this application.'})

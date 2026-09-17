@@ -55,6 +55,10 @@ class StaticFileTests(unittest.TestCase):
         self.assertIn('accept="image/*" capture="environment"', html)
         for screen in ('screen-find', 'screen-recipe', 'screen-brew'):
             self.assertIn(f'id="{screen}"', html)
+        self.assertIn('id="recents"', html)
+        self.assertNotIn('id="recents-hint"', html)
+        self.assertIn('id="scan-preview"', html)
+        self.assertIn('id="recipe-photo"', html)
         # No frameworks, fonts or scripts from the internet.
         self.assertNotRegex(html, r'(src|href)="https?://')
 
