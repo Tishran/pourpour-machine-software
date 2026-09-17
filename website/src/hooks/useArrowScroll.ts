@@ -15,7 +15,7 @@ export function useArrowScroll() {
     const tick = (time: number) => {
       const elapsed = Math.min((time - previous) / 1000, 0.05);
       previous = time;
-      window.scrollBy({ top: direction * 720 * elapsed, behavior: "instant" });
+      window.scrollBy({ top: direction * 360 * elapsed, behavior: "instant" });
       if (direction) frame = requestAnimationFrame(tick);
     };
     const keydown = (event: KeyboardEvent) => {
@@ -41,7 +41,7 @@ export function useArrowScroll() {
       if (event.repeat) return;
       stop();
       direction = event.key === "ArrowDown" ? 1 : -1;
-      window.scrollBy({ top: direction * 64, behavior: "instant" });
+      window.scrollBy({ top: direction * 32, behavior: "instant" });
       previous = performance.now();
       frame = requestAnimationFrame(tick);
     };
