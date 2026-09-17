@@ -86,7 +86,7 @@ export default function LaunchDialog({
             />
             <p className="form-note">
               By subscribing, you agree to receive First Brew updates.
-              Unsubscribe through any email.
+              You can unsubscribe at any time.
             </p>
             <button className="action" disabled={status === "sending"}>
               {status === "sending" ? "SUBMITTING…" : "KEEP ME POSTED"}{" "}

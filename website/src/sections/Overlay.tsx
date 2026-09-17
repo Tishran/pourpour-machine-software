@@ -24,7 +24,7 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                   <h1>
                     We finally bring you
                     <br />
-                    <em>the tasty coffee</em>
+                    <em>tasty coffee</em>
                   </h1>
                   <p className="body-copy">
                     Brew every new bag with a recipe matched to that coffee —
@@ -162,7 +162,7 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                   <h2>
                     We finally bring you
                     <br />
-                    <em>the tasty coffee</em>
+                    <em>tasty coffee</em>
                   </h2>
                   <p className="final-invite">
                     Bring First Brew to your kitchen.

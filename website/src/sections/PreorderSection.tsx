@@ -68,7 +68,7 @@ export default function PreorderSection() {
         <textarea id="join-message" name="message" rows={4} maxLength={3000} />
         <label className="join-consent">
           <input type="checkbox" name="contact-consent" value="yes" required />
-          <span>I agree to receive email about First Brew preorders.</span>
+          <span>I agree to receive emails about First Brew preorders.</span>
         </label>
         <button className="action" type="submit">
           REGISTER PREORDER INTEREST <span aria-hidden="true">↗</span>

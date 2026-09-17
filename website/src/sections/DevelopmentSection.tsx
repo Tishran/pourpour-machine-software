@@ -7,9 +7,9 @@ export default function DevelopmentSection() {
     >
       <p className="eyebrow">DEVELOPMENT</p>
       <h2 id="development-title">
-        We’re building the first
+        We’re building First Brew’s
         <br />
-        <em>First Brew prototype.</em>
+        <em>first prototype.</em>
       </h2>
       <p className="development-intro">
         Our next step is to turn a coffee recipe into a complete, automated
