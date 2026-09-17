@@ -93,7 +93,7 @@ async function selectProduct(product) {
     } else renderRecipe(0);
   } catch (error) {
     if (error.name === 'AbortError') return;
-    $('recipe-content').innerHTML = `<div class="empty"><h2>Could not<br>load the recipe.</h2><p role="alert">${escape(error.message)}</p><button type="button" class="retry" id="retry">Try again</button><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
+    $('recipe-content').innerHTML = `<div class="empty"><h2>Could not<br>load the recipe.</h2><p role="alert">${escape(error.message)}</p><button type="button" class="retry" id="retry">Try again</button><a href="${escape(product.url)}" target="_blank" rel="noopener noreferrer">Coffee page ↗</a></div>`;
     $('retry').addEventListener('click', () => selectProduct(product));
   } finally {
     if (recipeRequest === request) $('recipe-panel').setAttribute('aria-busy', 'false');
@@ -117,7 +117,8 @@ function renderRecipe(index) {
     <div class="recipe-top"><span class="eyebrow">02 / YOUR RECIPE</span><span class="tag">${escape(recipe.device)}</span></div>
     <h2 class="recipe-title" tabindex="-1">${escape(currentData.product.name)}</h2>
     <p class="recipe-subtitle">${escape(currentData.recipe_subtitle || 'Recipe by The Welder Catherine · filter roast')}</p>
-    ${currentData.recommendation_kind === 'suggested_reference' ? '<p class="warning">A starting recipe. The roaster tested it on a different coffee; taste has not been evaluated on yours.</p>' : ''}
+    ${['suggested_reference', 'suggested_baseline'].includes(currentData.recommendation_kind) ? '<p class="warning">A starting recipe. The roaster tested it on a different coffee; taste has not been evaluated on yours.</p>' : ''}
+    ${currentData.explanation ? `<p class="recipe-notes recommendation-basis">${escape(currentData.explanation)}</p>` : ''}
     ${currentData.recommendation_kind === 'catalog_match' ? '<p class="recipe-notes">Check the roaster, harvest and filter roast on your bag: different lots may share a name.</p>' : ''}
     ${variant}
     ${currentData.stale ? '<p class="warning">The source is temporarily unavailable. Showing saved data.</p>' : ''}
@@ -139,7 +140,7 @@ function renderRecipe(index) {
     </div>
     <p class="timer-caption" id="timer-caption" role="status">Prepare your coffee and hot water, then start the timer.</p>
     ${recipe.notes ? `<p class="recipe-notes">${escape(recipe.notes)}</p>` : ''}
-    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${currentData.recommendation_kind === 'suggested_reference' ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
+    <div class="source-links"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${['suggested_reference', 'suggested_baseline'].includes(currentData.recommendation_kind) ? 'Reference coffee' : 'Coffee page'} ↗</a></div>`;
   $('recipe-variant')?.addEventListener('change', event => renderRecipe(Number(event.target.value)));
   $('timer-toggle').addEventListener('click', toggleTimer);
   $('timer-reset').addEventListener('click', resetTimer);

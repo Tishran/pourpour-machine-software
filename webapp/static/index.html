@@ -41,7 +41,7 @@
         <div class="section-heading"><span class="eyebrow">01 / FIND COFFEE</span><span class="tag">The Welder Catherine</span></div>
         <section class="photo-box" aria-labelledby="photo-title">
           <h2 id="photo-title">Start with a photo of your coffee</h2>
-          <p>Read the label and find a recipe in our dataset. For a new coffee, try a recipe from a similar lot.</p>
+          <p>Even a country name is enough to start. We use what is readable and offer a general recipe when details are missing.</p>
           <label class="photo-pick" for="label-photo">Choose a label photo</label>
           <input id="label-photo" type="file" accept="image/jpeg,image/png,image/webp" aria-describedby="photo-help">
           <p id="photo-help" class="photo-help">Take a close, straight photo without glare. Photos are processed locally and are not saved.</p>
@@ -51,7 +51,7 @@
             <summary>Review the label or enter text manually</summary>
             <label for="label-text">Text on the bag</label>
             <textarea id="label-text" rows="7" maxlength="10000" placeholder="Roaster: The Welder Catherine&#10;Coffee: Руанда Суса&#10;Country: Rwanda&#10;Processing: washed, anaerobic&#10;Variety: red bourbon"></textarea>
-            <p class="photo-help">For a new coffee, include country and processing. Variety, region and tasting notes help too. Russian and English are supported.</p>
+            <p class="photo-help">Only “Colombia”? That works too. Processing, variety and tasting notes are optional. If nothing is readable, you still get a general starting recipe.</p>
             <button id="prepare-recipe" type="button">Prepare recipe ↗</button>
           </details>
           <div id="label-candidates" class="label-candidates"></div>

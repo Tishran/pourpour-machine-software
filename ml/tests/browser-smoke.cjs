@@ -42,8 +42,27 @@ const assert = require('node:assert/strict');
 
     await page.locator('#label-text').fill('Country: Brazil\nProcessing: natural');
     await page.locator('#prepare-recipe').click();
-    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('No sufficiently similar'));
-    assert.equal(await page.locator('#recipe-content').isVisible(), false);
+    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('origin is not matched'));
+    assert.equal(await page.locator('#recipe-content').isVisible(), true);
+    assert.match(await page.locator('.recommendation-basis').textContent(), /Not matched: country/);
+
+    await page.locator('#label-photo').setInputFiles(path.join(__dirname, 'fixtures/colombia-label.png'));
+    await page.waitForFunction(() => document.querySelector('.recipe-title')?.textContent === 'Colombia · starting recipe', null, {timeout: 40000});
+    assert.match(await page.locator('.recommendation-basis').textContent(), /Processing is not assumed/);
+    assert.match(await page.locator('.specs').textContent(), /250/);
+
+    const blankImage = await page.evaluate(() => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 500; canvas.height = 500;
+      const context = canvas.getContext('2d');
+      context.fillStyle = 'white'; context.fillRect(0, 0, 500, 500);
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
+    await page.locator('#label-photo').setInputFiles({name:'unreadable.png', mimeType:'image/png', buffer:Buffer.from(blankImage, 'base64')});
+    await page.waitForFunction(() => document.querySelector('#photo-status').textContent.includes('could not be read confidently'), null, {timeout: 40000});
+    assert.equal(await page.locator('#recipe-content').isVisible(), true);
+    assert.equal(await page.locator('.recipe-title').textContent(), 'Your coffee · starting recipe');
+    assert.match(await page.locator('.recommendation-basis').textContent(), /general recipe/);
 
     await page.locator('#label-text').fill('Руанда Суса');
     await page.locator('#prepare-recipe').click();
@@ -65,7 +84,7 @@ const assert = require('node:assert/strict');
     await page.setViewportSize({width: 390, height: 844});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
     await page.screenshot({path: process.env.POURPOUR_SCREENSHOT || '/tmp/pourpour-photo-mobile.png', fullPage:true});
-    console.log('PASS: photo OCR → exact recipe; unknown coffee → reference; abstention; confirmation; timer; invalid upload; same-origin; mobile layout; no JS errors.');
+    console.log('PASS: photo OCR → exact recipe; unknown coffee → reference; country-only photo; unreadable photo → general recipe; unsupported origin; confirmation; timer; invalid upload; same-origin; mobile layout; no JS errors.');
   } finally {
     await browser.close();
   }

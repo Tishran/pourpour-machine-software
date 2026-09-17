@@ -27,13 +27,29 @@ dataset. No API key or cloud image upload is required.
    recipe for a similar coffee; it does not claim that the roaster tested it on
    the user's new coffee. The reference coffee link remains visible; full
    source provenance is retained in the API response and dataset.
-5. **Abstention:** missing country/base processing, unsupported origins/processes,
-   new decafs, espresso/dark roast or low similarity produce no automatic
-   recommendation. The two malformed source recipes remain excluded. Poor OCR
-   requires text review before preparing a recipe.
+5. **Incomplete labels:** policy `progressive-fallback-v2` accepts even a single
+   country, e.g. “Колумбия” or “COLOMBIA”. If the strict matcher cannot suggest a
+   recipe, it selects a starting reference from the same country and, where
+   available, the same base processing. Processing alone can narrow the pool when
+   the country is unknown or unsupported. Otherwise it uses the general pool.
+   Missing and unmatched fields are returned explicitly; processing is never
+   invented. New decafs and espresso/dark roasts get a general reference with an
+   explicit limitation. The two malformed source recipes remain excluded.
+6. **Unreadable labels:** low-confidence OCR does not drive identification. The
+   app supplies a clearly marked general starting recipe while keeping the raw
+   text editable. A confidently recognized single word is enough to use the
+   country. This does not guarantee correct recognition of every photograph.
 
-Country and processing must agree with a reference; similarity must be at least
-0.3. The weights (country 2, processing 2, variety 1.5, region 1, flavor 0.5)
+Fallback selection retains an existing recipe closest to the pool's medians
+for dose, water-to-coffee ratio, temperature and duration, using absolute
+normalized distances (scales: 1 g, 1 ratio unit, 1 °C, 30 s). Ties prefer fewer
+source quality issues, then a stable coffee ID. These are hand-set rules, not
+learned brewing effects. The selected donor's dose, water and all steps stay
+intact; the API includes `basis.scope`, `reference_count`, `matched_fields`,
+`missing_fields` and `unmatched_fields`.
+
+For the strict nearest-reference path, country and processing must agree with a
+reference; similarity must be at least 0.3. The weights (country 2, processing 2, variety 1.5, region 1, flavor 0.5)
 and thresholds are hand-set. TF-IDF statistics are fitted from the dataset;
 this is a small instance-based ML baseline, not a newly trained neural network.
 Similarity and OCR confidence are not probabilities of a correct recipe.
@@ -90,7 +106,10 @@ it does not retrain per request. `artifacts/evaluation.json` stores the full
 leave-one-coffee-out predictions. Every fold refits IDF without the held-out
 coffee. Packaging variants are grouped, and names/recipe targets are not inputs.
 
-Current result: **27/35** coffees supported, **8 abstentions**. On supported folds:
+Strict-reference evaluation: **27/35** coffees supported, **8 abstentions**.
+This evaluates the original strict matcher, not the new fallback policy. The
+fallbacks increase recipe availability; their quality has not been validated.
+On supported strict-matcher folds:
 
 | Target | Nearest-reference MAE | Training-median MAE |
 | --- | ---: | ---: |
@@ -114,7 +133,7 @@ evaluate recommendations by coffee/farm/harvest groups plus real brewing outcome
 
 ## Endpoints
 
-- `GET /api/model`: model version, snapshot, OCR setup status.
+- `GET /api/model`: model version, recommendation policy version, snapshot, OCR setup status.
 - `POST /api/label`: raw JPEG/PNG body → OCR text and recommendation. No image URL
   fetching; 8 MB/16 MP bounds, one OCR process group at a time, 30-second OCR budget.
 - `POST /api/scan`: compatibility alias for the same real OCR flow, with `status`,
@@ -123,9 +142,13 @@ evaluate recommendations by coffee/farm/harvest groups plus real brewing outcome
   An optional `selected_coffee_id` confirms a catalog candidate; unknown IDs fail.
 
 Response `kind` is one of `catalog_match`, `confirm_match`, `suggested_reference`,
-`source_needs_review`, `insufficient_data`, or (photo only) `review_label`.
-`recipe_data` is null when the system abstains. Suggested recipes are never
-written back into the roaster dataset. This remains a local development server.
+or `suggested_baseline`. Successful recommendations include `recipe_data`, even
+while a possible catalog name awaits confirmation. The recipe's own
+`recommendation_kind` distinguishes that provisional baseline from a saved match.
+Photo responses set `label_review_required` when uncertain OCR was ignored.
+Empty text is valid and produces a general baseline; invalid uploads still fail.
+Suggested recipes are never written back into the roaster dataset. This remains
+a local development server.
 
 ## Verification
 
@@ -137,8 +160,8 @@ cd webapp
 ```
 
 The OCR integration test runs when dependencies/weights are installed. Its
-`tests/fixtures/rwanda-label.png` is a synthetic, clean text label (not a real
-photo or an OCR accuracy benchmark). The manual integration check also read
+`tests/fixtures/rwanda-label.png` and `colombia-label.png` are synthetic, clean
+text labels (not real photos or an OCR accuracy benchmark). The manual integration check also read
 the roaster's angled [Rwanda Susa product image](https://theweldercatherine.ru/upload/iblock/7f5/zvhz0s6hi01i0favlrkzl0hzlg6s8qyf/250g-_1_-_48_.png):
 it recovered the coffee name and correctly requested brand confirmation.
 
@@ -146,5 +169,7 @@ it recovered the coffee name and correctly requested brand confirmation.
 browser installed, run it against the local server using
 `node ml/tests/browser-smoke.cjs`. Set `POURPOUR_TEST_URL` to change the server,
 or `POURPOUR_BROWSER_CHANNEL=chrome` to use installed Chrome. It checks photo →
-recipe, unknown-coffee suggestions, abstention, manual confirmation, timer,
-invalid upload, same-origin enforcement and mobile overflow.
+recipe, unknown-coffee suggestions, single-country photos, unreadable photos,
+unsupported origins, manual confirmation, timer, invalid upload, same-origin
+enforcement and mobile overflow. API tests also ensure low-confidence text cannot
+trigger an identity match even if it contains a complete catalog name.

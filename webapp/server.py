@@ -8,7 +8,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 from pourpour import CoffeeService, SourceError, scan_label
 from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
-from recommender import RecipeModel
+from recommender import RecipeModel, RECOMMENDATION_POLICY
 
 ROOT = Path(__file__).parent / 'static'
 service = CoffeeService()
@@ -31,6 +31,7 @@ class Handler(BaseHTTPRequestHandler):
             if url.path == '/api/model':
                 fitted = get_model()
                 return self.send_json(200, {'version': fitted.model['version'],
+                                            'policy_version': RECOMMENDATION_POLICY,
                                             'dataset_snapshot': fitted.model['dataset_snapshot'],
                                             'coffees': len(fitted.rows), 'ocr': ocr_status()})
             if url.path == '/api/search':
@@ -85,11 +86,13 @@ class Handler(BaseHTTPRequestHandler):
             if is_photo:
                 scan = scan_label(payload, content_type)
                 ocr = scan['ocr']
-                recommendation = get_model().recommend(ocr['text'])
-                # Low-confidence OCR is editable, but should not automatically prepare a recipe.
+                recommendation = get_model().recommend('' if ocr['needs_review'] else ocr['text'])
+                # Uncertain text never drives identification, but a generic recipe
+                # remains available while the user reviews the original OCR text.
                 if ocr['needs_review']:
-                    recommendation.update(kind='review_label', recipe_data=None,
-                                          message='Review the label text and select Prepare recipe.')
+                    message = 'The label could not be read confidently. This is a general recipe, not a photo-specific match. You can correct the text to refine it.'
+                    recommendation.update(label_review_required=True, message=message)
+                    recommendation['recipe_data']['explanation'] = message
                 return self.send_json(200, {**scan, 'candidates': recommendation['candidates'],
                                             'message': recommendation['message'], 'recommendation': recommendation})
             body = json.loads(payload)

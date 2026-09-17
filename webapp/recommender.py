@@ -10,11 +10,13 @@ import json
 import math
 from pathlib import Path
 import re
+from statistics import median
 import unicodedata
 
 ROOT = Path(__file__).resolve().parents[1]
 MODEL_PATH = ROOT / 'ml' / 'artifacts' / 'model.json'
 MODEL_VERSION = 'tfidf-reference-v1'
+RECOMMENDATION_POLICY = 'progressive-fallback-v2'
 FEATURE_WEIGHTS = {'country': 2.0, 'processing': 2.0, 'variety': 1.5, 'region': 1.0, 'flavor': .5}
 
 COUNTRIES = {
@@ -86,8 +88,12 @@ def parse_label(text):
     if not isinstance(text, str) or len(text) > 10000:
         raise ValueError('Label text must be shorter than 10,000 characters.')
     country_line = field(text, ['страна', 'country', 'origin'])
-    # Country matching on the first three lines avoids mistaking a Java variety for origin.
-    origin_text = country_line or '\n'.join(text.splitlines()[:3])
+    # Search the whole label, excluding descriptive fields that can mention a
+    # country/Java variety without naming the coffee's origin.
+    description_fields = {'разновидность', 'сорт', 'variety', 'varietal', 'varieties',
+                          'обжарщик', 'roaster', 'вкус', 'букет', 'notes', 'tasting notes'}
+    origin_text = country_line or '\n'.join(line for line in text.splitlines()
+                                            if norm(line.partition(':')[0]) not in description_fields)
     countries = tags(origin_text, COUNTRIES)
     processing_line = field(text, ['обработка', 'способ обработки', 'process', 'processing'])
     variety_line = field(text, ['разновидность', 'разновидности', 'сорт', 'variety', 'varietal', 'varieties'])
@@ -166,6 +172,22 @@ def supported(profile, reference, similarity):
     return same_country and bool(base_process) and similarity >= .3
 
 
+def representative(rows):
+    """Select an intact recipe closest to the group's median brewing parameters.
+
+    Fixed scales express one meaningful unit per target. No new pour schedule
+    is synthesized, and missing label features are never imputed from the donor.
+    """
+    if not rows:
+        raise ValueError('No checked reference recipes are available.')
+    scales = {'coffee_g': 1, 'water_to_coffee_ratio': 1, 'temperature_c': 1,
+              'duration_seconds': 30}
+    centers = {key: median(row['recipe'][key] for row in rows) for key in scales}
+    def distance(row):
+        return sum(abs(row['recipe'][key] - centers[key]) / scale for key, scale in scales.items())
+    return min(rows, key=lambda row: (distance(row), len(row['recipe']['quality_issues']), row['coffee']['coffee_id']))
+
+
 def ui_recipe(raw):
     issue_text = {
         'missing_step_temperature': 'The source recipe omits the temperature of one pour.',
@@ -217,12 +239,10 @@ class RecipeModel:
     def recommend(self, text, selected_coffee_id=None):
         profile = parse_label(text)
         candidates = self.identity_candidates(text)
-        result = {'model_version': self.model['version'], 'dataset_snapshot': self.model['dataset_snapshot'],
+        result = {'model_version': self.model['version'], 'policy_version': RECOMMENDATION_POLICY,
+                  'dataset_snapshot': self.model['dataset_snapshot'],
                   'label': profile, 'candidates': candidates, 'kind': 'insufficient_data',
                   'message': '', 'recipe_data': None, 'neighbors': []}
-        if len(text.strip()) < 4:
-            result['message'] = 'Could not read the label. Add the coffee name, country and processing.'
-            return result
         exact = [c for c in candidates if c['exact_name']]
         selected = self.by_id.get(selected_coffee_id) if selected_coffee_id else None
         if selected_coffee_id and not selected:
@@ -232,35 +252,73 @@ class RecipeModel:
             selected = self.by_id[exact[0]['coffee_id']]
         if selected:
             if not selected['usable']:
-                result.update(kind='source_needs_review', message='Coffee found, but its source recipe contains errors and cannot be used automatically.')
-                return result
+                return self.baseline(result, reason='The matched source recipe has errors. This is a separate starting recipe, not a repaired version.')
             result.update(kind='catalog_match', message='Matched the saved catalog. Check the lot, harvest and filter roast on your bag.')
             result['recipe_data'] = self.response_recipe(selected, result['kind'], selected['coffee']['name'])
             return result
         if candidates and (exact or candidates[0]['name_similarity'] >= .86):
-            result.update(kind='confirm_match', message='This looks like a catalog coffee. Confirm its name and roaster, or correct the label text.')
+            self.baseline(result, reason='The coffee name is unconfirmed. Use this starting recipe or confirm the catalog match below.')
+            result['kind'] = 'confirm_match'
             return result
-        if profile['espresso_or_dark']:
-            result['message'] = 'This dataset covers filter roasts. Espresso and dark roasts are not supported yet.'
-            return result
-        if profile['decaf']:
-            result['message'] = 'There are not enough checked recipes to recommend one for a new decaf.'
-            return result
+        if profile['espresso_or_dark'] or profile['decaf']:
+            return self.baseline(result, general=True)
         if not profile['country'] or not (set(profile['processing']) & {'washed', 'natural', 'honey'}):
-            result['message'] = 'For a new coffee, include its country and base processing: washed, natural or honey.'
-            return result
+            return self.baseline(result)
         ranked = rank(profile, [r for r in self.rows if r['usable']], self.model['idf'])
         result['neighbors'] = [{'name': row['coffee']['name'], 'coffee_id': row['coffee']['coffee_id'],
                                 'url': row['coffee']['url'], 'similarity': round(score, 4)} for score, row in ranked[:3]]
         # Choose only a supported neighbor, not an unrelated best-scoring recipe.
         eligible = [(s, r) for s, r in ranked if supported(profile, r['profile'], s)]
         if not eligible:
-            result['message'] = 'No sufficiently similar coffee with this country and processing is in the dataset.'
-            return result
+            return self.baseline(result)
         score, reference = eligible[0]
         result.update(kind='suggested_reference', similarity=round(score, 4),
                       message='A starting recipe from a similar coffee. Taste is untested on your coffee; the grind setting applies only to the listed grinder.')
         result['recipe_data'] = self.response_recipe(reference, result['kind'], profile['name'] or 'Your coffee')
+        return result
+
+    def baseline(self, result, general=False, reason=None):
+        profile = result['label']
+        if profile['decaf'] or profile['espresso_or_dark']:
+            general = True
+            reason = (reason + ' ' if reason else '') + 'The dataset cannot tailor this reference to decaf, espresso or dark roast.'
+        pool = [r for r in self.rows if r['usable'] and not r['profile'].get('decaf')]
+        scope, matched = 'general', []
+        base = set(profile['processing']) & {'washed', 'natural', 'honey'}
+        if not general:
+            country_pool = [r for r in pool if profile['country'] and r['profile']['country'] == profile['country']]
+            if country_pool:
+                pool, scope, matched = country_pool, 'country', ['country']
+            process_pool = [r for r in pool if base and base == (set(r['profile']['processing']) & {'washed', 'natural', 'honey'})]
+            if process_pool:
+                pool = process_pool
+                scope = 'country_processing' if country_pool else 'processing'
+                matched.append('processing')
+        reference = representative(pool)
+        country_name = COUNTRIES[profile['country']][1].title() if profile['country'] in COUNTRIES else None
+        descriptions = {
+            'general': 'A general V60 starting recipe from the checked dataset.',
+            'country': f'A starting recipe based on {len(pool)} checked coffees from {country_name}. Processing is not assumed.',
+            'country_processing': f'A starting recipe based on {len(pool)} checked coffees with this country and base processing.',
+            'processing': f'A starting recipe based on {len(pool)} checked coffees with this base processing; origin is not matched.',
+        }
+        missing = [key for key in ('country', 'processing', 'variety', 'region', 'flavor')
+                   if not (base if key == 'processing' else profile.get(key))]
+        unmatched = [key for key in ('country', 'processing') if profile.get(key) and key not in matched]
+        message = descriptions[scope]
+        if missing:
+            message += ' Not read: ' + ', '.join(missing) + '.'
+        if unmatched:
+            message += ' Not matched: ' + ', '.join(unmatched) + '.'
+        if reason:
+            message = reason + ' ' + message
+        basis = {'scope': scope, 'reference_count': len(pool), 'matched_fields': matched,
+                 'missing_fields': missing, 'unmatched_fields': unmatched}
+        result.update(kind='suggested_baseline', message=message, basis=basis)
+        title = profile['name'] or (f'{country_name} · starting recipe' if country_name else 'Your coffee · starting recipe')
+        result['recipe_data'] = self.response_recipe(reference, 'suggested_baseline', title)
+        result['recipe_data'].update(basis=basis, explanation=message,
+                                    recipe_subtitle='Dataset starting recipe · ' + scope.replace('_', ' '))
         return result
 
     def response_recipe(self, row, kind, title):

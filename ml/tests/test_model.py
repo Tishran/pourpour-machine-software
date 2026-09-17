@@ -27,7 +27,7 @@ class ModelTests(unittest.TestCase):
         for text in ['Руанда Суса', 'Roaster: Someone Else\nРуанда Суса']:
             r = self.model.recommend(text)
             self.assertEqual(r['kind'], 'confirm_match')
-            self.assertIsNone(r['recipe_data'])
+            self.assertEqual(r['recipe_data']['recommendation_kind'], 'suggested_baseline')
             selected = self.model.recommend(text, r['candidates'][0]['coffee_id'])
             self.assertEqual(selected['kind'], 'catalog_match')
 
@@ -39,7 +39,7 @@ class ModelTests(unittest.TestCase):
     def test_all_catalog_names_are_identifiable(self):
         for row in self.model.rows:
             r = self.model.recommend('The Welder Catherine\n' + row['coffee']['name'])
-            self.assertEqual(r['kind'], 'catalog_match' if row['usable'] else 'source_needs_review', row['coffee']['name'])
+            self.assertEqual(r['kind'], 'catalog_match' if row['usable'] else 'suggested_baseline', row['coffee']['name'])
 
     def test_unseen_supported_coffee_gets_intact_reference(self):
         r = self.model.recommend('Coffee: New Lot\nCountry: Rwanda\nProcessing: washed\nVariety: red bourbon')
@@ -51,20 +51,66 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(sum(s['water_g'] for s in recipe['steps']), recipe['water_g'])
         self.assertEqual(r['recipe_data']['product']['name'], 'New Lot')
 
-    def test_insufficient_and_out_of_domain_labels_abstain(self):
+    def test_incomplete_and_out_of_domain_labels_get_honest_baselines(self):
         for text in ['', 'Coffee', 'Country: Rwanda', 'Country: Brazil\nProcessing: natural',
                      'Country: Rwanda\nProcessing: washed\nEspresso',
                      'Country: Colombia\nProcessing: washed\nDecaf',
                      'Country: Kenya\nProcessing: honey']:
             r = self.model.recommend(text)
-            self.assertEqual(r['kind'], 'insufficient_data', text)
-            self.assertIsNone(r['recipe_data'])
+            self.assertEqual(r['kind'], 'suggested_baseline', text)
+            recipe = r['recipe_data']['recipes'][0]
+            self.assertEqual(sum(s['water_g'] for s in recipe['steps']), recipe['water_g'])
+            self.assertTrue(r['message'])
 
     def test_bad_source_is_not_repaired(self):
         for name in ['Перу Valle Sagrado из бочки', 'Колумбия Рэйнбоу декаф']:
             r = self.model.recommend('The Welder Catherine\n' + name)
-            self.assertEqual(r['kind'], 'source_needs_review')
-            self.assertIsNone(r['recipe_data'])
+            self.assertEqual(r['kind'], 'suggested_baseline')
+            self.assertIn('source recipe has errors', r['message'])
+            self.assertNotIn(name, r['recipe_data']['reference_name'])
+
+    def test_country_only_never_invents_processing(self):
+        for text in ['Колумбия', 'COLOMBIA', 'Country: Colombia', 'Coffee bag\n250 g\nArabica\nКолумбия']:
+            r = self.model.recommend(text)
+            self.assertEqual(r['kind'], 'suggested_baseline')
+            self.assertEqual(r['label']['country'], 'CO')
+            self.assertEqual(r['label']['processing'], [])
+            self.assertEqual(r['basis']['scope'], 'country')
+            self.assertIn('processing', r['basis']['missing_fields'])
+            self.assertEqual(r['basis']['matched_fields'], ['country'])
+            self.assertGreater(r['basis']['reference_count'], 1)
+            self.assertIn('Колумбия', r['recipe_data']['reference_name'])
+
+    def test_fallback_selection_is_deterministic_and_source_intact(self):
+        r = self.model.recommend('Colombia')
+        other = RecipeModel()
+        other.rows.reverse()
+        self.assertEqual(r['recipe_data'], other.recommend('Colombia')['recipe_data'])
+        source = next(row['recipe'] for row in self.model.rows if row['coffee']['name'] == r['recipe_data']['reference_name'])
+        recipe = r['recipe_data']['recipes'][0]
+        for key in ('coffee_g', 'water_g', 'temperature_c', 'duration_seconds'):
+            self.assertEqual(recipe[key], source[key])
+        self.assertEqual([s['water_g'] for s in recipe['steps']], [s['water_g'] for s in source['steps']])
+
+    def test_processing_only_and_unknown_origin(self):
+        for text in ['Processing: washed', 'Country: Brazil\nProcessing: washed']:
+            r = self.model.recommend(text)
+            self.assertEqual(r['basis']['scope'], 'processing')
+            self.assertEqual(r['basis']['matched_fields'], ['processing'])
+        r = self.model.recommend('Brazil')
+        self.assertEqual(r['basis']['scope'], 'general')
+        self.assertIn('country', r['basis']['unmatched_fields'])
+
+    def test_unreadable_or_ambiguous_origin_is_not_identified(self):
+        for text in ['', '   ', 'Premium Arabica', 'Colombia Brazil']:
+            r = self.model.recommend(text)
+            self.assertEqual(r['basis']['scope'], 'general')
+            self.assertIsNone(r['label']['country'])
+            self.assertIn('country', r['basis']['missing_fields'])
+        for text in ['Colombia decaf', 'Rwanda espresso', 'Руанда тёмная обжарка']:
+            r = self.model.recommend(text)
+            self.assertEqual(r['basis']['scope'], 'general')
+            self.assertIn('cannot tailor', r['message'])
 
     def test_bilingual_features(self):
         en = parse_label('Country: Rwanda\nProcessing: washed, anaerobic\nVariety: red bourbon')
@@ -121,6 +167,15 @@ class OCRTests(unittest.TestCase):
         self.assertIn('руанда', result['text'].casefold())
         recommendation = RecipeModel().recommend(result['text'])
         self.assertEqual(recommendation['kind'], 'catalog_match')
+
+    @unittest.skipUnless(status()['available'], 'Install OCR dependencies')
+    def test_single_word_photo_is_enough(self):
+        result = extract((Path(__file__).parent / 'fixtures/colombia-label.png').read_bytes())
+        self.assertIn('colombia', result['text'].casefold())
+        self.assertFalse(result['needs_review'])
+        recommendation = RecipeModel().recommend(result['text'])
+        self.assertEqual(recommendation['basis']['scope'], 'country')
+        self.assertEqual(recommendation['label']['processing'], [])
 
 
 if __name__ == '__main__':

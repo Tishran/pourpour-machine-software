@@ -118,7 +118,8 @@ def extract(payload):
                     break
             if best is None:
                 raise OCRError('Could not recognize the photo within 30 seconds. Crop it to the label.')
-            needs_review = best['mean_word_confidence'] < 70 or best['word_count'] < 3
+            # One confidently read word (e.g. "Colombia") is useful label data.
+            needs_review = best['mean_word_confidence'] < 70 or best['word_count'] == 0
             best.pop('rank_score')
             return {**best, 'engine': 'Tesseract LSTM rus+eng',
                     'needs_review': needs_review,
