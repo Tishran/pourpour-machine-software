@@ -219,3 +219,32 @@ body[data-screen="brew"] #screen-brew { display: flex; flex-direction: column; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
 }
+
+/* Recognition is a separate stop before the recipe, including exact matches. */
+body[data-screen="confirm"] #screen-confirm { display: flex; flex-direction: column; }
+select { font: inherit; color: var(--ink); background: var(--card); min-height: 48px; max-width: 100%; border: 1.5px solid var(--line); border-radius: 12px; padding: 8px 12px; }
+#settings-panel { padding: 8px 0 16px; }
+.gallery-button, #photo-cancel { margin-top: 8px; }
+.recognition-body { flex: 1; min-width: 0; }
+.recognition-photo { display: block; width: 100%; height: 120px; object-fit: contain; margin: 16px 0; }
+.recognition-fields { display: flex; flex-direction: column; gap: 8px; margin: 12px 0; }
+.recognition-fields details { min-width: 0; }
+.recognition-fields summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 48px; padding: 8px 12px; border-radius: 12px; background: var(--card); cursor: pointer; }
+.recognition-fields summary::after { content: '✎'; flex: none; }
+.recognition-fields summary span { overflow-wrap: anywhere; }
+.recognition-fields summary small { color: var(--muted); font-size: .8rem; }
+.recognition-fields select, .recognition-fields input[type=text], .recognition-fields input[type=search] { width: 100%; margin-top: 8px; min-height: 48px; padding: 8px 12px; font: inherit; border: 1.5px solid var(--line); border-radius: 12px; color: var(--ink); background: var(--card); }
+.recognition-fields label.check { display: flex; align-items: center; gap: 12px; min-height: 48px; margin-top: 8px; }
+.recognition-fields input[type=checkbox] { width: 24px; height: 24px; accent-color: var(--orange); }
+.recognition-fields .candidates { display: grid; gap: 8px; margin-top: 8px; }
+.text-button { min-height: 48px; min-width: 48px; background: none; border: 0; padding: 8px; text-decoration: underline; text-underline-offset: 3px; font: inherit; }
+.recognition-actions { margin-top: 16px; }
+#recipe-recognition { font-size: .9rem; }
+#recipe-recognition p { margin: 0 0 8px; }
+#recipe-photo img { width: 64px; height: 64px; }
+#recipe-photo-label { text-align: left; }
+@media (min-width: 900px) {
+  .gallery-button { display: none; }
+  #screen-confirm { grid-column: 1 / -1; width: 100%; max-width: 540px; margin: 0 auto; }
+  .recipe-photo { display: flex; }
+}

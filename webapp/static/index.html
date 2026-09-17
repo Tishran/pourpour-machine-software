@@ -24,9 +24,17 @@
     <section class="screen" id="screen-find" aria-labelledby="find-title">
       <header class="bar">
         <h1 class="brand" id="find-title">First Brew</h1>
+        <button class="toggle" id="settings-button" type="button" aria-expanded="false" aria-controls="settings-panel">⚙</button>
       </header>
+      <div id="settings-panel" hidden>
+        <label class="label" id="language-label" for="language"></label>
+        <select id="language"><option value="en">English</option><option value="ru">Русский</option></select>
+      </div>
       <p class="status" id="status" role="status" aria-live="polite"></p>
       <button type="button" class="button primary big" id="photo-button"></button>
+      <button class="button gallery-button" id="gallery-button" type="button"></button>
+      <button class="button" id="photo-cancel" type="button" hidden></button>
+      <input class="visually-hidden" id="gallery-input" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
       <input class="visually-hidden" id="photo-input" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
       <figure class="scan-preview" id="scan-preview" data-scanning="false" hidden>
         <div class="scan-frame"><img id="scan-image" alt=""></div>
@@ -47,14 +55,33 @@
       <div class="results" id="results" role="list" hidden></div>
     </section>
 
+    <section class="screen" id="screen-confirm" aria-labelledby="confirm-title">
+      <header class="bar"><button class="back" id="confirm-back" type="button"></button></header>
+      <div class="recognition-body">
+        <h1 class="title" id="confirm-title" tabindex="-1"></h1>
+        <img class="recognition-photo" id="confirm-photo" alt="">
+        <p class="status" id="confirm-status" role="status" aria-live="polite"></p>
+        <div id="recognized-fields"></div>
+        <div id="unreadable-help" hidden><p id="photo-tips"></p></div>
+      </div>
+      <div class="cta-bar recognition-actions">
+        <button class="button primary big" id="confirm-recipe" type="button"></button>
+        <button class="button" id="not-this-coffee" type="button"></button>
+        <button class="button primary big" id="photo-retake" type="button" hidden></button>
+        <button class="button" id="type-name" type="button" hidden></button>
+        <button class="text-button" id="general-recipe" type="button" hidden></button>
+      </div>
+    </section>
+
     <section class="screen" id="screen-recipe" aria-labelledby="recipe-title">
       <header class="bar">
         <button type="button" class="back" id="recipe-back"></button>
       </header>
       <div class="recipe-photo" id="recipe-photo" hidden>
         <img id="recipe-photo-image" alt="">
-        <span id="recipe-photo-label"></span>
+        <button class="text-button" id="recipe-photo-label" type="button" aria-expanded="false" aria-controls="recipe-recognition"></button>
       </div>
+      <div id="recipe-recognition" hidden></div>
       <div class="recipe-body" id="recipe-body" aria-busy="false">
         <p class="placeholder" id="recipe-placeholder"></p>
       </div>

@@ -167,10 +167,10 @@ class OCRTests(unittest.TestCase):
         self.assertEqual(recommendation['kind'], 'catalog_match')
 
     @unittest.skipUnless(status()['available'], 'Install OCR dependencies')
-    def test_single_word_photo_is_enough(self):
+    def test_single_word_photo_requires_review_but_preserves_country(self):
         result = extract((Path(__file__).parent / 'fixtures/colombia-label.png').read_bytes())
         self.assertIn('colombia', result['text'].casefold())
-        self.assertFalse(result['needs_review'])
+        self.assertTrue(result['needs_review'])
         recommendation = RecipeModel().recommend(result['text'])
         self.assertEqual(recommendation['basis']['scope'], 'country')
         self.assertEqual(recommendation['label']['processing'], [])

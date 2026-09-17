@@ -23,7 +23,7 @@ const tapTargets = (page) => page.evaluate(() => [...document.querySelectorAll('
   .filter(el => el.h < 48 || el.w < 48));
 
 async function checkDevice(browser, deviceName) {
-  const context = await browser.newContext({...devices[deviceName], baseURL});
+  const context = await browser.newContext({...devices[deviceName], baseURL, locale: 'en-US'});
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -40,7 +40,9 @@ async function checkDevice(browser, deviceName) {
     assert.equal(await page.locator('#recents-hint').count(), 0, 'the recents hint is removed');
     assert.deepEqual(await tapTargets(page), [], 'every visible control is at least 48×48');
 
-    // Photo → recipe screen.
+    assert.equal(await page.getAttribute('#gallery-input', 'capture'), null);
+    assert.equal(await page.locator('#gallery-button').isVisible(), true);
+    // Photo → confirmation → recipe screen.
     await page.route('**/api/label', async route => {
       await new Promise(resolve => setTimeout(resolve, 750));
       await route.continue();
@@ -60,7 +62,14 @@ async function checkDevice(browser, deviceName) {
     assert.ok(Math.abs(previewRatio.shown - previewRatio.original) < .05, 'landscape photo keeps its aspect ratio');
     assert.notEqual(await page.locator('.scan-frame').evaluate(el => getComputedStyle(el, '::after').animationName), 'none');
     const photoData = await (await photoResponse).json();
-    const uncertain = photoData.recommendation.ocr_uncertain === true;
+    const uncertain = photoData.ocr.needs_review;
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
+    assert.match(await text(page, '#recognized-fields'), /Руанда Суса/);
+    assert.ok(await inViewport(page, '#confirm-recipe'));
+    assert.ok(await noHorizontalScroll(page));
+    assert.equal(await page.locator('#not-this-coffee').isVisible(), false, 'exact match needs only one confirmation');
+    assert.equal(await page.locator('#confirm-recipe').evaluate(el => el === document.activeElement), true);
+    await page.locator('#confirm-recipe').click();
     await page.waitForFunction(() => document.body.dataset.screen === 'recipe' && document.getElementById('recipe-title')?.textContent === 'Руанда Суса', null, {timeout: 40000});
     assert.ok(await noHorizontalScroll(page), 'no horizontal scroll on the recipe screen');
     assert.equal(await page.locator('#recipe-photo').isVisible(), true, 'uploaded photo stays visible on the phone recipe');
@@ -68,23 +77,15 @@ async function checkDevice(browser, deviceName) {
     assert.equal(await page.locator('#recipe-photo-image').evaluate(image => getComputedStyle(image).objectFit), 'contain',
       'recipe thumbnail shows the whole image');
     assert.equal(await page.locator('#scan-preview').getAttribute('data-scanning'), 'false');
-    assert.equal(await text(page, '#status'), photoData.recommendation.message, 'detailed message stays in the find panel');
-    assert.ok(!(await text(page, '#recipe-body')).includes(photoData.recommendation.message), 'message is not duplicated in the recipe panel');
+    assert.equal(await page.locator('#recipe-form').isVisible(), false, 'OCR never opens the recipe editor');
+    await page.locator('#recipe-photo-label').click();
+    assert.match(await text(page, '#recipe-recognition'), /Rwanda/);
+    await page.locator('#recipe-photo-label').click();
     await page.setViewportSize({width: 1100, height: 800});
-    assert.equal(await page.locator('#status').isVisible(), true, 'detailed message is visible in the desktop left panel');
-    assert.equal(await page.locator('#recipe-body').isVisible(), true, 'desktop recipe panel stays visible');
-    assert.equal(await page.locator('#scan-preview').isVisible(), true, 'desktop left panel keeps the uploaded photo');
+    assert.equal(await page.locator('#gallery-button').isVisible(), false);
+    await page.waitForFunction(() => document.getElementById('photo-button').textContent === 'Choose a photo');
+    assert.equal(await page.locator('#recipe-body').isVisible(), true);
     await page.setViewportSize(devices[deviceName].viewport);
-    assert.equal(await page.locator('#recipe-form').isVisible(), uncertain, 'uncertain OCR opens the editor automatically');
-    if (uncertain) {
-      assert.equal(await page.locator('#edit-water').inputValue(), '250', 'editor starts from the matched recipe');
-      assert.match(await text(page, '.review-reason'), /not read confidently/);
-      assert.equal(await page.locator('#cancel-edit').count(), 0, 'automatic review has no Cancel button');
-      assert.equal(await text(page, '#recipe-form button[type=submit]'), 'Use this recipe');
-      await page.locator('#recipe-form button[type=submit]').click();
-      assert.equal(await page.locator('#recipe-body').textContent().then(value => value.includes('Edited for this brew')), false,
-        'confirming unchanged defaults does not mark them as edited');
-    }
     assert.ok(await inViewport(page, '#brew-start'), 'start button visible without scrolling');
     assert.match(await text(page, '.figures'), /250 g/);
     assert.match(await text(page, '.figures'), /98 °C/);
@@ -125,7 +126,9 @@ async function checkDevice(browser, deviceName) {
     await page.goBack();
     await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
 
-    // Browser back returns to the find screen.
+    // Back through confirmation returns to Find.
+    await page.goBack();
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
     await page.goBack();
     await page.waitForFunction(() => document.body.dataset.screen === 'find');
     assert.ok(await inViewport(page, '#photo-button'));
@@ -159,15 +162,13 @@ async function checkDevice(browser, deviceName) {
     await page.locator('#scan-preview[data-scanning="true"]').waitFor({state: 'visible'});
     assert.equal(await page.locator('.scan-frame').evaluate(el => getComputedStyle(el, '::after').animationName), 'none',
       'reduced motion disables the scan animation');
-    await page.waitForFunction(() => document.body.dataset.screen === 'recipe' && document.getElementById('recipe-title')?.textContent === 'Руанда Суса');
-    assert.equal(await page.locator('#recipe-form').isVisible(), !uncertain, 'confident OCR leaves the editor closed');
-    assert.equal(await page.locator('.review-reason').isVisible(), !uncertain, 'only automatic review shows the reason');
-    if (!uncertain) assert.equal(await page.locator('#cancel-edit').count(), 0, 'automatic review only offers confirmation');
-    else {
-      await page.locator('#edit-recipe').click();
-      assert.equal(await page.locator('#cancel-edit').isVisible(), true, 'confident recipe can be edited and cancelled');
-      await page.locator('#cancel-edit').click();
-    }
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
+    assert.equal(await page.locator('#recipe-form').isVisible(), false);
+    assert.match(await text(page, '#confirm-status'), uncertain ? /Check the details/ : /uncertain/);
+    await page.locator('#confirm-recipe').click();
+    await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+    await page.goBack();
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
     await page.unroute('**/api/label');
     await page.goBack();
     await page.waitForFunction(() => document.body.dataset.screen === 'find');
@@ -211,24 +212,129 @@ async function checkDevice(browser, deviceName) {
   }
 }
 
+async function recognitionChecks(browser) {
+  const context = await browser.newContext({...devices['iPhone 13'], baseURL, locale: 'ru-RU'});
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  try {
+    await page.goto('/');
+    assert.equal(await page.getAttribute('html', 'lang'), 'ru');
+    await page.locator('#settings-button').click();
+    await page.locator('#language').selectOption('en');
+    await page.reload();
+    assert.equal(await page.getAttribute('html', 'lang'), 'en', 'language choice survives reload');
+    await page.waitForFunction(() => document.getElementById('status').textContent.includes('coffees'));
+    // Actual blank image through OCR, not a mocked unreadable response.
+    const blank = await page.evaluate(() => {
+      const canvas = document.createElement('canvas'); canvas.width = 500; canvas.height = 500;
+      const ctx = canvas.getContext('2d'); ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 500, 500);
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
+    await page.locator('#gallery-input').setInputFiles({name: 'blank.png', mimeType: 'image/png', buffer: Buffer.from(blank, 'base64')});
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm', null, {timeout: 40000});
+    assert.equal(await text(page, '#confirm-title'), 'Couldn’t read the label');
+    assert.equal(await page.locator('#confirm-recipe').isVisible(), false);
+    assert.ok(await inViewport(page, '#photo-retake'));
+    assert.ok(await noHorizontalScroll(page));
+    assert.equal(await page.locator('#confirm-photo').evaluate(img => img.naturalWidth > 0), true);
+    await page.locator('#type-name').click();
+    assert.equal(await screen(page), 'find');
+    assert.equal(await page.locator('#query').evaluate(el => el === document.activeElement), true);
+    await page.goBack();
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
+    await page.locator('#general-recipe').click();
+    await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+    assert.match(await text(page, '.recommendation-basis'), /starting recipe/);
+    await page.goBack(); await page.goBack();
+    // A slow response can be cancelled and cannot navigate when it arrives later.
+    const rec = await (await page.request.post('/api/recommend', {data: {text: 'Colombia washed'}})).json();
+    const photo = {text: 'Colombia washed', ocr: {needs_review: false}, recommendation: rec, photo_state: 'confirmation'};
+    await page.route('**/api/label', async route => {
+      await new Promise(resolve => setTimeout(resolve, 6500));
+      await route.fulfill({json: photo}).catch(() => {});
+    });
+    await page.locator('#gallery-input').setInputFiles(fixture('colombia-label.png'));
+    await page.locator('#photo-cancel').waitFor({state: 'visible', timeout: 8000});
+    assert.match(await text(page, '#status'), /longer than usual/);
+    await page.locator('#photo-cancel').click();
+    assert.equal(await page.locator('#scan-preview').isVisible(), true);
+    await page.waitForTimeout(1800);
+    assert.equal(await screen(page), 'find');
+    await page.unroute('**/api/label');
+    // Editing recognized chips sends only confirmed fields.
+    await page.route('**/api/label', route => route.fulfill({json: photo}));
+    await page.locator('#gallery-input').setInputFiles(fixture('colombia-label.png'));
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
+    await page.locator('#country-chip summary').click();
+    await page.locator('#confirm-country').selectOption('ET');
+    await page.locator('#country-chip summary').click();
+    const changed = page.waitForRequest(r => r.url().endsWith('/api/recommend'));
+    await page.locator('#confirm-recipe').click();
+    const body = (await changed).postDataJSON();
+    assert.match(body.text, /Страна: эфиопия/);
+    assert.ok(!body.text.includes('Colombia'));
+    await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+    assert.equal(await text(page, '#recipe-title'), 'Ethiopia · washed');
+    assert.match(await text(page, '.subtitle'), /Starting recipe based on/);
+    await page.goBack();
+    await page.locator('#not-this-coffee').click();
+    assert.equal(await page.locator('#query').inputValue(), 'Colombia washed');
+    await page.unroute('**/api/label');
+    // Name correction uses the catalog search, then still needs confirmation.
+    await page.route('**/api/label', route => route.fulfill({json: photo}));
+    await page.locator('#gallery-input').setInputFiles(fixture('colombia-label.png'));
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
+    await page.locator('#name-chip summary').click();
+    await page.locator('#confirm-name').fill('суса');
+    await page.locator('#confirm-candidates button', {hasText: 'Руанда Суса'}).click();
+    await page.waitForFunction(() => document.getElementById('name-chip').textContent.includes('Руанда Суса') && !document.getElementById('confirm-recipe').disabled);
+    assert.equal(await screen(page), 'confirm');
+    await page.locator('#confirm-recipe').click();
+    assert.equal(await text(page, '#recipe-title'), 'Руанда Суса');
+    await page.goBack(); await page.goBack();
+    await page.unroute('**/api/label');
+    const decaf = await (await page.request.post('/api/recommend', {data: {text: 'Колумбия декаф, мытая'}})).json();
+    await page.route('**/api/label', route => route.fulfill({json: {...photo, recommendation: decaf}}));
+    await page.locator('#gallery-input').setInputFiles(fixture('colombia-label.png'));
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm');
+    await page.locator('#confirm-recipe').click();
+    await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+    assert.match(await text(page, '#recipe-title'), /Colombia · washed · Decaf/);
+    assert.match(await text(page, '.recommendation-basis'), /filter roast without decaf/);
+    assert.ok(!(await text(page, '#recipe-body')).includes('Not matched'));
+    const storage = await page.evaluate(() => JSON.stringify({...localStorage}));
+    assert.ok(!storage.includes('Colombia washed') && !storage.includes('data:image'), 'OCR and images never persist');
+    assert.deepEqual(errors, []);
+    console.log('PASS recognition: language persistence, unreadable photo, explicit baseline, cancellation, corrected chips, decaf caveat.');
+  } finally { await context.close(); }
+}
+
 async function screenshots(browser, dir) {
   fs.mkdirSync(dir, {recursive: true});
   for (const colorScheme of ['light', 'dark']) {
-    const context = await browser.newContext({baseURL, viewport: {width: 375, height: 812}, deviceScaleFactor: 2, isMobile: true, hasTouch: true, colorScheme});
+    const context = await browser.newContext({baseURL, viewport: {width: 375, height: 812}, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'ru-RU', colorScheme});
     const page = await context.newPage();
     await page.goto('/');
-    await page.waitForFunction(() => /coffees in the database|unavailable/.test(document.getElementById('status').textContent));
-    await page.locator('#query').fill('руанда');
-    await page.locator('#results .coffee').first().waitFor();
+    await page.waitForFunction(() => !document.getElementById('status').textContent.includes('Проверяем'));
     await page.screenshot({path: path.join(dir, `1-find-${colorScheme}.png`)});
-    await page.locator('#results .coffee', {hasText: 'Руанда Суса'}).click();
-    await page.waitForFunction(() => document.querySelector('.figures'), null, {timeout: 30000});
-    await page.screenshot({path: path.join(dir, `2-recipe-${colorScheme}.png`)});
+    await page.locator('#gallery-input').setInputFiles(fixture('rwanda-label.png'));
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm', null, {timeout: 40000});
+    await page.screenshot({path: path.join(dir, `2-confirm-${colorScheme}.png`)});
+    await page.locator('#confirm-recipe').click();
+    await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+    await page.screenshot({path: path.join(dir, `3-recipe-${colorScheme}.png`)});
     await page.locator('#brew-start').click();
-    await page.waitForFunction(() => document.body.dataset.screen === 'brew');
     await page.evaluate(() => window.firstBrew.seek(64));
-    await page.locator('#brew-toggle').click(); // running again, mid-pour
-    await page.screenshot({path: path.join(dir, `3-brew-${colorScheme}.png`)});
+    await page.screenshot({path: path.join(dir, `4-brew-${colorScheme}.png`)});
+    const blank = await page.evaluate(() => {
+      const canvas = document.createElement('canvas'); canvas.width = 300; canvas.height = 300;
+      const ctx = canvas.getContext('2d'); ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 300, 300);
+      return canvas.toDataURL('image/png').split(',')[1];
+    });
+    await page.locator('#gallery-input').setInputFiles({name: 'blank.png', mimeType: 'image/png', buffer: Buffer.from(blank, 'base64')});
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm', null, {timeout: 40000});
+    await page.screenshot({path: path.join(dir, `5-unreadable-${colorScheme}.png`)});
     await context.close();
   }
   console.log(`Saved screenshots to ${dir}`);
@@ -241,6 +347,7 @@ async function screenshots(browser, dir) {
     : {headless: true, channel: process.env.POURPOUR_BROWSER_CHANNEL || undefined});
   try {
     for (const device of ['iPhone SE', 'iPhone 13', 'Pixel 5']) await checkDevice(browser, device);
+    await recognitionChecks(browser);
     if (process.env.POURPOUR_SCREENS_DIR) await screenshots(browser, process.env.POURPOUR_SCREENS_DIR);
   } finally {
     await browser.close();

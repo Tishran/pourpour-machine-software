@@ -10,7 +10,7 @@ const machineState = (page) => page.evaluate(() => window.firstBrew.state().mach
 
 (async () => {
   const browser = await chromium.launch({headless: true, channel: process.env.POURPOUR_BROWSER_CHANNEL || undefined});
-  const context = await browser.newContext({...devices['iPhone 13'], baseURL});
+  const context = await browser.newContext({...devices['iPhone 13'], baseURL, locale: 'en-US'});
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));

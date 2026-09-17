@@ -3,6 +3,7 @@ import csv
 import io
 import importlib.util
 import os
+import re
 from pathlib import Path
 import shutil
 import struct
@@ -15,6 +16,16 @@ DEFAULT_TESSDATA = Path(__file__).parent / '.cache' / 'tessdata'
 MAX_IMAGE_BYTES = 8_000_000
 MAX_PIXELS = 16_000_000
 OCR_LOCK = threading.BoundedSemaphore(1)
+
+
+def needs_review(text, confidence):
+    """Two meaningful Unicode words and confidence >=70 are required.
+
+    Punctuation/digits are separators, not evidence of a readable label.
+    A single country is still useful, but must be confirmed by the user.
+    """
+    words = re.findall(r'[^\W\d_]{3,}', text, re.UNICODE)
+    return confidence < 70 or len(words) < 2
 
 
 class OCRError(Exception):
@@ -118,12 +129,11 @@ def extract(payload):
                     break
             if best is None:
                 raise OCRError('Could not recognize the photo within 30 seconds. Crop it to the label.')
-            # One confidently read word (e.g. "Colombia") is useful label data.
-            needs_review = best['mean_word_confidence'] < 70 or best['word_count'] == 0
+            review = needs_review(best['text'], best['mean_word_confidence'])
             best.pop('rank_score')
             return {**best, 'engine': 'Tesseract LSTM rus+eng',
-                    'needs_review': needs_review,
-                    'warnings': ['Please review the text: the label was not read confidently.'] if needs_review else [],
+                    'needs_review': review,
+                    'warnings': ['Please review the text: the label was not read confidently.'] if review else [],
                     'privacy': 'Photo processed locally and deleted after OCR.'}
     finally:
         OCR_LOCK.release()

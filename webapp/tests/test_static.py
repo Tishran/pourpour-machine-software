@@ -64,7 +64,7 @@ class StaticFileTests(unittest.TestCase):
 
     def test_ui_strings_are_defined_in_the_dictionary(self):
         script = (ROOT / 'app.js').read_text(encoding='utf-8')
-        dictionary = script[script.index('const STRINGS'):script.index('const LANG')]
+        dictionary = script[script.index('const STRINGS'):script.index('const SETTINGS_KEY')]
         languages = {}
         for match in re.finditer(r'^\s{2}(\w+): \{\n(.*?)^\s{2}\},', dictionary, re.M | re.S):
             languages[match[1]] = set(re.findall(r'^\s{4}([a-z_]+):', match[2], re.M))
@@ -73,7 +73,8 @@ class StaticFileTests(unittest.TestCase):
         used = set(re.findall(r"\bt\('([a-z_]+)'", script))
         used |= {f'{key}_hint' for key in ('vibrate', 'sound')}
         self.assertFalse(used - languages['en'], used - languages['en'])
-        self.assertIn("const LANG = 'en';", script)
+        self.assertIn("navigator.language", script)
+        self.assertIn("firstbrew.settings.v1", script)
         self.assertNotIn('http://', script.replace('http://127.0.0.1', ''))
         self.assertNotIn('https://', script)
         css = (ROOT / 'style.css').read_text(encoding='utf-8')

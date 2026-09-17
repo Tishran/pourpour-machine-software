@@ -9,7 +9,7 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlsplit
 from pourpour import CoffeeService, SourceError, scan_label
 from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
-from recommender import RecipeModel, RECOMMENDATION_POLICY
+from recommender import RecipeModel, RECOMMENDATION_POLICY, COUNTRIES, PROCESSING, VARIETIES
 from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
 
 ROOT = Path(__file__).parent / 'static'
@@ -69,7 +69,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {'version': fitted.model['version'],
                                             'policy_version': RECOMMENDATION_POLICY,
                                             'dataset_snapshot': fitted.model['dataset_snapshot'],
-                                            'coffees': len(fitted.rows), 'ocr': ocr_status()})
+                                            'coffees': len(fitted.rows), 'ocr': ocr_status(),
+                                            'countries': COUNTRIES, 'processing': PROCESSING, 'varieties': VARIETIES})
             if url.path == '/api/search':
                 query = parse_qs(url.query).get('q', [''])[0].strip()
                 if len(query) > 120:
@@ -123,15 +124,16 @@ class Handler(BaseHTTPRequestHandler):
                 scan = scan_label(payload, content_type)
                 ocr = scan['ocr']
                 recommendation = get_model().recommend(ocr['text'])
-                # Preserve automatic recipes for readable names, including uncertain
-                # OCR. Surface the uncertainty without adding a confirmation step.
+                # Recognition is confirmed in the UI, before any recipe is shown.
+                label = recommendation['label']
+                unreadable = ocr['needs_review'] and not (
+                    label['country'] or label['processing'] or recommendation['candidates'])
                 if ocr['needs_review']:
-                    message = ('The label could not be read. This is a general starting recipe.'
-                               if not ocr['text'].strip() else
-                               'Some label text is uncertain. This recipe may refer to a different coffee; try a clearer photo to refine it.')
-                    recommendation.update(ocr_uncertain=True, message=message + ' ' + recommendation['message'])
-                    recommendation['recipe_data']['explanation'] = recommendation['message']
-                return self.send_json(200, {**scan, 'candidates': recommendation['candidates'],
+                    recommendation['ocr_uncertain'] = True
+                if unreadable:
+                    recommendation.update(recipe_data=None, message='Could not read the label.')
+                return self.send_json(200, {**scan, 'photo_state': 'unreadable' if unreadable else 'confirmation',
+                                            'candidates': recommendation['candidates'],
                                             'message': recommendation['message'], 'recommendation': recommendation})
             body = json.loads(payload)
             if not isinstance(body, dict) or not isinstance(body.get('text'), str):

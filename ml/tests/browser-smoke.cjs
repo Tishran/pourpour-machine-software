@@ -7,7 +7,7 @@ const assert = require('node:assert/strict');
   const browser = await chromium.launch({headless: true, channel: process.env.POURPOUR_BROWSER_CHANNEL || undefined});
   try {
     const baseURL = process.env.POURPOUR_TEST_URL || 'http://127.0.0.1:8002';
-    const page = await browser.newPage({baseURL, viewport: {width: 1280, height: 900}});
+    const page = await browser.newPage({baseURL, locale: 'en-US', viewport: {width: 1280, height: 900}});
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(baseURL);
@@ -15,11 +15,13 @@ const assert = require('node:assert/strict');
     const chooser = page.waitForEvent('filechooser');
     await page.locator('#photo-button').click();
     await (await chooser).setFiles(path.join(__dirname, 'fixtures/rwanda-label.png'));
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm', null, {timeout: 40000});
+    await page.locator('#confirm-recipe').click();
     await page.locator('#recipe-title').waitFor({timeout: 40000});
     await page.waitForFunction(() => document.querySelector('.figures'), null, {timeout: 40000});
     assert.equal(await page.locator('#recipe-title').textContent(), 'Руанда Суса');
     assert.match(await page.locator('.figures').textContent(), /250/);
-    // No manual OCR-confirmation UI: the recipe is prepared straight from the photo.
+    // Recognition has been confirmed; the recipe editor remains optional.
     assert.equal(await page.locator('#label-editor').count(), 0);
     assert.equal(await page.locator('#prepare-recipe').count(), 0);
     await page.locator('#brew-start').click();
@@ -47,8 +49,10 @@ const assert = require('node:assert/strict');
     assert.match(closest.message, /origin is not matched/i);
 
     await page.locator('#photo-input').setInputFiles(path.join(__dirname, 'fixtures/colombia-label.png'));
-    await page.waitForFunction(() => document.querySelector('#recipe-title')?.textContent === 'Colombia · starting recipe', null, {timeout: 40000});
-    assert.match(await page.locator('.recommendation-basis').textContent(), /Processing is not assumed/);
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm', null, {timeout: 40000});
+    await page.locator('#confirm-recipe').click();
+    assert.equal(await page.locator('#recipe-title').textContent(), 'Colombia');
+    assert.match(await page.locator('.recommendation-basis').textContent(), /starting recipe/);
     assert.match(await page.locator('.figures').textContent(), /250/);
 
     const blankImage = await page.evaluate(() => {
@@ -59,10 +63,12 @@ const assert = require('node:assert/strict');
       return canvas.toDataURL('image/png').split(',')[1];
     });
     await page.locator('#photo-input').setInputFiles({name:'unreadable.png', mimeType:'image/png', buffer:Buffer.from(blankImage, 'base64')});
-    await page.waitForFunction(() => document.querySelector('#recipe-title')?.textContent === 'Your coffee · starting recipe', null, {timeout: 40000});
-    assert.equal(await page.evaluate(() => document.body.dataset.screen), 'recipe');
-    assert.match(await page.locator('.recommendation-basis').textContent(), /could not be read/);
-    assert.match(await page.locator('.recommendation-basis').textContent(), /general starting recipe/);
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm', null, {timeout: 40000});
+    assert.equal(await page.locator('#confirm-title').textContent(), 'Couldn’t read the label');
+    assert.equal(await page.locator('#confirm-recipe').isVisible(), false);
+    await page.locator('#general-recipe').click();
+    await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+    assert.match(await page.locator('.recommendation-basis').textContent(), /starting recipe/);
 
     const invalid = await page.request.post('/api/label', {headers: {'Content-Type':'image/png'}, data: Buffer.from('not an image')});
     assert.equal(invalid.status(), 400);
@@ -78,7 +84,7 @@ const assert = require('node:assert/strict');
     await page.setViewportSize({width: 390, height: 844});
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth), true);
     await page.screenshot({path: process.env.POURPOUR_SCREENSHOT || '/tmp/pourpour-photo-mobile.png', fullPage:true});
-    console.log('PASS: photo OCR → catalog recipe with no confirmation UI; country-only photo; unreadable photo → general recipe; unsupported origin → reference; timer screen; invalid upload; same-origin; mobile layout; no JS errors.');
+    console.log('PASS desktop: photo → confirmation → recipe; country-only photo; explicit unreadable fallback; timer; invalid upload; same-origin; mobile overflow.');
   } finally {
     await browser.close();
   }

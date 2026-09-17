@@ -1,7 +1,7 @@
 # Photo → label → recipe: experimental local model
 
 The app now accepts a photo of a coffee bag, extracts Russian/English text,
-and immediately prepares a recipe using the versioned Welder Catherine
+and confirms the recognized details before showing a recipe from the versioned Welder Catherine
 dataset. No API key or cloud image upload is required.
 
 ## What the model does
@@ -17,7 +17,7 @@ dataset. No API key or cloud image upload is required.
    letters. This is not a fine-tuned label vision model; there is no labeled
    training set of real bag photographs yet.
 3. **Known coffee:** a complete or strong fuzzy name match automatically returns
-   the saved, structurally checked recipe. No manual confirmation is required.
+   the saved, structurally checked recipe in the API. The photo UI always asks for confirmation.
    Names may be shared by other roasters or harvests, so a match is not proof of
    identity; the result reminds the user to check the lot and filter roast.
 4. **Unseen coffee:** a TF-IDF nearest-neighbor model fitted on the 35 checked
@@ -35,11 +35,12 @@ dataset. No API key or cloud image upload is required.
    Missing and unmatched fields are returned explicitly; processing is never
    invented. New decafs and espresso/dark roasts get a general reference with an
    explicit limitation. The two malformed source recipes remain excluded.
-6. **Unreadable labels:** when no useful text is available, the app supplies a
-   clearly marked general starting recipe. A single country word is enough to
-   narrow the pool. Uncertain but readable OCR still prepares a recipe immediately,
-   with an explicit caveat and `ocr_uncertain` in the API; a clearer photo can refine
-   it. This does not guarantee correct recognition of every photograph.
+6. **Unreadable labels:** fewer than two Unicode words of at least three letters,
+   or mean OCR confidence below 70, requires review. A single recognized country
+   remains useful and appears on the confirmation screen. With no country,
+   processing or candidates, the photo endpoint returns `photo_state: unreadable`
+   and no recipe. A general starting recipe is available only after the user
+   explicitly asks for it. This does not guarantee correct recognition of every photograph.
 
 Fallback selection retains an existing recipe closest to the pool's medians
 for dose, water-to-coffee ratio, temperature and duration, using absolute
@@ -83,7 +84,7 @@ supports it) up to 20 MB, corrects orientation and resizes to a maximum side of
 2400 pixels before submitting JPEG. If the photo cannot be decoded, export it to
 JPEG first. Photos go only to your local server, are held in a temporary
 directory during OCR and deleted afterward. They are not placed in the dataset,
-logs, Git or a cloud service. The UI keeps no copy of the photo.
+logs, Git or a cloud service. The UI holds a preview only in tab memory and never persists the photo or OCR text.
 
 The photo/recipe flow works offline after setup; the separate live catalog search
 still requests the roaster's public site. If OCR dependencies are unavailable,
@@ -136,7 +137,8 @@ evaluate recommendations by coffee/farm/harvest groups plus real brewing outcome
 
 ## Endpoints
 
-- `GET /api/model`: model version, recommendation policy version, snapshot, OCR setup status.
+- `GET /api/model`: model version, policy, snapshot, OCR setup status, and parser
+  vocabularies `countries`, `processing`, `varieties` for confirmation controls.
 - `POST /api/label`: raw JPEG/PNG body → OCR text and recommendation. No image URL
   fetching; 8 MB/16 MP bounds, one OCR process group at a time, 30-second OCR budget.
 - `POST /api/scan`: compatibility alias for the same real OCR flow, with `status`,
@@ -146,8 +148,9 @@ evaluate recommendations by coffee/farm/harvest groups plus real brewing outcome
 
 Response `kind` is one of `catalog_match`, `closest_reference`, or
 `suggested_baseline`. Successful recommendations include `recipe_data` without
-an OCR-confirmation step. Photo responses set `ocr_uncertain` when text recognition
-is uncertain and include a visible explanation. Empty text is valid and produces
+changing the selection algorithm. Photo responses set `ocr_uncertain` when text
+recognition is uncertain; `photo_state` is `confirmation` or `unreadable`. In the latter
+case `recipe_data` is null. Empty text in an explicit `/api/recommend` request produces
 a general baseline; invalid uploads still fail. Suggested recipes are never
 written back into the roaster dataset. This remains a local development server.
 
@@ -174,5 +177,5 @@ recipe, unknown-coffee suggestions, single-country photos, unreadable photos,
 unsupported origins, immediate name matching, the timer screen, invalid upload,
 same-origin enforcement and mobile overflow. `tests/browser-mobile.cjs` runs the
 three-screen phone flow under iPhone 13 and Pixel 5 emulation (see the
-[web app README](../webapp/README.md#мобильный-интерфейс)). API tests check that uncertain text still returns
-a recipe with a caveat and that an empty OCR result returns a general baseline.
+[web app README](../webapp/README.md#мобильный-интерфейс)). API tests check the review threshold, confirmable sparse labels, vocabulary exposure,
+unreadable-photo gating, and the explicit general-recipe request.

@@ -2,11 +2,11 @@
 // First Brew — three screens: find → recipe → brew. Plain JS, no build step.
 
 // ---------------------------------------------------------------------------
-// Strings. Everything the user reads lives here; add `en` next to `ru` later.
+// UI strings in English and Russian; source coffee names remain as published.
 // ---------------------------------------------------------------------------
 const NBSP = ' ';
 const STRINGS = {
-  // English is the default. Wording is descriptive, not imperative: the machine
+  // Both languages use descriptive wording: the machine
   // (or the person) does the pouring; the app reports what is happening.
   en: {
     app: 'First Brew',
@@ -15,7 +15,46 @@ const STRINGS = {
     unit_c: '°C',
     unit_s: 's',
     instructions: {'предсмачивание': 'Bloom', 'смачивание': 'Bloom', 'вливание': 'Pour', 'пролив': 'Pour'},
-    photo_button: 'Take a photo of the bag',
+    source_warnings: {
+      'В источнике не заполнена часть параметров рецепта.': 'Some recipe parameters are missing from the source.',
+      'Сумма вливаний в источнике отличается от общего количества воды.': 'The source pour amounts do not add up to the total water.',
+      'В источнике есть неполное или некорректное время вливаний.': 'Some source pour times are missing or invalid.',
+    },
+    source_notes: {'Все вливания круговыми движениями': 'Pour in circles for every step.'},
+    photo_button: 'Take a photo',
+    gallery_button: 'Choose from gallery',
+    desktop_photo: 'Choose a photo',
+    settings: 'Settings',
+    language: 'Language',
+    reading_slow: 'Reading the label… Taking longer than usual.',
+    cancel: 'Cancel',
+    photo_cancelled: 'Recognition cancelled. Your photo is still here.',
+    we_read: 'We read:',
+    unreadable: 'Couldn’t read the label',
+    photo_tips: 'A closer photo helps. Avoid glare on the label.',
+    retake: 'Retake',
+    type_name: 'Type the name',
+    general_recipe: 'Use a general starting recipe',
+    confirm_recipe: 'Yes, show the recipe',
+    not_this: 'Not this coffee',
+    country: 'Country',
+    processing: 'Processing',
+    variety: 'Variety',
+    coffee_name: 'Coffee name',
+    not_read: 'Not read',
+    no_catalog_name: 'No catalog name confirmed',
+    clear_name: 'Not a catalog coffee',
+    choose_name: 'Search the catalog',
+    recognition_review: 'Some text is uncertain. Check the details below.',
+    recognition_check: 'Check the details against your bag.',
+    what_read: 'What we read',
+    recognized_coffee: 'General starting recipe',
+    starting_from: name => `Starting recipe based on ${name}`,
+    general_note: 'The saved recipes are for filter roast without decaf, so this is a general starting recipe.',
+    decaf: 'Decaf',
+    espresso: 'Espresso / dark roast',
+    review_saved: 'Confirmed label details',
+    model_options_error: 'Could not load the label options. Try again.',
     search_label: 'Or type the coffee name',
     search_placeholder: 'e.g. Rwanda Susa',
     show_all: 'Show all',
@@ -132,7 +171,11 @@ const STRINGS = {
     action_stopped: 'The brew was stopped',
     scale_line: (g, temp) => `${g} on the scale${NBSP}· ${temp}`,
     machine_done_text: 'The machine has finished. Let the water drain and enjoy your cup.',
-    machine_errors: {watchdog: 'The link to the machine was lost during the brew.', dry_run: 'The pump ran but the weight did not change. Check the water tank.', no_temp_sensor: 'No reading from the temperature sensor.', overheat: 'The water got too hot; the heater was switched off.', estop: 'The emergency stop is engaged. Restart the machine.'},
+    machine_errors: {watchdog: 'The link to the machine was lost during the brew.',
+    dry_run: 'The pump ran but the weight did not change. Check the water tank.',
+    no_temp_sensor: 'No reading from the temperature sensor.',
+    overheat: 'The water got too hot; the heater was switched off.',
+    estop: 'The emergency stop is engaged. Restart the machine.'},
     err_photo_size: 'Choose a photo smaller than 20 MB.',
     err_photo_open: 'Could not open the photo. Save it as JPEG and try again.',
     err_generic: 'Could not load data. Please try again.',
@@ -145,7 +188,50 @@ const STRINGS = {
     unit_c: '°C',
     unit_s: 'с',
     instructions: {},
+    source_warnings: {
+      'Some recipe parameters are missing from the source.': 'В источнике не заполнена часть параметров рецепта.',
+      'The source pour amounts do not add up to the total water.': 'Сумма вливаний в источнике отличается от общего количества воды.',
+      'Some source pour times are missing or invalid.': 'В источнике есть неполное или некорректное время вливаний.',
+      'The source recipe omits the temperature of one pour.': 'В источнике не указана температура одного вливания.',
+      'The source pour amounts do not match the stated total water.': 'Сумма вливаний в источнике отличается от общего количества воды.',
+      'The source contains an invalid pour time.': 'В источнике некорректное время вливания.',
+      'The source contains an invalid total duration.': 'В источнике некорректная общая длительность.',
+    },
+    source_notes: {},
     photo_button: 'Сфотографировать пачку',
+    gallery_button: 'Выбрать из галереи',
+    desktop_photo: 'Выбрать фото',
+    settings: 'Настройки',
+    language: 'Язык',
+    reading_slow: 'Фото распознаётся… Это дольше обычного.',
+    cancel: 'Отмена',
+    photo_cancelled: 'Распознавание отменено. Фото осталось на экране.',
+    we_read: 'Распознано:',
+    unreadable: 'Не удалось прочитать этикетку',
+    photo_tips: 'Снимок поближе поможет. Избегайте бликов на этикетке.',
+    retake: 'Переснять',
+    type_name: 'Ввести название',
+    general_recipe: 'Использовать общий стартовый рецепт',
+    confirm_recipe: 'Да, показать рецепт',
+    not_this: 'Это другой кофе',
+    country: 'Страна',
+    processing: 'Обработка',
+    variety: 'Разновидность',
+    coffee_name: 'Название кофе',
+    not_read: 'Не прочитано',
+    no_catalog_name: 'Название из каталога не подтверждено',
+    clear_name: 'Кофе вне каталога',
+    choose_name: 'Поиск в каталоге',
+    recognition_review: 'Часть текста прочитана неуверенно. Проверьте признаки ниже.',
+    recognition_check: 'Сверьте признаки с пачкой.',
+    what_read: 'Что распознано',
+    recognized_coffee: 'Общий стартовый рецепт',
+    starting_from: name => `Стартовый рецепт на основе «${name}»`,
+    general_note: 'Сохранённые рецепты — для обжарки под фильтр без декафа, поэтому это общий стартовый рецепт.',
+    decaf: 'Декаф',
+    espresso: 'Эспрессо / тёмная обжарка',
+    review_saved: 'Подтверждённые признаки',
+    model_options_error: 'Не удалось загрузить признаки этикетки. Попробуйте ещё раз.',
     search_label: 'Или введите название',
     search_placeholder: 'Например, Руанда Суса',
     show_all: 'Показать все',
@@ -262,14 +348,23 @@ const STRINGS = {
     action_stopped: 'Заваривание остановлено',
     scale_line: (g, temp) => `${g} на весах${NBSP}· ${temp}`,
     machine_done_text: 'Машина закончила. Дайте воде стечь и наслаждайтесь.',
-    machine_errors: {watchdog: 'Связь с машиной прервалась во время заваривания.', dry_run: 'Помпа работала, а вес не менялся. Проверьте бак с водой.', no_temp_sensor: 'Нет показаний датчика температуры.', overheat: 'Вода перегрелась, нагрев выключен.', estop: 'Нажата аварийная кнопка. Перезапустите машину.'},
+    machine_errors: {watchdog: 'Связь с машиной прервалась во время заваривания.',
+    dry_run: 'Помпа работала, а вес не менялся. Проверьте бак с водой.',
+    no_temp_sensor: 'Нет показаний датчика температуры.',
+    overheat: 'Вода перегрелась, нагрев выключен.',
+    estop: 'Нажата аварийная кнопка. Перезапустите машину.'},
     err_photo_size: 'Выберите фото меньше 20 МБ.',
     err_photo_open: 'Не удалось открыть фото. Сохраните его как JPEG и попробуйте снова.',
     err_generic: 'Не удалось загрузить данные. Попробуйте ещё раз.',
     err_label: 'Не удалось обработать фото.',
   },
 };
-const LANG = 'en';
+const SETTINGS_KEY = 'firstbrew.settings.v1';
+let LANG = navigator.language?.toLowerCase().startsWith('ru') ? 'ru' : 'en';
+try {
+  const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+  if (['en', 'ru'].includes(saved.language)) LANG = saved.language;
+} catch (error) { /* defaults when storage is unavailable */ }
 const t = (key, ...args) => {
   const value = STRINGS[LANG][key];
   return typeof value === 'function' ? value(...args) : value ?? key;
@@ -290,19 +385,11 @@ const countdown = (seconds) => seconds >= 60 ? clock(Math.max(0, seconds)) : sec
 const stepName = (instruction) => {
   const text = String(instruction ?? '').trim();
   const known = STRINGS[LANG].instructions[text.toLowerCase()];
-  return known || (/[А-Яа-яЁё]/.test(text) ? t('pour_default') : text ? text[0].toUpperCase() + text.slice(1) : t('pour_default'));
+  return known || text || t('pour_default');
 };
-const sourceWarnings = {
-  'В источнике не заполнена часть параметров рецепта.': 'Some recipe parameters are missing from the source.',
-  'Сумма вливаний в источнике отличается от общего количества воды.': 'The source pour amounts do not add up to the total water.',
-  'В источнике есть неполное или некорректное время вливаний.': 'Some source pour times are missing or invalid.',
-};
-const sourceWarning = (value) => sourceWarnings[value] || (/[А-Яа-яЁё]/.test(value) ? t('source_warning') : value);
-const sourceNote = (value) => {
-  const note = String(value || '').trim();
-  if (note === 'Все вливания круговыми движениями') return 'Pour in circles for every step.';
-  return /[А-Яа-яЁё]/.test(note) ? t('source_note_original') : note;
-};
+// Known API warnings may be localized; unrecognized source text stays intact.
+const sourceWarning = value => STRINGS[LANG].source_warnings[value] || value;
+const sourceNote = value => STRINGS[LANG].source_notes[value] || value;
 
 // ---------------------------------------------------------------------------
 // State
@@ -319,13 +406,13 @@ const prefs = {vibrate: true, sound: true};
 
 function loadPrefs() {
   try {
-    const saved = JSON.parse(localStorage.getItem('firstbrew.prefs') || '{}');
+    const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || localStorage.getItem('firstbrew.prefs') || '{}');
     if (typeof saved.vibrate === 'boolean') prefs.vibrate = saved.vibrate;
     if (typeof saved.sound === 'boolean') prefs.sound = saved.sound;
   } catch (error) { /* private mode or blocked storage: keep defaults */ }
 }
 function savePrefs() {
-  try { localStorage.setItem('firstbrew.prefs', JSON.stringify(prefs)); } catch (error) { /* ignore */ }
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify({...prefs, language: LANG})); } catch (error) { /* ignore */ }
 }
 
 // Only a small recipe snapshot is kept locally; scans and OCR text are never stored.
@@ -368,7 +455,7 @@ function renderRecents() {
     button.type = 'button';
     button.className = 'coffee recent-coffee';
     button.setAttribute('role', 'listitem');
-    const date = new Intl.DateTimeFormat('en', {month: 'short', day: 'numeric'}).format(entry.usedAt);
+    const date = new Intl.DateTimeFormat(LANG, {month: 'short', day: 'numeric'}).format(entry.usedAt);
     button.innerHTML = `<span class="coffee-copy"><strong>${escape(entry.product.name)}</strong><small>${grams(entry.recipe.coffee_g)} · ${grams(entry.recipe.water_g)} · ${date}</small></span><span class="arrow" aria-hidden="true">→</span>`;
     button.addEventListener('click', () => selectRecent(entry));
     list.append(button);
@@ -376,7 +463,9 @@ function renderRecents() {
   $('recents').hidden = !entries.length || !!$('query').value.trim();
 }
 function saveRecent() {
-  const product = {id: currentProduct?.id || null, name: currentData.product.name, url: currentData.product.url};
+  const product = {id: currentProduct?.id || null,
+    name: currentData.confirmed_label && currentData.recommendation_kind !== 'catalog_match'
+      ? currentData.reference_name : currentData.product.name, url: currentData.product.url};
   const recipe = currentRecipe;
   if (!safeRecentUrl(product.url)) return;
   const snapshot = {usedAt: Date.now(), product, recipe: {
@@ -411,21 +500,24 @@ function selectRecent(entry) {
 // ---------------------------------------------------------------------------
 // Screens and browser history
 // ---------------------------------------------------------------------------
-const SCREENS = ['find', 'recipe', 'brew'];
+const SCREENS = ['find', 'confirm', 'recipe', 'brew'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
   if (!SCREENS.includes(screen)) screen = 'find';
-  if (screen !== 'find' && !currentData && !recipeLoading) screen = 'find';
+  if (screen === 'confirm' && !recognition) screen = 'find';
+  if (['recipe', 'brew'].includes(screen) && !currentData && !recipeLoading) screen = 'find';
   if (screen === 'brew' && !currentRecipe) screen = currentData ? 'recipe' : 'find';
+  if (currentScreen() === 'confirm' && screen !== 'confirm') cancelConfirmation();
   document.body.dataset.screen = screen;
+  if (screen === 'confirm') renderConfirmation();
   if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
   if (screen === 'brew' && brewMode === 'machine') renderMachine();
   if (push && history.state?.screen !== screen) {
     history.pushState({screen}, '', screen === 'find' ? location.pathname : `#${screen}`);
   }
   window.scrollTo(0, 0);
-  const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title') : $('brew-toggle');
+  const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title') : screen === 'confirm' ? $('confirm-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -566,10 +658,11 @@ function renderRecipe(index, editedRecipe = null) {
     ? t('grind_setting', escape(recipe.grinder || t('grinder_unknown')), recipe.grind_setting ? escape(recipe.grind_setting) : t('setting_unknown'))
     : t('grind_unknown');
   $('recipe-body').innerHTML = `
-    <h1 class="title" id="recipe-title" tabindex="-1">${escape(currentData.product.name)}</h1>
-    <p class="subtitle">${escape(currentData.recipe_subtitle || t('recipe_subtitle'))}</p>
+    <h1 class="title" id="recipe-title" tabindex="-1">${escape(recipeTitle())}</h1>
+    <p class="subtitle">${escape(suggested ? t('starting_from', currentData.reference_name || currentData.product.name) : t('recipe_subtitle'))}</p>
     ${variants}
-    ${suggested ? `<p class="note">${t('starting_recipe')}</p>` : ''}
+    ${suggested ? `<p class="note recommendation-basis">${t(currentData.confirmed_label?.decaf || currentData.confirmed_label?.espresso_or_dark ? 'general_note' : 'starting_recipe')}</p>` : ''}
+    ${currentData.ocr_uncertain ? `<p class="note error">${t('recognition_review')}</p>` : ''}
     ${currentData.from_recent ? `<p class="note">${t('recent_copy')}</p>` : ''}
     ${currentData.stale ? `<p class="note">${t('stale_data')}</p>` : ''}
     ${recipe.edited ? `<p class="note">${t('edited_recipe')}</p>` : ''}
@@ -589,6 +682,7 @@ function renderRecipe(index, editedRecipe = null) {
     $('recipe-title').focus({preventScroll: true});
   }));
   $('edit-recipe').addEventListener('click', () => openRecipeEditor(index));
+  renderRecipeRecognition();
   $('recipe-cta').hidden = false;
   $('brew-start').disabled = !recipe.duration_seconds;
   updateBrewStartLabel();
@@ -709,7 +803,7 @@ function updateCtaBar() {
 // ---------------------------------------------------------------------------
 // Photo → recipe
 // ---------------------------------------------------------------------------
-let photoPreviewData = null;
+let photoPreviewData = null, slowPhotoTimer = null;
 function clearPhotoPreview() {
   $('scan-preview').hidden = true;
   $('scan-preview').dataset.scanning = 'false';
@@ -717,6 +811,9 @@ function clearPhotoPreview() {
   $('scan-image').removeAttribute('src');
   $('recipe-photo-image').removeAttribute('src');
   photoPreviewData = null;
+  $('confirm-photo').removeAttribute('src');
+  $('recipe-recognition').hidden = true;
+  $('recipe-photo-label').setAttribute('aria-expanded', 'false');
 }
 function previewDataUrl(blob) {
   return new Promise((resolve, reject) => {
@@ -730,6 +827,7 @@ function showPhotoPreview(dataUrl) {
   photoPreviewData = dataUrl;
   $('scan-image').src = dataUrl;
   $('recipe-photo-image').src = dataUrl;
+  $('confirm-photo').src = dataUrl;
   $('scan-preview').hidden = false;
   $('scan-preview').dataset.scanning = 'true';
   $('scan-caption').textContent = t('scan_caption');
@@ -738,12 +836,17 @@ function finishPhotoScan() {
   $('scan-preview').dataset.scanning = 'false';
   $('scan-caption').textContent = t('scan_complete');
 }
-function cancelPhotoRequests() {
+function cancelPhotoRequests({keepPreview = false} = {}) {
   photoGeneration++;
   photoRequest?.abort();
   photoRequest = null;
-  clearPhotoPreview();
+  clearTimeout(slowPhotoTimer);
+  cancelConfirmation();
+  if (!keepPreview) { clearPhotoPreview(); recognition = null; }
+  finishPhotoScan();
+  $('photo-cancel').hidden = true;
   $('photo-button').disabled = false;
+  $('gallery-button').disabled = false;
 }
 
 async function photoBlob(file) {
@@ -770,18 +873,222 @@ async function photoBlob(file) {
 
 function showRecommendation(recommendation) {
   if (!recommendation.recipe_data) {
-    setStatus('status', recommendation.message, true);
+    setStatus('confirm-status', t('recipe_error'), true);
     return;
   }
-  currentData = recommendation.recipe_data;
+  currentData = {...recommendation.recipe_data,
+    confirmed_label: structuredClone(recommendation.label), ocr_uncertain: !!recognition?.ocr.needs_review};
   currentProduct = currentData.product;
-  // The detailed recognition message stays in the find panel on desktop.
   markSelected();
-  setStatus('status', recommendation.message);
+  setStatus('status', t('review_saved'));
   renderRecipe(0);
   $('recipe-photo').hidden = !photoPreviewData;
   show('recipe');
-  if (recommendation.ocr_uncertain === true) openRecipeEditor(0, {uncertain: true});
+}
+
+// Recognition data lives only in memory. Never persist photos or OCR text.
+let recognition = null, draft = null, draftName = '', draftChanged = false;
+let modelOptions = null, modelOptionsReady, confirmRequest = null, nameRequest = null, nameTimer;
+function photoButtonLabel() {
+  $('photo-button').textContent = t(matchMedia('(min-width: 900px)').matches ? 'desktop_photo' : 'photo_button');
+}
+function cancelConfirmation() {
+  confirmRequest?.abort(); confirmRequest = null;
+  nameRequest?.abort(); nameRequest = null;
+  clearTimeout(nameTimer);
+}
+function featureName(type, key) {
+  const aliases = modelOptions?.[type]?.[key];
+  if (!aliases) return key || t('not_read');
+  const value = LANG === 'ru' ? aliases[0] : type === 'countries' ? aliases[1] : aliases.at(-1);
+  return type === 'countries' ? value.charAt(0).toUpperCase() + value.slice(1) : value;
+}
+function recognizedTitle(label) {
+  const parts = [label?.country ? featureName('countries', label.country) : '',
+    ...(label?.processing || []).map(key => featureName('processing', key))].filter(Boolean);
+  if (label?.decaf) parts.push(t('decaf'));
+  if (label?.espresso_or_dark) parts.push(t('espresso'));
+  return parts.join(' · ') || label?.name || t('recognized_coffee');
+}
+function recipeTitle() {
+  return currentData.confirmed_label && currentData.recommendation_kind !== 'catalog_match'
+    ? recognizedTitle(currentData.confirmed_label) : currentData.product.name;
+}
+function isUnreadable() {
+  const rec = recognition?.recommendation;
+  return recognition?.photo_state === 'unreadable' || (recognition?.ocr.needs_review &&
+    !rec?.label.country && !rec?.label.processing?.length && !rec?.candidates?.length);
+}
+function isExactRecognition() {
+  return !draftChanged && recognition?.recommendation.candidates.some(c => c.exact_name);
+}
+function detailsSummary(label, value) {
+  return `<summary><span><small>${t(label)}</small><br>${escape(value || t('not_read'))}</span></summary>`;
+}
+function renderConfirmation() {
+  const unreadable = isUnreadable();
+  $('confirm-back').textContent = t('back');
+  $('confirm-title').textContent = t(unreadable ? 'unreadable' : 'we_read');
+  $('photo-tips').textContent = t('photo_tips');
+  $('unreadable-help').hidden = !unreadable;
+  $('recognized-fields').hidden = unreadable;
+  for (const [id, key] of [['confirm-recipe', 'confirm_recipe'], ['not-this-coffee', 'not_this'],
+    ['photo-retake', 'retake'], ['type-name', 'type_name'], ['general-recipe', 'general_recipe']]) $(id).textContent = t(key);
+  $('confirm-recipe').hidden = unreadable;
+  $('confirm-recipe').disabled = false;
+  $('not-this-coffee').hidden = unreadable || isExactRecognition();
+  ['photo-retake', 'type-name', 'general-recipe'].forEach(id => { $(id).hidden = !unreadable; $(id).disabled = false; });
+  setStatus('confirm-status', unreadable ? '' : t(recognition.ocr.needs_review ? 'recognition_review' : 'recognition_check'));
+  if (unreadable) return;
+  const options = (type, selected) => `<option value="">${t('not_read')}</option>` +
+    Object.keys(modelOptions?.[type] || {}).map(key => `<option value="${escape(key)}" ${key === selected ? 'selected' : ''}>${escape(featureName(type, key))}</option>`).join('');
+  const varietyText = (draft.variety || []).map(key => featureName('varieties', key)).join(', ');
+  $('recognized-fields').innerHTML = `<div class="recognition-fields">
+    <details id="name-chip">${detailsSummary('coffee_name', draftName || t('no_catalog_name'))}
+      <label class="label" for="confirm-name">${t('choose_name')}</label>
+      <input id="confirm-name" type="search" maxlength="120" autocomplete="off" placeholder="${t('search_placeholder')}">
+      <div class="candidates" id="confirm-candidates"></div>
+      <button class="text-button" type="button" id="clear-name">${t('clear_name')}</button>
+    </details>
+    <details id="country-chip">${detailsSummary('country', draft.country && featureName('countries', draft.country))}
+      <select id="confirm-country" aria-label="${t('country')}">${options('countries', draft.country)}</select>
+    </details>
+    <details id="processing-chip">${detailsSummary('processing', draft.processing.map(key => featureName('processing', key)).join(', '))}
+      ${Object.keys(modelOptions?.processing || {}).map(key => `<label class="check"><input type="checkbox" name="confirm-processing" value="${key}" ${draft.processing.includes(key) ? 'checked' : ''}>${escape(featureName('processing', key))}</label>`).join('')}
+    </details>
+    <details id="variety-chip">${detailsSummary('variety', varietyText)}
+      <input id="confirm-variety" type="text" maxlength="120" aria-label="${t('variety')}" value="${escape(varietyText)}">
+    </details>
+    ${draft.decaf ? `<span>${t('decaf')}</span>` : ''}${draft.espresso_or_dark ? `<span>${t('espresso')}</span>` : ''}
+  </div>`;
+  const changed = () => {
+    cancelConfirmation();
+    draftChanged = true;
+    // A changed feature must not be overridden by the previous exact name match.
+    draftName = ''; draft.name = null;
+    updateChipSummary('name-chip', 'coffee_name', t('no_catalog_name'));
+    $('confirm-recipe').disabled = false;
+    $('not-this-coffee').hidden = false;
+  };
+  $('confirm-country').addEventListener('change', event => {
+    changed(); draft.country = event.target.value || null;
+    updateChipSummary('country-chip', 'country', draft.country && featureName('countries', draft.country));
+  });
+  document.querySelectorAll('[name=confirm-processing]').forEach(input => input.addEventListener('change', () => {
+    changed(); draft.processing = [...document.querySelectorAll('[name=confirm-processing]:checked')].map(el => el.value);
+    updateChipSummary('processing-chip', 'processing', draft.processing.map(key => featureName('processing', key)).join(', '));
+  }));
+  $('confirm-variety').addEventListener('input', event => {
+    changed(); draft.variety = [event.target.value.trim()].filter(Boolean);
+    updateChipSummary('variety-chip', 'variety', event.target.value);
+  });
+  $('clear-name').addEventListener('click', () => { changed(); $('name-chip').open = false; });
+  renderNameCandidates(recognition.recommendation.candidates || []);
+  $('confirm-name').addEventListener('input', () => {
+    clearTimeout(nameTimer); nameRequest?.abort();
+    const query = $('confirm-name').value.trim();
+    if (!query) { renderNameCandidates(recognition.recommendation.candidates || []); return; }
+    nameTimer = setTimeout(() => searchConfirmationNames(query), 300);
+  });
+}
+function updateChipSummary(id, label, value) {
+  const summary = $(id).querySelector('summary');
+  summary.innerHTML = `<span><small>${t(label)}</small><br>${escape(value || t('not_read'))}</span>`;
+}
+function renderNameCandidates(candidates) {
+  const container = $('confirm-candidates');
+  if (!container) return;
+  container.replaceChildren();
+  candidates.forEach(candidate => {
+    const button = document.createElement('button');
+    button.type = 'button'; button.className = 'button'; button.textContent = candidate.name;
+    button.addEventListener('click', async () => {
+      cancelConfirmation();
+      const request = confirmRequest = new AbortController();
+      $('confirm-recipe').disabled = true;
+      setStatus('confirm-status', t('catalog_searching'));
+      try {
+        const result = await post('/api/recommend', JSON.stringify({text: candidate.name}), 'application/json', request.signal);
+        if (confirmRequest !== request) return;
+        recognition = {...recognition, recommendation: result};
+        draft = structuredClone(result.label); draftName = result.kind === 'catalog_match' ? candidate.name : '';
+        draftChanged = false;
+        renderConfirmation();
+      } catch (error) { if (error.name !== 'AbortError') setStatus('confirm-status', t('recipe_error'), true); }
+      finally { if (confirmRequest === request) { confirmRequest = null; $('confirm-recipe').disabled = false; } }
+    });
+    container.append(button);
+  });
+}
+async function searchConfirmationNames(query) {
+  const request = nameRequest = new AbortController();
+  try {
+    const data = await api(`/api/search?q=${encodeURIComponent(query)}`, request.signal);
+    if (nameRequest === request) renderNameCandidates(data.products);
+  } catch (error) { if (error.name !== 'AbortError') setStatus('confirm-status', t('catalog_empty'), true); }
+}
+function confirmedText() {
+  // Rebuild from the confirmed fields, never from the old OCR text: removed
+  // fields must stay removed. Explicit labels prevent accidental inference.
+  const lines = [];
+  if (draftName) lines.push(`Название: ${draftName}`);
+  if (draft.country) lines.push(`Страна: ${modelOptions.countries[draft.country][0]}`);
+  if (draft.processing.length) lines.push(`Обработка: ${draft.processing.map(k => modelOptions.processing[k][0]).join(', ')}`);
+  if (draft.variety.length) lines.push(`Разновидность: ${draft.variety.join(', ')}`);
+  if (draft.decaf) lines.push('Decaf');
+  if (draft.espresso_or_dark) lines.push('Espresso');
+  return lines.join('\n');
+}
+async function confirmRecipe({general = false} = {}) {
+  cancelConfirmation();
+  const request = confirmRequest = new AbortController();
+  $('confirm-recipe').disabled = true; $('general-recipe').disabled = true;
+  try {
+    let result = recognition.recommendation;
+    if (general || draftChanged) {
+      if (!general && !modelOptions) throw new Error(t('model_options_error'));
+      result = await post('/api/recommend', JSON.stringify({text: general ? '' : confirmedText()}), 'application/json', request.signal);
+    }
+    if (confirmRequest !== request) return;
+    showRecommendation(result);
+  } catch (error) { if (error.name !== 'AbortError') setStatus('confirm-status', error.message, true); }
+  finally { if (confirmRequest === request) { confirmRequest = null; $('confirm-recipe').disabled = false; $('general-recipe').disabled = false; } }
+}
+function renderRecipeRecognition() {
+  const label = currentData.confirmed_label;
+  $('recipe-recognition').hidden = true;
+  $('recipe-photo-label').setAttribute('aria-expanded', 'false');
+  $('recipe-photo').hidden = !photoPreviewData || !label;
+  $('recipe-recognition').replaceChildren();
+  if (!label) return;
+  const fields = [[t('coffee_name'), currentData.recommendation_kind === 'catalog_match' ? currentData.product.name : label.name],
+    [t('country'), label.country && featureName('countries', label.country)],
+    [t('processing'), label.processing.map(k => featureName('processing', k)).join(', ')],
+    [t('variety'), label.variety.map(k => featureName('varieties', k)).join(', ')]];
+  fields.forEach(([name, value]) => {
+    const line = document.createElement('p'); line.textContent = `${name}: ${value || t('not_read')}`;
+    $('recipe-recognition').append(line);
+  });
+}
+function searchInstead(useText) {
+  const text = useText ? recognition?.text || '' : '';
+  cancelPhotoRequests({keepPreview: true});
+  show('find');
+  $('query').value = text.slice(0, 120).replace(/\s+/g, ' ');
+  $('query').focus({preventScroll: true});
+  if ($('query').value) search($('query').value);
+}
+function wireRecognition() {
+  $('confirm-back').addEventListener('click', () => back('find'));
+  $('confirm-recipe').addEventListener('click', () => confirmRecipe());
+  $('not-this-coffee').addEventListener('click', () => searchInstead(true));
+  $('type-name').addEventListener('click', () => searchInstead(false));
+  $('general-recipe').addEventListener('click', () => confirmRecipe({general: true}));
+  $('photo-retake').addEventListener('click', () => $(matchMedia('(min-width: 900px)').matches ? 'gallery-input' : 'photo-input').click());
+  $('recipe-photo-label').addEventListener('click', () => {
+    $('recipe-recognition').hidden = !$('recipe-recognition').hidden;
+    $('recipe-photo-label').setAttribute('aria-expanded', String(!$('recipe-recognition').hidden));
+  });
 }
 
 async function handlePhoto(file) {
@@ -792,8 +1099,14 @@ async function handlePhoto(file) {
   currentRecipe = currentData = currentProduct = null;
   recipeLoading = false;
   markSelected();
+  show('find', {push: false});
   setStatus('status', t('status_reading'));
   $('photo-button').disabled = true;
+  $('gallery-button').disabled = true;
+  slowPhotoTimer = setTimeout(() => {
+    setStatus('status', t('reading_slow'));
+    $('photo-cancel').hidden = false;
+  }, 5000);
   const generation = photoGeneration;
   photoRequest = new AbortController();
   try {
@@ -804,13 +1117,25 @@ async function handlePhoto(file) {
     showPhotoPreview(preview);
     const data = await post('/api/label', body, 'image/jpeg', photoRequest.signal);
     if (generation !== photoGeneration) return;
-    showRecommendation(data.recommendation);
+    await modelOptionsReady;
+    if (generation !== photoGeneration) return;
+    recognition = data;
+    draft = structuredClone(data.recommendation.label);
+    draftName = data.recommendation.kind === 'catalog_match' ? data.recommendation.recipe_data.product.name : '';
+    draftChanged = false;
+    renderConfirmation();
+    show('confirm');
+    if (isExactRecognition()) $('confirm-recipe').focus({preventScroll: true});
   } catch (error) {
     if (error.name !== 'AbortError' && generation === photoGeneration) setStatus('status', error.message, true);
   } finally {
     if (generation === photoGeneration) {
+      clearTimeout(slowPhotoTimer);
+      $('photo-cancel').hidden = true;
+      photoRequest = null;
       finishPhotoScan();
       $('photo-button').disabled = false;
+      $('gallery-button').disabled = false;
     }
   }
 }
@@ -1185,21 +1510,29 @@ function setToggle(id, key) {
 // ---------------------------------------------------------------------------
 // Wiring
 // ---------------------------------------------------------------------------
-function init() {
-  loadPrefs();
+function localize() {
+  document.documentElement.lang = LANG;
   document.title = t('app');
-  $('photo-button').textContent = t('photo_button');
+  photoButtonLabel();
+  $('gallery-button').textContent = t('gallery_button');
+  $('photo-cancel').textContent = t('cancel');
+  $('settings-button').setAttribute('aria-label', t('settings'));
+  $('language-label').textContent = t('language');
+  $('language').value = LANG;
+  $('confirm-photo').alt = t('photo_alt');
   $('scan-image').alt = t('photo_alt');
   $('recipe-photo-image').alt = t('photo_alt');
-  $('recipe-photo-label').textContent = t('scan_complete');
+  $('recipe-photo-label').textContent = t('what_read');
   $('search-label').textContent = t('search_label');
   $('query').placeholder = t('search_placeholder');
   $('show-all').textContent = t('show_all');
   $('recents-title').textContent = t('recents_title');
   renderRecents();
   $('recipe-back').textContent = t('back');
-  $('recipe-placeholder').textContent = t('pick_coffee');
-  $('recipe-placeholder').classList.add('desktop-only');
+  if ($('recipe-placeholder')) {
+    $('recipe-placeholder').textContent = t('pick_coffee');
+    $('recipe-placeholder').classList.add('desktop-only');
+  }
   $('brew-start').textContent = t('start_brew');
   $('brew-back').textContent = t('to_recipe');
   $('brew-title').textContent = t('brew_title');
@@ -1213,14 +1546,36 @@ function init() {
   setToggle('brew-sound', 'sound');
   if (!navigator.vibrate) $('brew-vibrate').hidden = true;
 
+}
+
+function init() {
+  loadPrefs();
+  localize();
   history.replaceState({screen: 'find'}, '', location.pathname + location.search);
   document.body.dataset.screen = 'find';
 
-  $('photo-button').addEventListener('click', () => $('photo-input').click());
-  $('photo-input').addEventListener('change', event => {
+  $('settings-button').addEventListener('click', () => {
+    $('settings-panel').hidden = !$('settings-panel').hidden;
+    $('settings-button').setAttribute('aria-expanded', String(!$('settings-panel').hidden));
+  });
+  $('language').addEventListener('change', () => {
+    LANG = $('language').value;
+    savePrefs(); localize();
+    if (!photoRequest) setStatus('status', t('status_ready', modelOptions?.coffees || 0));
+    if (currentData && !running && brewMode === 'local') renderRecipe(0, currentRecipe);
+  });
+  const wide = matchMedia('(min-width: 900px)');
+  wide.addEventListener('change', photoButtonLabel);
+  $('photo-button').addEventListener('click', () => $(wide.matches ? 'gallery-input' : 'photo-input').click());
+  $('gallery-button').addEventListener('click', () => $('gallery-input').click());
+  $('photo-cancel').addEventListener('click', () => {
+    cancelPhotoRequests({keepPreview: true});
+    setStatus('status', t('photo_cancelled'));
+  });
+  ['photo-input', 'gallery-input'].forEach(id => $(id).addEventListener('change', event => {
     handlePhoto(event.target.files[0]);
     event.target.value = '';
-  });
+  }));
   $('search-form').addEventListener('submit', event => {
     event.preventDefault();
     clearTimeout(searchTimer);
@@ -1276,9 +1631,11 @@ function init() {
   $('brew-vibrate').addEventListener('click', () => { prefs.vibrate = !prefs.vibrate; savePrefs(); setToggle('brew-vibrate', 'vibrate'); });
   $('brew-sound').addEventListener('click', () => { prefs.sound = !prefs.sound; savePrefs(); setToggle('brew-sound', 'sound'); if (prefs.sound) primeAudio(); });
 
+  wireRecognition();
   refreshMachine();
   setStatus('status', t('status_checking'));
-  api('/api/model').then(data => {
+  modelOptionsReady = api('/api/model').then(data => {
+    modelOptions = data;
     if (photoGeneration) return;
     setStatus('status', data.ocr.available ? t('status_ready', data.coffees) : t('status_no_ocr'));
   }).catch(() => {
