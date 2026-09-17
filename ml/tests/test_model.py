@@ -23,13 +23,11 @@ class ModelTests(unittest.TestCase):
         self.assertEqual(recipe['duration_seconds'], 175)
         self.assertEqual(sum(s['water_g'] for s in recipe['steps']), 250)
 
-    def test_brand_missing_or_other_roaster_requires_confirmation(self):
+    def test_name_match_is_used_without_confirmation(self):
         for text in ['Руанда Суса', 'Roaster: Someone Else\nРуанда Суса']:
             r = self.model.recommend(text)
-            self.assertEqual(r['kind'], 'confirm_match')
-            self.assertEqual(r['recipe_data']['recommendation_kind'], 'suggested_baseline')
-            selected = self.model.recommend(text, r['candidates'][0]['coffee_id'])
-            self.assertEqual(selected['kind'], 'catalog_match')
+            self.assertEqual(r['kind'], 'catalog_match')
+            self.assertEqual(r['recipe_data']['product']['name'], 'Руанда Суса')
 
     def test_ocr_mixed_cyrillic_latin_letters(self):
         result = self.model.recommend('The Welder Catherine\nРуанда Cyca')
@@ -43,7 +41,7 @@ class ModelTests(unittest.TestCase):
 
     def test_unseen_supported_coffee_gets_intact_reference(self):
         r = self.model.recommend('Coffee: New Lot\nCountry: Rwanda\nProcessing: washed\nVariety: red bourbon')
-        self.assertEqual(r['kind'], 'suggested_reference')
+        self.assertEqual(r['kind'], 'closest_reference')
         reference = r['recipe_data']['reference_name']
         row = next(row for row in self.model.rows if row['coffee']['name'] == reference)
         recipe = r['recipe_data']['recipes'][0]

@@ -247,18 +247,14 @@ class RecipeModel:
         selected = self.by_id.get(selected_coffee_id) if selected_coffee_id else None
         if selected_coffee_id and not selected:
             raise ValueError('The selected coffee is not in the model.')
-        # Name-only matches must be confirmed unless the source brand is also visible.
-        if not selected and len(exact) == 1 and profile['welder_brand_present'] and not profile['espresso_or_dark']:
-            selected = self.by_id[exact[0]['coffee_id']]
+        # Preserve the photo-only flow: use a strong name match immediately.
+        if not selected and candidates and (exact or candidates[0]['name_similarity'] >= .86):
+            selected = self.by_id[(exact[0] if exact else candidates[0])['coffee_id']]
         if selected:
             if not selected['usable']:
                 return self.baseline(result, reason='The matched source recipe has errors. This is a separate starting recipe, not a repaired version.')
             result.update(kind='catalog_match', message='Matched the saved catalog. Check the lot, harvest and filter roast on your bag.')
             result['recipe_data'] = self.response_recipe(selected, result['kind'], selected['coffee']['name'])
-            return result
-        if candidates and (exact or candidates[0]['name_similarity'] >= .86):
-            self.baseline(result, reason='The coffee name is unconfirmed. Use this starting recipe or confirm the catalog match below.')
-            result['kind'] = 'confirm_match'
             return result
         if profile['espresso_or_dark'] or profile['decaf']:
             return self.baseline(result, general=True)
@@ -272,7 +268,7 @@ class RecipeModel:
         if not eligible:
             return self.baseline(result)
         score, reference = eligible[0]
-        result.update(kind='suggested_reference', similarity=round(score, 4),
+        result.update(kind='closest_reference', similarity=round(score, 4),
                       message='A starting recipe from a similar coffee. Taste is untested on your coffee; the grind setting applies only to the listed grinder.')
         result['recipe_data'] = self.response_recipe(reference, result['kind'], profile['name'] or 'Your coffee')
         return result

@@ -86,13 +86,15 @@ class Handler(BaseHTTPRequestHandler):
             if is_photo:
                 scan = scan_label(payload, content_type)
                 ocr = scan['ocr']
-                recommendation = get_model().recommend('' if ocr['needs_review'] else ocr['text'])
-                # Uncertain text never drives identification, but a generic recipe
-                # remains available while the user reviews the original OCR text.
+                recommendation = get_model().recommend(ocr['text'])
+                # Preserve automatic recipes for readable names, including uncertain
+                # OCR. Surface the uncertainty without adding a confirmation step.
                 if ocr['needs_review']:
-                    message = 'The label could not be read confidently. This is a general recipe, not a photo-specific match. You can correct the text to refine it.'
-                    recommendation.update(label_review_required=True, message=message)
-                    recommendation['recipe_data']['explanation'] = message
+                    message = ('The label could not be read. This is a general starting recipe.'
+                               if not ocr['text'].strip() else
+                               'Some label text is uncertain. This recipe may refer to a different coffee; try a clearer photo to refine it.')
+                    recommendation.update(ocr_uncertain=True, message=message + ' ' + recommendation['message'])
+                    recommendation['recipe_data']['explanation'] = recommendation['message']
                 return self.send_json(200, {**scan, 'candidates': recommendation['candidates'],
                                             'message': recommendation['message'], 'recommendation': recommendation})
             body = json.loads(payload)

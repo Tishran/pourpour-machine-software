@@ -1,7 +1,7 @@
 # Photo → label → recipe: experimental local model
 
 The app now accepts a photo of a coffee bag, extracts Russian/English text,
-allows corrections, and prepares a recipe using the versioned Welder Catherine
+and immediately prepares a recipe using the versioned Welder Catherine
 dataset. No API key or cloud image upload is required.
 
 ## What the model does
@@ -10,16 +10,16 @@ dataset. No API key or cloud image upload is required.
    fixes EXIF orientation/transparency and converts to grayscale. Adaptive
    thresholding, two text-layout modes and modest ±10° deskew attempts handle
    some shading and tilt. The highest OCR-quality result is retained without
-   consulting coffee names. Raw recognized text remains editable.
+   consulting coffee names. Raw recognized text is returned in the API response.
 2. **Label extraction:** deterministic Russian/English vocabulary and field
    parsing extract country, processing, variety, region and tasting notes.
    Name matching tolerates transliteration and visually identical Cyrillic/Latin
    letters. This is not a fine-tuned label vision model; there is no labeled
    training set of real bag photographs yet.
-3. **Known coffee:** a complete name plus the visible Welder Catherine brand
-   returns the saved, structurally checked recipe. Partial/fuzzy matches or a
-   missing brand require the user to select the correct coffee and filter roast.
-   Lot/harvest still need checking: names can be reused.
+3. **Known coffee:** a complete or strong fuzzy name match automatically returns
+   the saved, structurally checked recipe. No manual confirmation is required.
+   Names may be shared by other roasters or harvests, so a match is not proof of
+   identity; the result reminds the user to check the lot and filter roast.
 4. **Unseen coffee:** a TF-IDF nearest-neighbor model fitted on the 35 checked
    coffees compares country, processing, variety, region and tasting notes. It
    transfers one intact reference recipe, including the original equipment,
@@ -35,10 +35,11 @@ dataset. No API key or cloud image upload is required.
    Missing and unmatched fields are returned explicitly; processing is never
    invented. New decafs and espresso/dark roasts get a general reference with an
    explicit limitation. The two malformed source recipes remain excluded.
-6. **Unreadable labels:** low-confidence OCR does not drive identification. The
-   app supplies a clearly marked general starting recipe while keeping the raw
-   text editable. A confidently recognized single word is enough to use the
-   country. This does not guarantee correct recognition of every photograph.
+6. **Unreadable labels:** when no useful text is available, the app supplies a
+   clearly marked general starting recipe. A single country word is enough to
+   narrow the pool. Uncertain but readable OCR still prepares a recipe immediately,
+   with an explicit caveat and `ocr_uncertain` in the API; a clearer photo can refine
+   it. This does not guarantee correct recognition of every photograph.
 
 Fallback selection retains an existing recipe closest to the pool's medians
 for dose, water-to-coffee ratio, temperature and duration, using absolute
@@ -84,7 +85,7 @@ logs, Git or a cloud service. The UI keeps its preview in memory until navigatio
 
 The photo/recipe flow works offline after setup; the separate live catalog search
 still requests the roaster's public site. If OCR dependencies are unavailable,
-manual label text and the recommendation model still work.
+the text recommendation API still works.
 
 The setup script downloads the English/Russian weights from the official
 [Tesseract model repository](https://github.com/tesseract-ocr/tessdata_fast/tree/4.1.0),
@@ -141,14 +142,12 @@ evaluate recommendations by coffee/farm/harvest groups plus real brewing outcome
 - `POST /api/recommend`: JSON `{"text":"Country: Rwanda\nProcessing: washed"}`.
   An optional `selected_coffee_id` confirms a catalog candidate; unknown IDs fail.
 
-Response `kind` is one of `catalog_match`, `confirm_match`, `suggested_reference`,
-or `suggested_baseline`. Successful recommendations include `recipe_data`, even
-while a possible catalog name awaits confirmation. The recipe's own
-`recommendation_kind` distinguishes that provisional baseline from a saved match.
-Photo responses set `label_review_required` when uncertain OCR was ignored.
-Empty text is valid and produces a general baseline; invalid uploads still fail.
-Suggested recipes are never written back into the roaster dataset. This remains
-a local development server.
+Response `kind` is one of `catalog_match`, `closest_reference`, or
+`suggested_baseline`. Successful recommendations include `recipe_data` without
+an OCR-confirmation step. Photo responses set `ocr_uncertain` when text recognition
+is uncertain and include a visible explanation. Empty text is valid and produces
+a general baseline; invalid uploads still fail. Suggested recipes are never
+written back into the roaster dataset. This remains a local development server.
 
 ## Verification
 
@@ -163,13 +162,13 @@ The OCR integration test runs when dependencies/weights are installed. Its
 `tests/fixtures/rwanda-label.png` and `colombia-label.png` are synthetic, clean
 text labels (not real photos or an OCR accuracy benchmark). The manual integration check also read
 the roaster's angled [Rwanda Susa product image](https://theweldercatherine.ru/upload/iblock/7f5/zvhz0s6hi01i0favlrkzl0hzlg6s8qyf/250g-_1_-_48_.png):
-it recovered the coffee name and correctly requested brand confirmation.
+it recovered the coffee name. This was an earlier manual check, not an accuracy benchmark.
 
 `tests/browser-smoke.cjs` is an optional Playwright test. With Playwright and a
 browser installed, run it against the local server using
 `node ml/tests/browser-smoke.cjs`. Set `POURPOUR_TEST_URL` to change the server,
 or `POURPOUR_BROWSER_CHANNEL=chrome` to use installed Chrome. It checks photo →
 recipe, unknown-coffee suggestions, single-country photos, unreadable photos,
-unsupported origins, manual confirmation, timer, invalid upload, same-origin
-enforcement and mobile overflow. API tests also ensure low-confidence text cannot
-trigger an identity match even if it contains a complete catalog name.
+unsupported origins, immediate name matching, timer, invalid upload, same-origin
+enforcement and mobile overflow. API tests check that uncertain text still returns
+a recipe with a caveat and that an empty OCR result returns a general baseline.
