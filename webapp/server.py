@@ -102,8 +102,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.machine_post(url.path.removeprefix('/api/machine/'))
             if url.path not in ('/api/label', '/api/scan', '/api/recommend'):
                 return self.send_json(404, {'error': 'Page not found.'})
-            origin = self.headers.get('Origin')
-            if origin and origin != 'http://' + self.headers.get('Host', ''):
+            if not self.same_origin():
                 return self.send_json(403, {'error': 'The request must come from this application.'})
             if self.headers.get('Transfer-Encoding'):
                 return self.send_json(400, {'error': 'The request must include Content-Length.'})
@@ -152,10 +151,21 @@ class Handler(BaseHTTPRequestHandler):
             logging.exception('Photo/recommendation request failed')
             self.send_json(500, {'error': 'Could not prepare a recipe. Check the model setup.'})
 
+    def same_origin(self):
+        """Reject cross-site browser requests.
+
+        Both schemes of this host count as the application: behind a TLS proxy the
+        browser sends an https Origin while the request reaching us is plain http.
+        """
+        origin = self.headers.get('Origin')
+        if not origin:
+            return True
+        host = self.headers.get('Host', '')
+        return bool(host) and origin in ('http://' + host, 'https://' + host)
+
     # -- machine bridge ---------------------------------------------------
     def machine_post(self, action):
-        origin = self.headers.get('Origin')
-        if origin and origin != 'http://' + self.headers.get('Host', ''):
+        if not self.same_origin():
             return self.send_json(403, {'error': 'The request must come from this application.'})
         if action not in ('recipe',) + MACHINE_COMMANDS:
             return self.send_json(404, {'error': 'Страница не найдена.'})
