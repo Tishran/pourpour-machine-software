@@ -2,8 +2,16 @@ import { acts } from "../data/story";
 import MagneticButton from "../components/MagneticButton";
 import PreorderSection from "./PreorderSection";
 import DevelopmentSection from "./DevelopmentSection";
+import { copyFor, phaseFor, type Language } from "../i18n";
 
-export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
+export default function Overlay({
+  language,
+  onLaunch,
+}: {
+  language: Language;
+  onLaunch: () => void;
+}) {
+  const copy = copyFor(language);
   return (
     <main className="story" id="story">
       {acts.map((act, i) => (
@@ -11,7 +19,7 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
           className={`act act-${act.id}`}
           id={act.id}
           key={act.id}
-          aria-label={`${i + 1}. ${act.label}`}
+          aria-label={`${i + 1}. ${copy.acts[act.id]}`}
         >
           <div className={`act-panel panel-${act.id}`}>
             {act.id === "object" && (
@@ -19,115 +27,101 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                 <div className="hero-copy">
                   <p className="eyebrow">
                     <span className="status-dot" />
-                    AUTOMATIC POUR-OVER
+                    {copy.heroEyebrow}
                   </p>
                   <h1>
-                    We finally bring you
+                    {copy.heroTitle}
                     <br />
-                    <em>tasty coffee</em>
+                    <em>{copy.heroEmphasis}</em>
                   </h1>
-                  <p className="body-copy">
-                    Brew every new bag with a recipe matched to that coffee —
-                    without manually controlling the pour.
-                  </p>
+                  <p className="body-copy">{copy.heroBody}</p>
                 </div>
                 <div className="hero-index mono">
-                  01—05 <span>SCROLL TO EXPLORE</span>
+                  01—05 <span>{copy.scrollExplore}</span>
                   <i />
                 </div>
               </>
             )}
             {act.id === "engineering" && (
               <div className="editorial">
-                <p className="eyebrow">03 / ANATOMY OF A POUR</p>
+                <p className="eyebrow">{copy.engineeringEyebrow}</p>
                 <h2>
-                  Nothing extra.
+                  {copy.engineeringTitle}
                   <br />
-                  <em>
-                    Every part
-                    <br />
-                    has a purpose.
-                  </em>
+                  <em>{copy.engineeringEmphasis}</em>
                 </h2>
-                <p className="body-copy">
-                  Your V60 stays.
-                  <br />
-                  The repetitive pouring doesn’t.
-                </p>
+                <p className="body-copy">{copy.engineeringBody}</p>
                 <div className="engineering-legend mono">
-                  <span>COMPONENT STUDY</span>
-                  <span>COMPONENT DETAIL</span>
-                  <span>CONCEPT GEOMETRY · NOT TO SCALE</span>
+                  <span>{copy.componentStudy}</span>
+                  <span>{copy.componentDetail}</span>
+                  <span>{copy.conceptGeometry}</span>
                 </div>
               </div>
             )}
             {act.id === "brew" && (
               <>
                 <div className="editorial brew-editorial">
-                  <p className="eyebrow">02 / THE POUR, TAKEN CARE OF</p>
+                  <p className="eyebrow">{copy.brewEyebrow}</p>
                   <h2>
-                    Precision.
+                    {copy.brewTitle}
                     <br />
-                    In <em>motion.</em>
+                    <em>{copy.brewEmphasis}</em>
                   </h2>
-                  <p className="body-copy">
-                    The nozzle follows the recipe.
-                    <br />
-                    The water follows the nozzle.
-                  </p>
+                  <p className="body-copy">{copy.brewBody}</p>
                   <span className="brew-phase mono" id="brew-phase">
-                    01 / CENTER POUR
+                    {phaseFor(language, "01 / CENTER POUR")}
                   </span>
                   <div className="brew-instruction mono">
-                    <span>↓</span> SCROLL SLOWLY TO FOLLOW THE POUR
+                    <span>↓</span> {copy.brewInstruction}
                   </div>
                   <div className="brew-hud">
                     <div>
-                      <span>BREW TIME</span>
+                      <span>{copy.brewTime}</span>
                       <strong id="brew-timer">00:00</strong>
                     </div>
                     <div>
-                      <span>TEMPERATURE</span>
+                      <span>{copy.temperature}</span>
                       <strong>
                         92<small> °C</small>
                       </strong>
                     </div>
                     <div>
-                      <span>FLOW / ML/S</span>
+                      <span>{copy.flow}</span>
                       <strong id="brew-flow">5.0</strong>
                     </div>
                     <div>
-                      <span>VOLUME / ML</span>
+                      <span>{copy.volume}</span>
                       <strong id="brew-volume">000 / 300</strong>
                     </div>
                   </div>
                   <span className="simulation-note mono">
-                    SCROLL-CONTROLLED SIMULATION · ILLUSTRATIVE PARAMETERS
+                    {copy.simulation}
                   </span>
                 </div>
               </>
             )}
             {act.id === "purpose" && (
               <div className="editorial purpose-editorial">
-                <p className="eyebrow">01 / A FAMILIAR GESTURE</p>
+                <p className="eyebrow">{copy.purposeEyebrow}</p>
                 <div className="new-bag mono">
-                  NEW BAG <span>should not require</span> NEW POURING TECHNIQUE
+                  {copy.newBag} <span>{copy.shouldNot}</span>{" "}
+                  {copy.newTechnique}
                 </div>
                 <h2>
-                  Different coffee.
+                  {copy.purposeLine1}
                   <br />
-                  Different recipe.
+                  {copy.purposeLine2}
                   <br />
-                  <em>Same gesture.</em>
+                  <em>{copy.purposeEmphasis}</em>
                 </h2>
-                <ol className="workflow" aria-label="How First Brew works">
+                <ol className="workflow" aria-label={copy.workflowLabel}>
                   <li>
                     <span className="workflow-number mono" aria-hidden="true">
                       01
                     </span>
                     <div>
-                      <h3>SCAN</h3>
-                      <p>Photograph your coffee bag.</p>
+                      <h3>{copy.scan}</h3>
+                      <p>{copy.scanText}</p>
                     </div>
                   </li>
                   <li>
@@ -135,8 +129,8 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                       02
                     </span>
                     <div>
-                      <h3>CHOOSE</h3>
-                      <p>Select the recommended recipe.</p>
+                      <h3>{copy.choose}</h3>
+                      <p>{copy.chooseText}</p>
                     </div>
                   </li>
                   <li>
@@ -144,37 +138,30 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
                       03
                     </span>
                     <div>
-                      <h3>BREW</h3>
-                      <p>Load your V60. First Brew performs the pour.</p>
+                      <h3>{copy.brew}</h3>
+                      <p>{copy.brewText}</p>
                     </div>
                   </li>
                 </ol>
-                <p className="body-copy">
-                  First Brew handles the temperature, water flow, timing,
-                  pulses, pauses, and pouring pattern automatically.
-                </p>
+                <p className="body-copy">{copy.purposeBody}</p>
               </div>
             )}
             {act.id === "launch" && (
               <>
                 <div className="editorial final-editorial">
-                  <p className="eyebrow">04 / ROOM FOR A NEW RITUAL</p>
+                  <p className="eyebrow">{copy.launchEyebrow}</p>
                   <h2>
-                    We finally bring you
+                    {copy.launchTitle}
                     <br />
-                    <em>tasty coffee</em>
+                    <em>{copy.launchEmphasis}</em>
                   </h2>
-                  <p className="final-invite">
-                    Bring First Brew to your kitchen.
-                  </p>
-                  <p className="body-copy">
-                    We’re building the first working prototype now.
-                  </p>
+                  <p className="final-invite">{copy.finalInvite}</p>
+                  <p className="body-copy">{copy.prototypeNow}</p>
                   <MagneticButton onClick={onLaunch}>
-                    GET NOTIFIED AT LAUNCH
+                    {copy.notify}
                   </MagneticButton>
                   <a className="join-link mono" href="#preorder">
-                    PREORDER FIRST BREW ↓
+                    {copy.preorderLink}
                   </a>
                 </div>
                 <div className="final-wordmark" aria-hidden="true">
@@ -185,8 +172,8 @@ export default function Overlay({ onLaunch }: { onLaunch: () => void }) {
           </div>
         </section>
       ))}
-      <DevelopmentSection />
-      <PreorderSection />
+      <DevelopmentSection language={language} />
+      <PreorderSection language={language} />
     </main>
   );
 }

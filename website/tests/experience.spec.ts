@@ -1,9 +1,41 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "@playwright/test";
 import { acts } from "../src/data/story";
+
+const useEnglish = (page: Page) =>
+  page.addInitScript(() =>
+    localStorage.setItem("firstbrew.landing.language", "en"),
+  );
+
+test("Russian is the default and the language switch persists", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("lang", "ru");
+  await expect(
+    page.getByRole("heading", {
+      level: 1,
+      name: "Вкусный кофе — без лишних движений.",
+    }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "RU" })).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator("#preorder")).toContainText("скидку 15%");
+  await expect(page.locator("#preorder a.action")).toHaveAttribute(
+    "href",
+    "https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb",
+  );
+  await page.getByRole("button", { name: "EN" }).click();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await page.reload();
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+});
 
 test("classic view renders high-quality optics without shader errors", async ({
   page,
 }, testInfo) => {
+  await useEnglish(page);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   page.on("console", (message) => {
@@ -35,6 +67,7 @@ test("classic view renders high-quality optics without shader errors", async ({
 test("classic mobile defaults to low quality and a DPR of one", async ({
   page,
 }, testInfo) => {
+  await useEnglish(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/?view=classic");
   const canvas = page.locator("canvas").first();
@@ -65,6 +98,7 @@ test("classic mobile defaults to low quality and a DPR of one", async ({
 test("join heading uses the story typography at desktop and mobile sizes", async ({
   page,
 }) => {
+  await useEnglish(page);
   for (const viewport of [
     { width: 1440, height: 1000 },
     { width: 390, height: 844 },
@@ -97,10 +131,11 @@ test("join heading uses the story typography at desktop and mobile sizes", async
 test("development update precedes the team form and fits small screens", async ({
   page,
 }) => {
+  await useEnglish(page);
   await page.setViewportSize({ width: 375, height: 667 });
   await page.goto("/#development");
   await expect(page.locator("#development-title")).toContainText(
-    "First Brew prototype.",
+    "first prototype.",
   );
   await expect(page.locator(".development-progress li")).toHaveCount(3);
   expect(
@@ -115,36 +150,20 @@ test("development update precedes the team form and fits small screens", async (
   ).toBeLessThanOrEqual(375);
 });
 
-test("preorder interest form validates and local preview never claims delivery", async ({
+test("preorder survey explains the discount and links to Yandex Forms", async ({
   page,
 }) => {
-  test.skip(
-    process.env.TEST_PRODUCTION === "1",
-    "Do not submit a production form in this local-preview test",
-  );
+  await useEnglish(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/#preorder");
-  const form = page.locator(".join-form");
-  await expect(form).toHaveAttribute("name", "preorder-first-brew");
-  await page.getByLabel("Full name", { exact: true }).fill("Preview Test");
-  await page
-    .getByLabel("Email address", { exact: true })
-    .fill("preview@example.com");
-  await page
-    .getByLabel("Questions or notes (optional)")
-    .fill("Testing the local preview only.");
-  await page
-    .getByLabel("I agree to receive email about First Brew preorders.")
-    .check();
-  let submissions = 0;
-  page.on("request", (request) => {
-    if (request.method() === "POST") submissions++;
-  });
-  await page
-    .getByRole("button", { name: "REGISTER PREORDER INTEREST" })
-    .click();
-  await expect(form.getByRole("status")).toContainText("nothing was sent");
-  expect(submissions).toBe(0);
+  const card = page.locator(".survey-card");
+  await expect(card).toContainText("15% off");
+  await expect(
+    card.getByRole("link", { name: /TAKE THE SURVEY/ }),
+  ).toHaveAttribute(
+    "href",
+    "https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb",
+  );
   expect(
     await page.evaluate(() => document.documentElement.scrollWidth),
   ).toBeLessThanOrEqual(390);
@@ -154,6 +173,7 @@ test("preorder interest form validates and local preview never claims delivery",
 test("keyboard arrows scroll steadily and release without drifting", async ({
   page,
 }) => {
+  await useEnglish(page);
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto("/");
   await page.evaluate(() => document.fonts.ready);
@@ -188,6 +208,7 @@ test("keyboard arrows scroll steadily and release without drifting", async ({
 test("text panels flow continuously without overlapping at act boundaries", async ({
   page,
 }) => {
+  await useEnglish(page);
   for (const size of [
     { width: 1440, height: 900 },
     { width: 390, height: 844 },
@@ -250,6 +271,7 @@ test("text panels flow continuously without overlapping at act boundaries", asyn
 test("desktop: five acts, working 3D, recipe highlights, brew and launch dialog", async ({
   page,
 }) => {
+  await useEnglish(page);
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.setViewportSize({ width: 1440, height: 1000 });
@@ -306,6 +328,7 @@ test("desktop: five acts, working 3D, recipe highlights, brew and launch dialog"
 });
 
 test("brew buttons and editable parameters are absent", async ({ page }) => {
+  await useEnglish(page);
   await page.goto("/");
   await expect(
     page.getByRole("button", { name: "SEE HOW IT BREWS" }),
@@ -323,6 +346,7 @@ test("brew buttons and editable parameters are absent", async ({ page }) => {
 test("mobile: portrait object, all acts fit horizontally and launch remains reachable", async ({
   page,
 }) => {
+  await useEnglish(page);
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/");
   await page.waitForTimeout(1600);
@@ -351,6 +375,7 @@ test("mobile: portrait object, all acts fit horizontally and launch remains reac
 test("reduced motion retains static machine states and keyboard navigation", async ({
   page,
 }) => {
+  await useEnglish(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto("/");

@@ -10,8 +10,12 @@ import {
   stageToScrollProgress,
   story,
 } from "../data/story";
+import { phaseFor, type Language } from "../i18n";
 gsap.registerPlugin(ScrollTrigger);
-export function useStory(root: RefObject<HTMLElement | null>) {
+export function useStory(
+  root: RefObject<HTMLElement | null>,
+  language: Language,
+) {
   useArrowScroll();
   const [active, setActive] = useState(0);
   const [reduced, setReduced] = useState(
@@ -56,7 +60,7 @@ export function useStory(root: RefObject<HTMLElement | null>) {
           `${Math.round(brew.volume).toString().padStart(3, "0")} / 300`,
         ],
         ["brew-flow", brew.flow.toFixed(1)],
-        ["brew-phase", brew.phase],
+        ["brew-phase", phaseFor(language, brew.phase)],
       ]) {
         const node = document.getElementById(id);
         if (node) node.textContent = text;
@@ -112,7 +116,7 @@ export function useStory(root: RefObject<HTMLElement | null>) {
       ScrollTrigger.removeEventListener("refreshInit", rebuild);
       ctx.revert();
     };
-  }, [root, reduced]);
+  }, [root, reduced, language]);
   return { active, reduced };
 }
 export function goToAct(index: number) {

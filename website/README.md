@@ -1,6 +1,6 @@
 # First Brew / Prototype 01
 
-A continuous, five-act product experience for the First Brew project. React, TypeScript, Vite, Three.js, React Three Fiber, Drei, and GSAP ScrollTrigger. All copy is English. The machine geometry, inscriptions, and scan demonstration are constructed locally. CC0 material maps from ambientCG are optimized and hosted with the site; no paid models, remote photography, or external font requests.
+A continuous, five-act product experience for the First Brew project. React, TypeScript, Vite, Three.js, React Three Fiber, Drei, and GSAP ScrollTrigger. Russian is the default language; the RU/EN choice is saved locally. The machine geometry, inscriptions, and scan demonstration are constructed locally. CC0 material maps from ambientCG are optimized and hosted with the site; no paid models, remote photography, or external font requests.
 
 ## Run
 
@@ -63,11 +63,9 @@ The V60 and carafe have hollow profiles with real wall thickness and curved hand
 
 By default, the launch dialog clearly states that sign-ups are not open and collects no data. To enable the form, set `VITE_LAUNCH_ENDPOINT` in `.env.local` and rebuild. The endpoint must accept `POST` JSON `{ "email": "..." }`, allow the site's origin, and return a successful status only after saving the subscription. It must implement validation, rate limiting, consent storage, and unsubscribe handling. Never put service secrets in `VITE_` variables; those are public browser configuration.
 
-## Preorder interest
+## Preorder survey
 
-The final preorder section uses a native Netlify Forms submission named `preorder-first-brew`, separate from launch subscriptions and the former team form. It collects name, email, optional notes, and consent to preorder emails. It registers interest only: it does not take payment, place an order, reserve stock, or promise a delivery date. A static blueprint in `index.html` mirrors the React form, with a honeypot for spam filtering. Local development deliberately prevents delivery and shows an honest preview notice.
-
-Before accepting real preorder interest, enable **Forms → Enable form detection** in the site's Netlify dashboard, then deploy the updated site. Submissions appear under Forms; configure notifications there if needed. The native POST uses Netlify's receipt page rather than displaying a simulated success message. See [Netlify Forms setup](https://docs.netlify.com/manage/forms/setup/). This integration has not been activated or tested against a live Netlify account.
+The final section links to the published Yandex Forms survey. It offers a 15% pre-order discount for completing the survey and opens the form in a new tab. The destination is centralized as `SURVEY_URL` in `src/sections/PreorderSection.tsx`; keep the Russian and English offer copy together in `src/i18n.ts`.
 
 ## Product status
 

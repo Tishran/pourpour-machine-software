@@ -17,9 +17,10 @@ import {
 } from "./RenderingQuality";
 import Fallback from "./Fallback";
 import { inspectionCamera, keyframe, story } from "../data/story";
+import type { Language } from "../i18n";
 
 class SceneBoundary extends Component<
-  { children: ReactNode },
+  { children: ReactNode; language: Language },
   { failed: boolean }
 > {
   state = { failed: false };
@@ -27,11 +28,21 @@ class SceneBoundary extends Component<
     return { failed: true };
   }
   render() {
-    return this.state.failed ? <Fallback /> : this.props.children;
+    return this.state.failed ? (
+      <Fallback language={this.props.language} />
+    ) : (
+      this.props.children
+    );
   }
 }
 
-function Stage({ reduced }: { reduced: boolean }) {
+function Stage({
+  reduced,
+  language,
+}: {
+  reduced: boolean;
+  language: Language;
+}) {
   const { size, camera, invalidate } = useThree();
   const mobile = size.width < 620;
   const quality = useRenderQuality();
@@ -144,7 +155,7 @@ function Stage({ reduced }: { reduced: boolean }) {
         />
       </Environment>
       <Suspense fallback={null}>
-        <Machine />
+        <Machine language={language} />
       </Suspense>
     </>
   );
@@ -154,12 +165,18 @@ function useMemoVector() {
   return ref.current;
 }
 
-export default function Experience({ reduced }: { reduced: boolean }) {
+export default function Experience({
+  reduced,
+  language,
+}: {
+  reduced: boolean;
+  language: Language;
+}) {
   const [lost, setLost] = useState(false);
   return (
-    <SceneBoundary>
+    <SceneBoundary language={language}>
       {lost ? (
-        <Fallback />
+        <Fallback language={language} />
       ) : (
         <Canvas
           shadows
@@ -171,7 +188,7 @@ export default function Experience({ reduced }: { reduced: boolean }) {
             alpha: true,
             powerPreference: "high-performance",
           }}
-          fallback={<Fallback />}
+          fallback={<Fallback language={language} />}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
             gl.toneMapping = THREE.AgXToneMapping;
@@ -185,7 +202,7 @@ export default function Experience({ reduced }: { reduced: boolean }) {
           }}
         >
           <RenderingQuality>
-            <Stage reduced={reduced} />
+            <Stage reduced={reduced} language={language} />
           </RenderingQuality>
         </Canvas>
       )}

@@ -1,11 +1,15 @@
 import { useRef, useState, useEffect } from "react";
+import { copyFor, type Language } from "../i18n";
 export default function LaunchDialog({
+  language,
   open,
   onClose,
 }: {
+  language: Language;
   open: boolean;
   onClose: () => void;
 }) {
+  const copy = copyFor(language);
   const ref = useRef<HTMLDialogElement>(null);
   const [status, setStatus] = useState<
     "idle" | "sending" | "success" | "error"
@@ -36,23 +40,16 @@ export default function LaunchDialog({
     >
       <button
         className="close-dialog"
-        aria-label="Close launch updates"
+        aria-label={copy.dialogClose}
         onClick={onClose}
       >
         ×
       </button>
-      <span className="mono">FIRST BREW / EARLY DAYS</span>
-      <h2 id="dialog-title">
-        The next
-        <br />
-        chapter.
-      </h2>
+      <span className="mono">{copy.earlyDays}</span>
+      <h2 id="dialog-title">{copy.dialogTitle}</h2>
       {endpoint ? (
         status === "success" ? (
-          <p role="status">
-            You’re on the list. We’ll email you when First Brew is ready for its
-            next chapter.
-          </p>
+          <p role="status">{copy.subscribed}</p>
         ) : (
           <form
             onSubmit={async (e) => {
@@ -73,8 +70,8 @@ export default function LaunchDialog({
               }
             }}
           >
-            <p>Leave your email for prototype and launch updates.</p>
-            <label htmlFor="email">EMAIL ADDRESS</label>
+            <p>{copy.emailIntro}</p>
+            <label htmlFor="email">{copy.email}</label>
             <input
               id="email"
               name="email"
@@ -84,30 +81,20 @@ export default function LaunchDialog({
               required
               maxLength={254}
             />
-            <p className="form-note">
-              By subscribing, you agree to receive First Brew updates.
-              You can unsubscribe at any time.
-            </p>
+            <p className="form-note">{copy.consent}</p>
             <button className="action" disabled={status === "sending"}>
-              {status === "sending" ? "SUBMITTING…" : "KEEP ME POSTED"}{" "}
+              {status === "sending" ? copy.submitting : copy.keepPosted}{" "}
               <span>↗</span>
             </button>
-            {status === "error" && (
-              <p role="alert">We couldn’t save your email. Please try again.</p>
-            )}
+            {status === "error" && <p role="alert">{copy.subscribeError}</p>}
           </form>
         )
       ) : (
         <>
-          <p>
-            We’re building the first working prototype. Launch sign-ups will
-            open here once our mailing list is ready.
-          </p>
-          <p className="form-note">
-            This preview does not collect email addresses.
-          </p>
+          <p>{copy.signupSoon}</p>
+          <p className="form-note">{copy.noCollection}</p>
           <button className="action" onClick={onClose}>
-            BACK TO FIRST BREW <span>↗</span>
+            {copy.backToFirstBrew} <span>↗</span>
           </button>
         </>
       )}

@@ -1,11 +1,16 @@
-export default function Fallback({ loading = false }: { loading?: boolean }) {
+import { copyFor, type Language } from "../i18n";
+
+export default function Fallback({
+  loading = false,
+  language = "ru",
+}: {
+  loading?: boolean;
+  language?: Language;
+}) {
+  const copy = copyFor(language);
   return (
     <div className="fallback-object">
-      <svg
-        viewBox="0 0 500 580"
-        role="img"
-        aria-label="First Brew machine: a suspended nozzle pours into a V60 above a glass server"
-      >
+      <svg viewBox="0 0 500 580" role="img" aria-label={copy.machineAlt}>
         <defs>
           <linearGradient id="ceramic" x2="1" y2="0">
             <stop stopColor="#a9aaa1" />
@@ -79,9 +84,7 @@ export default function Fallback({ loading = false }: { loading?: boolean }) {
         </text>
       </svg>
       <span className="mono fallback-note">
-        {loading
-          ? "ASSEMBLING THE OBJECT…"
-          : "STATIC PRODUCT VIEW / WEBGL UNAVAILABLE"}
+        {loading ? copy.assembling : copy.staticView}
       </span>
     </div>
   );

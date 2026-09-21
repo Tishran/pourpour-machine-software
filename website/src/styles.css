@@ -1,7 +1,11 @@
 @import "@fontsource/manrope/latin-400.css";
 @import "@fontsource/manrope/latin-500.css";
 @import "@fontsource/manrope/latin-600.css";
+@import "@fontsource/manrope/cyrillic-400.css";
+@import "@fontsource/manrope/cyrillic-500.css";
+@import "@fontsource/manrope/cyrillic-600.css";
 @import "@fontsource/ibm-plex-mono/latin-400.css";
+@import "@fontsource/ibm-plex-mono/cyrillic-400.css";
 
 :root {
   font-family: "Manrope", Helvetica, Arial, sans-serif;
@@ -149,6 +153,31 @@ button:disabled {
   padding-left: 25px;
   color: var(--copper);
   font-size: 20px;
+}
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.4vw, 36px);
+  pointer-events: auto;
+}
+.language-switcher {
+  display: inline-flex;
+  padding: 3px;
+  border: 1px solid color-mix(in srgb, var(--fg) 34%, transparent);
+  border-radius: 999px;
+}
+.language-switcher button {
+  min-width: 42px;
+  min-height: 38px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: transparent;
+  font: inherit;
+  letter-spacing: 1px;
+}
+.language-switcher button[aria-pressed="true"] {
+  background: var(--fg);
+  color: var(--bg);
 }
 .scene-shell {
   position: fixed;
@@ -2007,6 +2036,49 @@ em {
   line-height: 1.7;
   color: #f2ede3b3;
 }
+.survey-card {
+  align-self: start;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 24px;
+  padding: clamp(24px, 3.2vw, 44px);
+  border: 1px solid var(--copper);
+  background: #211e19;
+}
+.survey-badge {
+  display: grid;
+  place-items: center;
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  background: var(--copper);
+  color: #171815;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+}
+.survey-card h3 {
+  margin: 0 0 12px;
+  font-size: clamp(25px, 2.5vw, 38px);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+.survey-card p {
+  color: #f2ede3b3;
+  font-size: var(--support-size);
+  line-height: 1.65;
+}
+.survey-card .action {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin-top: 8px;
+  background: var(--copper);
+  color: #171815;
+}
+.survey-card .action:hover {
+  background: #f2ede3;
+}
 .join-form {
   width: 100%;
   max-width: 580px;
@@ -2096,6 +2168,14 @@ em {
   }
   .join-intro > p:not(.eyebrow) {
     font-size: 16px;
+  }
+  .survey-card {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 24px;
+  }
+  .survey-card .action {
+    grid-column: auto;
   }
   .join-footer {
     flex-direction: column;

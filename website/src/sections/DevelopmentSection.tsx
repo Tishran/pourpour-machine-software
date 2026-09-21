@@ -1,41 +1,42 @@
-export default function DevelopmentSection() {
+import { copyFor, type Language } from "../i18n";
+
+export default function DevelopmentSection({
+  language,
+}: {
+  language: Language;
+}) {
+  const copy = copyFor(language);
   return (
     <section
       id="development"
       className="development-section"
       aria-labelledby="development-title"
     >
-      <p className="eyebrow">DEVELOPMENT</p>
+      <p className="eyebrow">{copy.development}</p>
       <h2 id="development-title">
-        We’re building First Brew’s
+        {copy.developmentTitle}
         <br />
-        <em>first prototype.</em>
+        <em>{copy.developmentEmphasis}</em>
       </h2>
-      <p className="development-intro">
-        Our next step is to turn a coffee recipe into a complete, automated
-        pour—from water temperature and flow to the movement of the nozzle.
-      </p>
+      <p className="development-intro">{copy.developmentIntro}</p>
       <ol className="development-progress">
         <li>
-          <span className="mono">01 / DEFINED</span>
-          <h3>Prototype architecture</h3>
+          <span className="mono">{copy.defined}</span>
+          <h3>{copy.architecture}</h3>
         </li>
         <li>
-          <span className="mono">02 / SELECTED</span>
-          <h3>Components</h3>
+          <span className="mono">{copy.selected}</span>
+          <h3>{copy.components}</h3>
         </li>
         <li>
-          <span className="mono">03 / NEXT</span>
-          <h3>Automated brewing tests</h3>
+          <span className="mono">{copy.next}</span>
+          <h3>{copy.brewingTests}</h3>
         </li>
       </ol>
       <div className="development-validation">
-        <p className="eyebrow">WHAT WE’LL TEST</p>
-        <p>Brew repeatability. Active user time. Water-delivery accuracy.</p>
-        <p>
-          Then we’ll test the complete experience with home specialty-coffee
-          drinkers.
-        </p>
+        <p className="eyebrow">{copy.whatTest}</p>
+        <p>{copy.validation1}</p>
+        <p>{copy.validation2}</p>
       </div>
     </section>
   );

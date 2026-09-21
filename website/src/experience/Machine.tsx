@@ -24,6 +24,7 @@ import {
   story,
   type Part,
 } from "../data/story";
+import { copyFor, type Language } from "../i18n";
 
 const COPPER = "#b87542";
 
@@ -144,7 +145,8 @@ function Annotation({
   );
 }
 
-export function MachineBase() {
+export function MachineBase({ language = "en" }: { language?: Language }) {
+  const copy = copyFor(language);
   return (
     <group>
       <Block position={[0, 0.17, 0]} size={[2.55, 0.25, 2.03]} radius={0.08} />
@@ -181,13 +183,14 @@ export function MachineBase() {
         height={0.07}
       />
       <Annotation position={[-0.7, 0.3, 0.9]} side="left">
-        06 / BREW SCALE
+        {copy.brewScale}
       </Annotation>
     </group>
   );
 }
 
-export function Column() {
+export function Column({ language = "en" }: { language?: Language }) {
+  const copy = copyFor(language);
   return (
     <group>
       <Block
@@ -221,12 +224,13 @@ export function Column() {
         height={0.045}
         color="#aaa995"
       />
-      <Annotation position={[1.05, 2.3, -0.2]}>02 / HEATER</Annotation>
+      <Annotation position={[1.05, 2.3, -0.2]}>{copy.heater}</Annotation>
     </group>
   );
 }
 
-export function Arm() {
+export function Arm({ language = "en" }: { language?: Language }) {
+  const copy = copyFor(language);
   return (
     <group>
       <Block
@@ -265,12 +269,13 @@ export function Arm() {
           <Finish surface="brushedSteel" axial uvScale={[0.157, 2.08]} />
         </mesh>
       ))}
-      <Annotation position={[1, 3.32, 0.5]}>03 / FLOW CONTROL</Annotation>
+      <Annotation position={[1, 3.32, 0.5]}>{copy.flowControl}</Annotation>
     </group>
   );
 }
 
-export function Nozzle() {
+export function Nozzle({ language = "en" }: { language?: Language }) {
+  const copy = copyFor(language);
   return (
     <group>
       <Block
@@ -297,12 +302,15 @@ export function Nozzle() {
         width={0.16}
         height={0.035}
       />
-      <Annotation position={[0.18, -0.18, 0.03]}>04 / MOVING NOZZLE</Annotation>
+      <Annotation position={[0.18, -0.18, 0.03]}>
+        {copy.movingNozzle}
+      </Annotation>
     </group>
   );
 }
 
-export function Reservoir() {
+export function Reservoir({ language = "en" }: { language?: Language }) {
+  const copy = copyFor(language);
   return (
     <group>
       <mesh position={[-0.76, 1.87, -0.65]}>
@@ -334,7 +342,7 @@ export function Reservoir() {
         />
       ))}
       <Annotation position={[-1.1, 2.2, -0.65]} side="left">
-        01 / WATER SYSTEM
+        {copy.waterSystem}
       </Annotation>
     </group>
   );
@@ -538,7 +546,8 @@ function WaterSystem() {
   );
 }
 
-function MachineModel() {
+function MachineModel({ language }: { language: Language }) {
+  const copy = copyFor(language);
   const root = useRef<THREE.Group>(null),
     nozzle = useRef<THREE.Group>(null),
     pathGroup = useRef<THREE.Group>(null);
@@ -578,23 +587,23 @@ function MachineModel() {
   return (
     <group ref={root}>
       <group>
-        <MachineBase />
+        <MachineBase language={language} />
       </group>
-      <Column />
+      <Column language={language} />
       <WaterSystem />
       <group>
-        <Arm />
+        <Arm language={language} />
       </group>
       <group>
-        <Reservoir />
+        <Reservoir language={language} />
       </group>
       <group ref={nozzle} position={[0, 3.08, CENTER_Z]}>
-        <Nozzle />
+        <Nozzle language={language} />
       </group>
       <group>
         <Dripper />
         <Annotation position={[-0.44, 1.85, CENTER_Z]} side="left">
-          05 / STANDARD V60
+          {copy.standardV60}
         </Annotation>
       </group>
       <group>
@@ -622,11 +631,11 @@ function MachineModel() {
   );
 }
 
-export default function Machine() {
+export default function Machine({ language }: { language: Language }) {
   const quality = useRenderQuality();
   return (
     <SurfaceProvider>
-      <MachineModel />
+      <MachineModel language={language} />
       <ContactShadows
         position={[0, -0.047, 0]}
         opacity={0.38}

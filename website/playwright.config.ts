@@ -9,6 +9,7 @@ export default defineConfig({
   use: {
     baseURL: `http://127.0.0.1:${port}`,
     headless: true,
+    channel: process.env.POURPOUR_BROWSER_CHANNEL,
     launchOptions: { args: ["--enable-unsafe-swiftshader"] },
   },
   webServer: {
