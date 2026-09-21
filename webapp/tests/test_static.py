@@ -49,7 +49,7 @@ class StaticFileTests(unittest.TestCase):
 
     def test_index_is_a_mobile_app_shell(self):
         html = (ROOT / 'index.html').read_text(encoding='utf-8')
-        self.assertIn('<html lang="en">', html)
+        self.assertIn('<html lang="ru">', html)
         self.assertIn('rel="manifest"', html)
         self.assertIn('viewport-fit=cover', html)
         self.assertIn('accept="image/*" capture="environment"', html)
@@ -59,8 +59,9 @@ class StaticFileTests(unittest.TestCase):
         self.assertNotIn('id="recents-hint"', html)
         self.assertIn('id="scan-preview"', html)
         self.assertIn('id="recipe-photo"', html)
-        # No frameworks, fonts or scripts from the internet.
-        self.assertNotRegex(html, r'(src|href)="https?://')
+        self.assertIn('href="https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb"', html)
+        # No scripts, fonts or images are loaded from the internet.
+        self.assertNotRegex(html, r'src="https?://')
 
     def test_ui_strings_are_defined_in_the_dictionary(self):
         script = (ROOT / 'app.js').read_text(encoding='utf-8')
@@ -73,7 +74,7 @@ class StaticFileTests(unittest.TestCase):
         used = set(re.findall(r"\bt\('([a-z_]+)'", script))
         used |= {f'{key}_hint' for key in ('vibrate', 'sound')}
         self.assertFalse(used - languages['en'], used - languages['en'])
-        self.assertIn("navigator.language", script)
+        self.assertIn("let LANG = 'ru'", script)
         self.assertIn("firstbrew.settings.v1", script)
         self.assertNotIn('http://', script.replace('http://127.0.0.1', ''))
         self.assertNotIn('https://', script)

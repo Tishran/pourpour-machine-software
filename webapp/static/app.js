@@ -26,6 +26,10 @@ const STRINGS = {
     desktop_photo: 'Choose a photo',
     settings: 'Settings',
     language: 'Language',
+    survey_eyebrow: 'PourPour pre-order',
+    survey_title: '15% off your pre-order',
+    survey_text: 'Take a short survey about how you brew coffee and get a 15% discount on your PourPour pre-order.',
+    survey_button: 'Take the survey',
     reading_slow: 'Reading the label… Taking longer than usual.',
     cancel: 'Cancel',
     photo_cancelled: 'Recognition cancelled. Your photo is still here.',
@@ -203,6 +207,10 @@ const STRINGS = {
     desktop_photo: 'Выбрать фото',
     settings: 'Настройки',
     language: 'Язык',
+    survey_eyebrow: 'Предзаказ PourPour',
+    survey_title: 'Скидка 15% на предзаказ',
+    survey_text: 'Пройдите короткий опрос о том, как вы завариваете кофе, и получите скидку 15% на предзаказ PourPour.',
+    survey_button: 'Пройти опрос',
     reading_slow: 'Фото распознаётся… Это дольше обычного.',
     cancel: 'Отмена',
     photo_cancelled: 'Распознавание отменено. Фото осталось на экране.',
@@ -360,7 +368,7 @@ const STRINGS = {
   },
 };
 const SETTINGS_KEY = 'firstbrew.settings.v1';
-let LANG = navigator.language?.toLowerCase().startsWith('ru') ? 'ru' : 'en';
+let LANG = 'ru';
 try {
   const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
   if (['en', 'ru'].includes(saved.language)) LANG = saved.language;
@@ -1516,9 +1524,12 @@ function localize() {
   photoButtonLabel();
   $('gallery-button').textContent = t('gallery_button');
   $('photo-cancel').textContent = t('cancel');
-  $('settings-button').setAttribute('aria-label', t('settings'));
   $('language-label').textContent = t('language');
   $('language').value = LANG;
+  $('survey-eyebrow').textContent = t('survey_eyebrow');
+  $('survey-title').textContent = t('survey_title');
+  $('survey-text').textContent = t('survey_text');
+  $('survey-link').textContent = `${t('survey_button')} ↗`;
   $('confirm-photo').alt = t('photo_alt');
   $('scan-image').alt = t('photo_alt');
   $('recipe-photo-image').alt = t('photo_alt');
@@ -1554,10 +1565,6 @@ function init() {
   history.replaceState({screen: 'find'}, '', location.pathname + location.search);
   document.body.dataset.screen = 'find';
 
-  $('settings-button').addEventListener('click', () => {
-    $('settings-panel').hidden = !$('settings-panel').hidden;
-    $('settings-button').setAttribute('aria-expanded', String(!$('settings-panel').hidden));
-  });
   $('language').addEventListener('change', () => {
     LANG = $('language').value;
     savePrefs(); localize();

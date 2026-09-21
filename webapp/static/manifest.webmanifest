@@ -1,8 +1,8 @@
 {
   "name": "First Brew",
   "short_name": "First Brew",
-  "description": "Pour-over recipe for your coffee: photo of the bag or the name, pours and a timer.",
-  "lang": "en",
+  "description": "Рецепт воронки для вашего кофе: фото пачки или название, вливания и таймер.",
+  "lang": "ru",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

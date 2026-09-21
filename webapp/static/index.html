@@ -1,12 +1,12 @@
 <!doctype html>
-<html lang="en">
+<html lang="ru">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#f4f1e9" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#161613" media="(prefers-color-scheme: dark)">
-  <meta name="description" content="The pour-over recipe for your coffee from The Welder Catherine: photo of the bag or the name, pours and a timer.">
+  <meta name="description" content="Рецепт воронки для вашего кофе: фото пачки или название, пошаговые вливания и таймер.">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -24,12 +24,23 @@
     <section class="screen" id="screen-find" aria-labelledby="find-title">
       <header class="bar">
         <h1 class="brand" id="find-title">First Brew</h1>
-        <button class="toggle" id="settings-button" type="button" aria-expanded="false" aria-controls="settings-panel">⚙</button>
+        <label class="language-switch">
+          <span class="visually-hidden" id="language-label"></span>
+          <select id="language" aria-labelledby="language-label">
+            <option value="ru">RU</option>
+            <option value="en">EN</option>
+          </select>
+        </label>
       </header>
-      <div id="settings-panel" hidden>
-        <label class="label" id="language-label" for="language"></label>
-        <select id="language"><option value="en">English</option><option value="ru">Русский</option></select>
-      </div>
+      <aside class="survey-offer" aria-labelledby="survey-title">
+        <div class="survey-discount" aria-hidden="true">−15%</div>
+        <div class="survey-copy">
+          <p class="survey-eyebrow" id="survey-eyebrow"></p>
+          <h2 id="survey-title"></h2>
+          <p id="survey-text"></p>
+          <a class="button survey-button" id="survey-link" href="https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb" target="_blank" rel="noopener noreferrer"></a>
+        </div>
+      </aside>
       <p class="status" id="status" role="status" aria-live="polite"></p>
       <button type="button" class="button primary big" id="photo-button"></button>
       <button class="button gallery-button" id="gallery-button" type="button"></button>

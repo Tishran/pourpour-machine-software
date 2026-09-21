@@ -30,6 +30,10 @@ async function checkDevice(browser, deviceName) {
   try {
     await page.goto('/');
     assert.equal(await page.title(), 'First Brew');
+    assert.equal(await page.getAttribute('html', 'lang'), 'ru', 'Russian is the default for every browser locale');
+    assert.match(await text(page, '#survey-title'), /15%/);
+    assert.equal(await page.locator('#survey-link').getAttribute('href'), 'https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb');
+    await page.locator('#language').selectOption('en');
     assert.equal(await page.getAttribute('html', 'lang'), 'en');
     assert.equal(await screen(page), 'find');
     assert.ok(await noHorizontalScroll(page), 'no horizontal scroll on the find screen');
@@ -220,7 +224,6 @@ async function recognitionChecks(browser) {
   try {
     await page.goto('/');
     assert.equal(await page.getAttribute('html', 'lang'), 'ru');
-    await page.locator('#settings-button').click();
     await page.locator('#language').selectOption('en');
     await page.reload();
     assert.equal(await page.getAttribute('html', 'lang'), 'en', 'language choice survives reload');
