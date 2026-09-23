@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "source_file": "Таблица_соотношения_помолов_08_08_1.pdf",
+  "reference_grinder": "Mahlkönig EK43 (turkish), dial 1–11",
+  "methodology": "not_specified_in_source",
+  "accuracy": "approximate",
+  "unit": "manufacturer_setting_not_particle_microns",
+  "rows": [
+    {"reference_setting":5,"settings":{"comandante_c40_standard":{"minimum":13,"maximum":14},"baratza_encore":{"minimum":7,"maximum":8},"1zpresso_k_plus":{"minimum":43,"maximum":44}}},
+    {"reference_setting":5.5,"settings":{"comandante_c40_standard":{"minimum":15,"maximum":16},"baratza_encore":{"minimum":9,"maximum":10},"1zpresso_k_plus":{"minimum":49,"maximum":50}}},
+    {"reference_setting":6,"settings":{"comandante_c40_standard":{"minimum":17,"maximum":18},"baratza_encore":{"minimum":10,"maximum":10},"1zpresso_k_plus":{"minimum":53,"maximum":54}}},
+    {"reference_setting":6.5,"settings":{"comandante_c40_standard":{"minimum":19,"maximum":20},"baratza_encore":{"minimum":11,"maximum":11},"1zpresso_k_plus":{"minimum":56,"maximum":57}}},
+    {"reference_setting":7,"settings":{"comandante_c40_standard":{"minimum":20,"maximum":21},"baratza_encore":{"minimum":12,"maximum":12},"1zpresso_k_plus":{"minimum":58,"maximum":60}}},
+    {"reference_setting":7.5,"settings":{"comandante_c40_standard":{"minimum":21,"maximum":22},"baratza_encore":{"minimum":13,"maximum":13},"1zpresso_k_plus":{"minimum":63,"maximum":66}}},
+    {"reference_setting":8,"settings":{"comandante_c40_standard":{"minimum":22,"maximum":23},"baratza_encore":{"minimum":14,"maximum":14},"1zpresso_k_plus":{"minimum":68,"maximum":69}}},
+    {"reference_setting":8.5,"settings":{"comandante_c40_standard":{"minimum":23,"maximum":24},"baratza_encore":{"minimum":15,"maximum":15},"1zpresso_k_plus":{"minimum":69,"maximum":71}}},
+    {"reference_setting":9,"settings":{"comandante_c40_standard":{"minimum":24,"maximum":25},"baratza_encore":{"minimum":15,"maximum":16},"1zpresso_k_plus":{"minimum":73,"maximum":75}}},
+    {"reference_setting":9.5,"settings":{"comandante_c40_standard":{"minimum":25,"maximum":26},"baratza_encore":{"minimum":16,"maximum":16},"1zpresso_k_plus":{"minimum":75,"maximum":76}}},
+    {"reference_setting":10,"settings":{"comandante_c40_standard":{"minimum":26,"maximum":27},"baratza_encore":{"minimum":17,"maximum":17},"1zpresso_k_plus":{"minimum":81,"maximum":82}}},
+    {"reference_setting":10.5,"settings":{"comandante_c40_standard":{"minimum":29,"maximum":29},"baratza_encore":{"minimum":18,"maximum":18},"1zpresso_k_plus":{"minimum":83,"maximum":85}}},
+    {"reference_setting":11,"settings":{"comandante_c40_standard":{"minimum":31,"maximum":31},"baratza_encore":{"minimum":19,"maximum":19},"1zpresso_k_plus":{"minimum":87,"maximum":90}}}
+  ]
+}

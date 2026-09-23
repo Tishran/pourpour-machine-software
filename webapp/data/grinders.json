@@ -1,0 +1,47 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id":"comandante_c40_standard","name_ru":"Comandante C40 (стандартная ось)","name_en":"Comandante C40 (standard axle)",
+      "scale":{"kind":"clicks_from_zero","label_ru":"кликов от нуля","label_en":"clicks from zero","minimum":1,"maximum":null,"clicks_per_revolution":null,"zero_offset":0},
+      "burr_travel_microns_per_click":null,"micron_kind":null,"particle_calibration":null,"clicks_per_particle_micron":null,
+      "starting_filter_range":{"minimum":18,"maximum":35},"accuracy":"approximate",
+      "source_url":"https://comandantegrinder.com/pages/faq"
+    },
+    {
+      "id":"1zpresso_k_ultra","name_ru":"1Zpresso K-Ultra","name_en":"1Zpresso K-Ultra",
+      "scale":{"kind":"clicks_from_zero","label_ru":"кликов от нуля","label_en":"clicks from zero","minimum":1,"maximum":null,"clicks_per_revolution":100,"zero_offset":0},
+      "burr_travel_microns_per_click":20,"micron_kind":"burr_travel","particle_calibration":null,"clicks_per_particle_micron":null,
+      "starting_filter_range":null,"accuracy":"approximate",
+      "source_url":"https://1zpresso.coffee/jp/manual-kultra-en/"
+    },
+    {
+      "id":"1zpresso_jx_pro_s","name_ru":"1Zpresso JX-Pro S","name_en":"1Zpresso JX-Pro S",
+      "scale":{"kind":"clicks_from_zero","label_ru":"кликов от нуля","label_en":"clicks from zero","minimum":1,"maximum":null,"clicks_per_revolution":40,"zero_offset":0},
+      "burr_travel_microns_per_click":12.5,"micron_kind":"burr_travel","particle_calibration":null,"clicks_per_particle_micron":null,
+      "starting_filter_range":null,"accuracy":"approximate",
+      "source_url":"https://1zpresso.coffee/grind-setting/"
+    },
+    {
+      "id":"fellow_ode_gen2","name_ru":"Fellow Ode Gen 2","name_en":"Fellow Ode Gen 2",
+      "scale":{"kind":"dial","label_ru":"деление шкалы","label_en":"dial setting","minimum":1,"maximum":11,"clicks_per_revolution":null,"zero_offset":0},
+      "burr_travel_microns_per_click":null,"micron_kind":null,"particle_calibration":null,"clicks_per_particle_micron":null,
+      "starting_filter_range":null,"accuracy":"approximate",
+      "source_url":"https://help.fellowproducts.com/hc/en-us/articles/9962302561819-What-are-the-recommended-grind-settings-for-Ode-Gen-2-Brew-Burrs"
+    },
+    {
+      "id":"1zpresso_k_plus","name_ru":"1Zpresso K-Plus","name_en":"1Zpresso K-Plus",
+      "scale":{"kind":"clicks_from_zero","label_ru":"кликов от нуля","label_en":"clicks from zero","minimum":1,"maximum":null,"clicks_per_revolution":90,"zero_offset":0},
+      "burr_travel_microns_per_click":22,"micron_kind":"burr_travel","particle_calibration":null,"clicks_per_particle_micron":null,
+      "starting_filter_range":null,"accuracy":"approximate",
+      "source_url":"https://1zpresso.coffee/k/"
+    },
+    {
+      "id":"baratza_encore","name_ru":"Baratza Encore","name_en":"Baratza Encore",
+      "scale":{"kind":"dial","label_ru":"деление шкалы","label_en":"dial setting","minimum":1,"maximum":40,"clicks_per_revolution":null,"zero_offset":0},
+      "burr_travel_microns_per_click":null,"micron_kind":null,"particle_calibration":null,"clicks_per_particle_micron":null,
+      "starting_filter_range":null,"accuracy":"approximate",
+      "source_url":"https://www.baratza.com/en-us/product/encore-zcg485"
+    }
+  ]
+}

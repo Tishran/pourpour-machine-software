@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "items": [
+    {"id":"plastic","name_ru":"Пластик","name_en":"Plastic","thermal_class":"low_mass","accuracy":"approximate"},
+    {"id":"porcelain","name_ru":"Фарфор","name_en":"Porcelain","thermal_class":"high_mass","accuracy":"approximate"},
+    {"id":"ceramic","name_ru":"Керамика","name_en":"Ceramic","thermal_class":"high_mass","accuracy":"approximate"},
+    {"id":"glass","name_ru":"Стекло","name_en":"Glass","thermal_class":"high_mass","accuracy":"approximate"},
+    {"id":"metal","name_ru":"Металл","name_en":"Metal","thermal_class":"variable","accuracy":"approximate"}
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "items": [
+    {"id":"washed","name_ru":"Мытая","name_en":"Washed","family":"washed"},
+    {"id":"natural","name_ru":"Натуральная","name_en":"Natural","family":"natural"},
+    {"id":"honey","name_ru":"Хани","name_en":"Honey","family":"honey"},
+    {"id":"semi_washed","name_ru":"Полумытая","name_en":"Semi-washed","family":"washed"},
+    {"id":"washed_anaerobic","name_ru":"Мытая анаэробная","name_en":"Washed anaerobic","family":"washed"},
+    {"id":"natural_anaerobic","name_ru":"Натуральная анаэробная","name_en":"Natural anaerobic","family":"natural"},
+    {"id":"carbonic_maceration","name_ru":"Карбоническая мацерация","name_en":"Carbonic maceration","family":"experimental"},
+    {"id":"lacto_fermentation","name_ru":"Лакто-ферментация","name_en":"Lacto-fermentation","family":"experimental"},
+    {"id":"co_fermentation","name_ru":"Соферментация","name_en":"Co-fermentation","family":"experimental"},
+    {"id":"thermal_shock","name_ru":"Термошок","name_en":"Thermal shock","family":"experimental"},
+    {"id":"infused","name_ru":"Инфьюз","name_en":"Infused","family":"experimental"},
+    {"id":"wet_hulled","name_ru":"Вет-халл","name_en":"Wet-hulled","family":"wet_hulled"},
+    {"id":"experimental","name_ru":"Экспериментальная","name_en":"Experimental","family":"experimental"}
+  ]
+}

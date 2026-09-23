@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "items": [
+    {"id":"dense_paper","name_ru":"Плотный бумажный","name_en":"Dense paper","flow_class":"slow","accuracy":"approximate"},
+    {"id":"standard_paper","name_ru":"Стандартный бумажный","name_en":"Standard paper","flow_class":"medium","accuracy":"approximate"},
+    {"id":"fast_paper","name_ru":"Быстрый бумажный","name_en":"Fast paper","flow_class":"fast","accuracy":"approximate"},
+    {"id":"metal","name_ru":"Металлический","name_en":"Metal","flow_class":"variable","accuracy":"approximate"}
+  ]
+}
