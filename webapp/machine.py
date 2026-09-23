@@ -105,6 +105,14 @@ def recipe_to_machine(recipe):
     """Convert the web app's recipe object (unchanged roaster data) to a `load_recipe` payload."""
     if not isinstance(recipe, dict) or not isinstance(recipe.get('steps'), list):
         raise MachineError('incomplete_recipe')
+    # Calculated immersion/automatic steps carry water and times for the local
+    # timer, but the current pump protocol only understands controlled pours.
+    if recipe.get('origin') == 'calculated' and recipe.get('method') != 'percolation':
+        raise MachineError('bad_params', 'This brewing method is not supported by the machine')
+    if recipe.get('origin') == 'calculated' and any(
+            not isinstance(step, dict) or step.get('kind') != 'pour'
+            for step in recipe['steps']):
+        raise MachineError('bad_params', 'Only calculated pour steps can be sent to the machine')
     steps = []
     for step in recipe['steps']:
         if not isinstance(step, dict):
