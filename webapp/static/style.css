@@ -342,7 +342,8 @@ select { font: inherit; color: var(--ink); background: var(--card); min-height: 
 .builder-favorite { width: 100%; margin-bottom: 10px; }
 .builder-favorite[aria-pressed=true] { border-color: var(--orange); color: var(--accent-ink); background: var(--accent-soft); }
 @media (max-width: 899px) {
-  #screen-construct[data-step="2"] .builder-form-pane { display: none; }
+  #screen-construct[data-step="2"] .builder-form-pane,
+  #screen-construct[data-step="4"] .builder-form-pane { display: none; }
   #screen-construct[data-step="2"] .builder-layout { display: block; }
 }
 @media (min-width: 900px) {
@@ -376,3 +377,99 @@ select { font: inherit; color: var(--ink); background: var(--card); min-height: 
   #screen-confirm { grid-column: 1 / -1; width: 100%; max-width: 540px; margin: 0 auto; }
   .recipe-photo { display: flex; }
 }
+
+/* Wizard header close and the two-button action bar. */
+.bar-actions { display: flex; align-items: center; gap: 8px; }
+.bar-close {
+  display: grid; place-items: center; width: 48px; height: 48px; padding: 0;
+  border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); font-size: 1.5rem; line-height: 1;
+}
+.builder-cta-buttons { display: grid; grid-template-columns: 1fr; gap: 8px; }
+.builder-cta-buttons.pair { grid-template-columns: 1fr 1fr; }
+.builder-cta-buttons .button { min-width: 0; padding-inline: 10px; line-height: 1.2; }
+
+/* Step 4: rate the cup by taste or refractometer. */
+.builder-feedback { padding-bottom: 16px; }
+.feedback-rated {
+  display: grid; gap: 2px; margin: 0 0 14px; padding: 12px 14px;
+  border: 1.5px solid var(--line); border-radius: 12px; background: var(--card);
+}
+.feedback-rated span { font-size: .85rem; color: var(--muted); }
+.feedback-rated strong { font-size: 1.1rem; }
+.feedback-rated small { font-size: .875rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.feedback-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 16px; }
+.feedback-modes .button[aria-pressed="true"] { border-color: var(--orange); background: var(--accent-soft); color: var(--accent-ink); }
+.feedback-count { margin: 0 0 2px; font-size: 1rem; font-weight: 700; }
+.taste-columns { display: grid; gap: 18px; }
+.taste-group { min-width: 0; margin: 0; padding: 0; border: 0; }
+.taste-group legend {
+  padding: 0; margin: 0 0 8px; font-size: .85rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.taste-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.taste-option {
+  display: inline-flex; align-items: stretch; min-width: 0; max-width: 100%;
+  border: 1.5px solid var(--line); border-radius: 999px; background: var(--card);
+}
+.taste-option.selected { border-color: var(--orange); background: var(--accent-soft); color: var(--accent-ink); }
+.taste-option.selected .taste-choice span::before { content: "✓"; margin-right: 6px; }
+.taste-option.blocked { opacity: .42; }
+.taste-option:has(input:focus-visible) { outline: 3px solid var(--orange); outline-offset: 2px; }
+.taste-choice { position: relative; display: flex; align-items: center; min-height: 48px; padding: 0 2px 0 16px; font-size: 1rem; cursor: pointer; }
+.taste-choice input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: pointer; }
+.taste-choice input:disabled { cursor: not-allowed; }
+.taste-help {
+  display: grid; place-items: center; flex: none; width: 48px; min-height: 48px; padding: 0;
+  border: 0; border-radius: 0 999px 999px 0; background: none; color: var(--accent-ink);
+}
+.taste-help::before {
+  content: "?"; display: grid; place-items: center; width: 24px; height: 24px;
+  border: 1.5px solid currentColor; border-radius: 50%; font-size: .8rem; font-weight: 700;
+}
+.taste-help[aria-expanded="true"]::before { background: var(--orange); border-color: var(--orange); color: var(--on-orange); }
+.taste-explain {
+  margin: 10px 0 0; padding: 10px 12px; border: 1.5px solid var(--line); border-radius: 10px;
+  background: var(--card); font-size: .9rem;
+}
+.feedback-extraction { margin: 0 0 4px; min-height: 1.4em; font-size: 1.1rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+@media (min-width: 700px) and (max-width: 899px) {
+  .taste-columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* Step 5: diagnosis, extraction chart and the corrected recipe. */
+.correction-kind {
+  margin: 0 0 6px; font-size: .85rem; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .05em;
+}
+.correction-explanation { margin: 0 0 12px; }
+.correction-changes { list-style: none; margin: 0 0 8px; padding: 0; }
+.correction-changes li { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.change-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 2px 12px; }
+.change-value { font-weight: 700; font-variant-numeric: tabular-nums; }
+.correction-changes small { display: block; margin-top: 3px; color: var(--muted); font-size: .875rem; }
+.correction-name { margin: 0 0 10px; font-size: 1.1rem; font-weight: 700; }
+.extraction-chart { margin: 4px 0 18px; }
+.extraction-chart svg { display: block; width: 100%; max-width: 520px; height: auto; font-family: inherit; }
+.chart-plot { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+.chart-grid { stroke: var(--line); stroke-width: 1; }
+.chart-zone { fill: var(--accent-soft); stroke: var(--orange); stroke-width: 1.5; }
+.chart-ratio { stroke: var(--muted); stroke-width: 1; opacity: .5; }
+.chart-recipe { stroke: var(--ink); stroke-width: 2; stroke-dasharray: 6 4; }
+.chart-estimate { stroke: var(--orange); stroke-width: 14; stroke-linecap: round; opacity: .5; }
+.chart-cup { fill: var(--orange); stroke: var(--card); stroke-width: 2; }
+.chart-cup-halo { fill: var(--orange); opacity: .22; }
+.chart-tick, .chart-ratio-label { fill: var(--muted); font-size: 11px; }
+.chart-axis { fill: var(--muted); font-size: 12px; }
+.chart-side-label { fill: var(--ink); font-size: 12px; font-weight: 600; }
+.chart-zone-label {
+  fill: var(--ink); font-size: 12px; font-weight: 600;
+  paint-order: stroke; stroke: var(--card); stroke-width: 4px; stroke-linejoin: round;
+}
+.chart-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 6px; padding: 0; list-style: none; font-size: .875rem; }
+.chart-legend li { display: inline-flex; align-items: center; gap: 8px; }
+.chart-legend i { display: inline-block; flex: none; width: 22px; height: 12px; }
+.legend-zone { border: 1.5px solid var(--orange); border-radius: 3px; background: var(--accent-soft); }
+.chart-legend .legend-recipe { height: 0; border-top: 2px dashed var(--ink); }
+.chart-legend .legend-cup { width: 12px; border-radius: 50%; background: var(--orange); }
+.legend-estimate { border-radius: 6px; background: var(--orange); opacity: .5; }
+.extraction-chart figcaption p { margin: 0; font-size: .875rem; color: var(--muted); }

@@ -12,7 +12,8 @@ from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel, RECOMMENDATION_POLICY, COUNTRIES, PROCESSING, VARIETIES
 from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
 from brew_catalog import load_catalog, unique_object
-from brewing_engine import BrewingInputError, adjust, build, rescale, validate_calculated_recipe
+from brewing_engine import (BrewingInputError, adjust, build, rescale, taste_options,
+                            validate_calculated_recipe)
 
 ROOT = Path(__file__).parent / 'static'
 STATIC_FILES = {
@@ -78,7 +79,7 @@ class Handler(BaseHTTPRequestHandler):
                                             'coffees': len(fitted.rows), 'ocr': ocr_status(),
                                             'countries': COUNTRIES, 'processing': PROCESSING, 'varieties': VARIETIES})
             if url.path == '/api/catalog/options':
-                return self.send_json(200, {'schema_version': 1, **load_catalog()})
+                return self.send_json(200, {'schema_version': 1, **load_catalog(), 'tastes': taste_options()})
             if url.path == '/api/search':
                 query = parse_qs(url.query).get('q', [''])[0].strip()
                 if len(query) > 120:

@@ -6,13 +6,16 @@ heuristics. Burr travel per click is *not* a particle-size calibration.
 
 from copy import deepcopy
 from datetime import date
+from itertools import combinations
 import math
 
 from brew_catalog import load_catalog
 
 
 COEFFICIENTS = {
-    'version': '2.0',
+    'version': '2.1',
+    # 2.1 changed only the feedback step; build() output is identical to 2.0.
+    'compatible_versions': ('2.0', '2.1'),
     'base': {'dose_g': 15, 'water_g': 250, 'temperature_c': 94,
              'particle_microns': 780, 'reference_dial': 8.5,
              'duration_seconds': 170, 'bloom_multiplier': 2.5,
@@ -33,7 +36,17 @@ COEFFICIENTS = {
     'adjustment': {'temperature_step_c': 2, 'particle_step_microns': 30,
                    'reference_step': 0.5, 'water_ratio_step': 0.5,
                    'balanced_extraction_min_percent': 18,
-                   'balanced_extraction_max_percent': 22},
+                   'balanced_extraction_max_percent': 22,
+                   'balanced_tds_min_percent': 1.15,
+                   'balanced_tds_max_percent': 1.45},
+    # Extraction chart. Ratio diagonals assume the bed keeps ~2 g of water per
+    # gram of coffee (an approximation); taste bands are not measurements.
+    'chart': {'extraction_percent': (14, 26), 'tds_percent': (0.9, 1.8),
+              'ratios': (12, 22), 'retained_water_g_per_g': 2.0,
+              'taste_extraction_bands': {
+                  'under': (14, 18), 'over': (22, 26), 'on_target': (18, 22),
+                  'weak_after_sweet': (18, 22), 'heavy_after_sweet': (18, 22),
+                  'strength_needs_sweetness': (14, 26)}},
     'roast': {
         'light': {},
         'medium': {'temperature_c': -2, 'particle_microns': 40,
@@ -478,6 +491,12 @@ def rescale(recipe, dose_g=None, water_g=None):
     return result
 
 
+# Taste descriptors in the order and columns of the result form.
+_TASTE_COLUMNS = (
+    ('acidity_sweetness', ('sour', 'sharp', 'flat', 'sweet', 'balanced')),
+    ('body_strength', ('watery', 'hollow', 'syrupy', 'heavy')),
+    ('finish_clarity', ('bitter', 'dry', 'astringent', 'muddy', 'rough')),
+)
 _TASTE_GROUPS = {
     'under': {'sour', 'sharp', 'flat', 'hollow'},
     'over': {'bitter', 'dry', 'astringent', 'muddy', 'rough', 'heavy'},
@@ -486,9 +505,38 @@ _TASTE_GROUPS = {
     'positive': {'sweet', 'balanced'},
 }
 _ALL_TASTES = set().union(*_TASTE_GROUPS.values())
+_MAX_TASTES = 3
+# A cup cannot be both thin and thick.
+_BODY_CONFLICTS = {frozenset(('watery', 'syrupy')), frozenset(('watery', 'heavy'))}
+assert _ALL_TASTES == {item for _, items in _TASTE_COLUMNS for item in items}
 
 
-def _feedback_signal(feedback, recipe):
+def _tastes_conflict(first, second):
+    """Two descriptors that cannot describe one cup or would pull the fix both ways."""
+    pair = {first, second}
+    if first == second:
+        return False
+    return ('balanced' in pair or
+            bool(pair & _TASTE_GROUPS['under']) and bool(pair & _TASTE_GROUPS['over']) or
+            bool(pair & _TASTE_GROUPS['under']) and 'sweet' in pair or
+            frozenset(pair) in _BODY_CONFLICTS)
+
+
+def taste_options():
+    """Columns, limit and pairwise conflicts the form uses to switch options off."""
+    ids = [item for _, items in _TASTE_COLUMNS for item in items]
+    return {'max_selected': _MAX_TASTES,
+            'columns': [{'id': column, 'descriptors': list(items)} for column, items in _TASTE_COLUMNS],
+            'conflicts': {item: [other for other in ids if _tastes_conflict(item, other)] for item in ids}}
+
+
+def _percent(value, digits, language):
+    text = f'{value:.{digits}f}'
+    return text.replace('.', ',') if language == 'ru' else text
+
+
+def _feedback(feedback, recipe):
+    """Read one feedback path; return the signal, a finer diagnosis code and the cup data."""
     if not isinstance(feedback, dict):
         raise BrewingInputError('feedback: expected an object')
     has_taste = 'descriptors' in feedback
@@ -497,25 +545,27 @@ def _feedback_signal(feedback, recipe):
         raise BrewingInputError('feedback: supply descriptors or measurement, not both')
     if has_taste:
         tastes = feedback['descriptors']
-        if (not isinstance(tastes, list) or not 1 <= len(tastes) <= 3 or
+        if (not isinstance(tastes, list) or not 1 <= len(tastes) <= _MAX_TASTES or
                 any(not isinstance(item, str) or item not in _ALL_TASTES for item in tastes) or
                 len(set(tastes)) != len(tastes)):
             raise BrewingInputError('descriptors: choose 1–3 distinct known tastes')
         selected = set(tastes)
-        if ({'sweet', 'balanced'} <= selected or
-                ('balanced' in selected and len(selected) > 1) or
-                selected & _TASTE_GROUPS['under'] and selected & _TASTE_GROUPS['over'] or
-                selected & _TASTE_GROUPS['under'] and 'sweet' in selected):
+        if any(_tastes_conflict(a, b) for a, b in combinations(sorted(selected), 2)):
             raise BrewingInputError('descriptors: contradictory tastes')
         if selected & _TASTE_GROUPS['under']:
-            return 'under', None
-        if selected & _TASTE_GROUPS['over']:
-            return 'over', None
-        if 'sweet' in selected and 'watery' in selected:
-            return 'weak_after_sweet', None
-        if 'sweet' in selected and 'syrupy' in selected:
-            return 'heavy_after_sweet', None
-        return 'hold', None
+            signal = code = 'under'
+        elif selected & _TASTE_GROUPS['over']:
+            signal = code = 'over'
+        elif 'sweet' in selected and 'watery' in selected:
+            signal = code = 'weak_after_sweet'
+        elif 'sweet' in selected and 'syrupy' in selected:
+            signal = code = 'heavy_after_sweet'
+        else:
+            # Strength alone says nothing about extraction: wait for sweetness.
+            signal = 'hold'
+            code = 'on_target' if selected & _TASTE_GROUPS['positive'] else 'strength_needs_sweetness'
+        return {'kind': 'taste', 'signal': signal, 'code': code, 'extraction': None,
+                'tds': None, 'strength': None}
     measurement = feedback['measurement']
     if not isinstance(measurement, dict) or set(measurement) != {
             'beverage_tds_percent', 'beverage_g', 'dose_g', 'drawdown_seconds'}:
@@ -529,21 +579,177 @@ def _feedback_signal(feedback, recipe):
     extraction = round(beverage * tds / dose, 2)
     _number(extraction, 'extraction_percent', 0, 100)
     rule = COEFFICIENTS['adjustment']
+    strength = ('weak' if tds < rule['balanced_tds_min_percent'] else
+                'strong' if tds > rule['balanced_tds_max_percent'] else 'on_target')
     if extraction < rule['balanced_extraction_min_percent']:
-        return 'under', extraction
-    if extraction > rule['balanced_extraction_max_percent']:
-        return 'over', extraction
-    return 'hold', extraction
+        signal = code = 'under'
+    elif extraction > rule['balanced_extraction_max_percent']:
+        signal = code = 'over'
+    else:
+        # A measurement cannot confirm sweetness, so concentration stays as it is.
+        signal = 'hold'
+        code = 'on_target' if strength == 'on_target' else 'strength_needs_sweetness'
+    return {'kind': 'measured', 'signal': signal, 'code': code, 'extraction': extraction,
+            'tds': round(tds, 2), 'strength': strength}
+
+
+_DIAGNOSES = {
+    'under': ('Нужно больше раскрытия', 'Draw out more flavor'),
+    'over': ('Нужно извлекать мягче', 'Extract more gently'),
+    'weak_after_sweet': ('Добавим плотности', 'Add some body'),
+    'heavy_after_sweet': ('Сделаем чашку легче', 'Lighten the cup'),
+    'on_target': ('Рецепт в ориентире', 'The recipe is on target'),
+    'strength_needs_sweetness': ('Сначала сладость, потом крепость', 'Sweetness first, then strength'),
+}
+_TASTE_EXPLANATIONS = {
+    'under': ('Кислинка без сладости, резкость или пустая середина обычно значат, что вода '
+              'забрала из кофе слишком мало. Делаем воду горячее и помол мельче, чтобы вкус '
+              'раскрылся полнее.',
+              'Sourness without sweetness, sharpness or a hollow middle usually mean the water '
+              'took too little from the coffee. Hotter water and a finer grind let more flavor through.'),
+    'over': ('Горечь, сухость, терпкость или тяжесть часто появляются, когда вода вытягивает '
+             'лишнее. Делаем воду прохладнее и помол грубее.',
+             'Bitterness, dryness, astringency or heaviness often appear when the water pulls out '
+             'too much. Cooler water and a coarser grind hold it back.'),
+    'weak_after_sweet': ('Сладость уже есть — значит, с экстракцией порядок. Чтобы чашка стала '
+                         'плотнее, уменьшаем воду при той же дозе кофе.',
+                         'Sweetness is already there, so extraction is fine. For more body, '
+                         'use less water with the same dose.'),
+    'heavy_after_sweet': ('Сладость есть, но чашка слишком плотная. Добавляем немного воды '
+                          'при той же дозе кофе.',
+                          'Sweetness is there, but the cup is too dense. Add a little water '
+                          'with the same dose.'),
+    'on_target': ('Сладость и баланс на месте. Ничего не меняем: заварите так же ещё раз и '
+                  'сравните — если вкус повторится, это ваш рецепт.',
+                  'Sweetness and balance are in place. Change nothing: brew it again and '
+                  'compare. If the taste repeats, this is your recipe.'),
+    'strength_needs_sweetness': ('Крепость меняем только после того, как появилась сладость, '
+                                 'иначе легко спрятать недоэкстракцию. Параметры не трогаем: '
+                                 'заварите ещё раз и отметьте, есть ли сладость.',
+                                 'Strength changes only once sweetness shows up; otherwise it is '
+                                 'easy to hide under-extraction. Parameters stay: brew again and '
+                                 'note whether the cup is sweet.'),
+}
+_CHANGE_WHY = {
+    ('temperature_c', 1): ('Горячая вода извлекает быстрее.', 'Hotter water extracts faster.'),
+    ('temperature_c', -1): ('Более прохладная вода извлекает мягче.', 'Cooler water extracts more gently.'),
+    ('grind', 1): ('Мельче помол открывает больше поверхности кофе.',
+                   'A finer grind exposes more of the coffee to water.'),
+    ('grind', -1): ('Грубее помол открывает меньше поверхности кофе.',
+                    'A coarser grind exposes less of the coffee to water.'),
+    ('water_g', -1): ('Меньше воды на ту же дозу — плотнее чашка.',
+                      'Less water for the same dose makes a denser cup.'),
+    ('water_g', 1): ('Больше воды на ту же дозу — легче чашка.',
+                     'More water for the same dose makes a lighter cup.'),
+}
+
+
+def _measured_explanation(cup):
+    rule = COEFFICIENTS['adjustment']
+    texts = []
+    for language in ('ru', 'en'):
+        ey = _percent(cup['extraction'], 1, language)
+        tds = _percent(cup['tds'], 2, language)
+        low_ey, high_ey = rule['balanced_extraction_min_percent'], rule['balanced_extraction_max_percent']
+        low_tds = _percent(rule['balanced_tds_min_percent'], 2, language)
+        high_tds = _percent(rule['balanced_tds_max_percent'], 2, language)
+        ru = language == 'ru'
+        if cup['code'] == 'under':
+            text = (f'Экстракция {ey} % — ниже ориентира {low_ey}–{high_ey} %: вода забрала из кофе '
+                    'мало. Пробуем горячее и мельче.' if ru else
+                    f'Extraction {ey}% is below the {low_ey}–{high_ey}% reference: the water took too '
+                    'little. Try hotter and finer.')
+        elif cup['code'] == 'over':
+            text = (f'Экстракция {ey} % — выше ориентира {low_ey}–{high_ey} %: вода вытянула лишнее. '
+                    'Пробуем прохладнее и грубее.' if ru else
+                    f'Extraction {ey}% is above the {low_ey}–{high_ey}% reference: the water pulled out '
+                    'too much. Try cooler and coarser.')
+        elif cup['code'] == 'on_target':
+            text = (f'Экстракция {ey} % и крепость {tds} % — в ориентирах SCA. Это не гарантия вкуса: '
+                    'если чашка нравится, оставьте рецепт.' if ru else
+                    f'Extraction {ey}% and strength {tds}% are within the SCA reference. That is no '
+                    'guarantee of taste: if you like the cup, keep the recipe.')
+        elif cup['strength'] == 'weak':
+            text = (f'Экстракция {ey} % в ориентире, а крепость {tds} % ниже {low_tds} %. Крепче делаем '
+                    'только при сладости: если чашка сладкая, но водянистая, отметьте это во вкусовой '
+                    'оценке.' if ru else
+                    f'Extraction {ey}% is on target, but strength {tds}% is below {low_tds}%. We only make '
+                    'the cup stronger once it is sweet: if it tastes sweet but watery, say so in the '
+                    'taste rating.')
+        else:
+            text = (f'Экстракция {ey} % в ориентире, а крепость {tds} % выше {high_tds} %. Если чашка '
+                    'сладкая, но тяжёлая, отметьте это во вкусовой оценке — тогда добавим воды.' if ru else
+                    f'Extraction {ey}% is on target, but strength {tds}% is above {high_tds}%. If the cup '
+                    'is sweet but heavy, say so in the taste rating and we will add water.')
+        texts.append(text)
+    return tuple(texts)
+
+
+def _ratio_segment(slope, low, high):
+    """Clip the line TDS = slope × extraction to the chart; None when it misses the chart."""
+    chart = COEFFICIENTS['chart']
+    x_low, x_high = chart['extraction_percent']
+    y_low, y_high = chart['tds_percent']
+    start = max(x_low, low, y_low / slope)
+    stop = min(x_high, high, y_high / slope)
+    if start >= stop:
+        return None
+    return [[round(start, 2), round(start * slope, 3)], [round(stop, 2), round(stop * slope, 3)]]
+
+
+def extraction_chart(recipe, cup=None):
+    """Geometry of the extraction/strength chart for one brewed recipe.
+
+    Ratio diagonals are TDS = extraction × dose / (water − retained × dose).
+    A taste estimate is a stretch of the recipe's own diagonal, never a point.
+    """
+    chart = COEFFICIENTS['chart']
+    rule = COEFFICIENTS['adjustment']
+    retained = chart['retained_water_g_per_g']
+    low_ratio, high_ratio = chart['ratios']
+    lines = []
+    for ratio in range(low_ratio, high_ratio + 1):
+        segment = _ratio_segment(1 / (ratio - retained), *chart['extraction_percent'])
+        if segment:
+            lines.append({'ratio': ratio, 'points': segment})
+    dose, water = recipe['dose_g'], recipe['water_g']
+    slope = dose / (water - retained * dose)
+    result = {
+        'extraction_axis': list(chart['extraction_percent']),
+        'tds_axis': list(chart['tds_percent']),
+        'balanced': {'extraction': [rule['balanced_extraction_min_percent'],
+                                    rule['balanced_extraction_max_percent']],
+                     'tds': [rule['balanced_tds_min_percent'], rule['balanced_tds_max_percent']]},
+        'retained_water_g_per_g': retained,
+        'accuracy': 'approximate',
+        'ratio_lines': lines,
+        'recipe_line': {'ratio': recipe['ratio'], 'points': _ratio_segment(slope, *chart['extraction_percent'])},
+        'cup': None,
+    }
+    if cup and cup['kind'] == 'measured':
+        x_low, x_high = chart['extraction_percent']
+        y_low, y_high = chart['tds_percent']
+        result['cup'] = {'kind': 'measured', 'extraction_percent': cup['extraction'],
+                         'tds_percent': cup['tds'],
+                         'inside': x_low <= cup['extraction'] <= x_high and y_low <= cup['tds'] <= y_high}
+    elif cup:
+        low, high = chart['taste_extraction_bands'][cup['code']]
+        result['cup'] = {'kind': 'estimate', 'extraction_range': [low, high],
+                         'points': _ratio_segment(slope, low, high)}
+    return result
 
 
 def validate_calculated_recipe(recipe):
     """Reject malformed calculated recipes before accepting client-side edits."""
     if (not isinstance(recipe, dict) or recipe.get('origin') != 'calculated' or
             recipe.get('schema_version') != 1 or recipe.get('catalog_schema_version') != 1 or
-            recipe.get('engine_version') != COEFFICIENTS['version'] or
+            recipe.get('engine_version') not in COEFFICIENTS['compatible_versions'] or
             not isinstance(recipe.get('id'), str) or
             recipe['id'] not in COEFFICIENTS['variants']):
         raise BrewingInputError('recipe: expected a current calculated recipe')
+    revision = recipe.get('revision', 0)
+    if not isinstance(revision, int) or isinstance(revision, bool) or not 0 <= revision <= 1000:
+        raise BrewingInputError('recipe.revision: expected a whole number')
     device = _choice(recipe.get('device_id'), 'devices', 'recipe.device_id')
     if device is None or recipe.get('method') != device['method']:
         raise BrewingInputError('recipe: device and method disagree')
@@ -613,42 +819,30 @@ def validate_calculated_recipe(recipe):
 def adjust(recipe, feedback):
     """One conservative correction from taste or measured extraction.
 
-    This phase-3 rule set does not estimate TDS/extraction from taste and never
-    changes concentration before the user has reported sweetness.
+    Changes at most two parameters, never estimates TDS/extraction from taste
+    and never changes concentration before the user has reported sweetness.
     """
     dose, water, temperature, particle, reference, grinder = validate_calculated_recipe(recipe)
-    signal, extraction = _feedback_signal(feedback, recipe)
+    cup = _feedback(feedback, recipe)
+    signal, code = cup['signal'], cup['code']
     corrected = deepcopy(recipe)
     changes = []
     rule = COEFFICIENTS['adjustment']
-    diagnosis = {
-        'under': ('Нужно больше раскрытия', 'Try more extraction'),
-        'over': ('Нужно мягче извлекать', 'Try gentler extraction'),
-        'weak_after_sweet': ('Можно добавить плотности', 'Add body after sweetness'),
-        'heavy_after_sweet': ('Можно сделать чашку легче', 'Lighten the cup after sweetness'),
-        'hold': ('Пока оставим рецепт', 'Keep the recipe for now'),
-    }[signal]
-    explanation = {
-        'under': ('Есть признаки недоэкстракции: пробуем горячее и мельче.',
-                  'Possible under-extraction: try hotter and finer.'),
-        'over': ('Есть признаки переэкстракции: пробуем прохладнее и грубее.',
-                 'Possible over-extraction: try cooler and coarser.'),
-        'weak_after_sweet': ('Сладость уже есть: можно уменьшить воду для плотности.',
-                             'Sweetness is present: use less water for more body.'),
-        'heavy_after_sweet': ('Сладость уже есть: можно добавить воды для лёгкости.',
-                              'Sweetness is present: use more water for a lighter cup.'),
-        'hold': ('Недостаточно оснований менять параметры; повторите заваривание или уточните вкус.',
-                 'Not enough evidence to change parameters; brew again or describe the taste.'),
-    }[signal]
+    diagnosis = _DIAGNOSES[code]
+    explanation = _measured_explanation(cup) if cup['kind'] == 'measured' else _TASTE_EXPLANATIONS[code]
+
+    def change(parameter, direction, before, after, **extra):
+        why = _CHANGE_WHY[(parameter, direction)]
+        changes.append({'parameter': parameter, 'before': before, 'after': after,
+                        'why': why[0], 'why_en': why[1], **extra})
+        corrected['reasons'].append(_reason(parameter, f'feedback_{code}', why[0], why[1]))
+
     if signal in ('under', 'over'):
         direction = 1 if signal == 'under' else -1
         new_temp = round(_clamp(temperature + direction * rule['temperature_step_c'], 'temperature_c'))
         if new_temp != temperature:
             corrected['temperature_c'] = new_temp
-            changes.append({'parameter': 'temperature_c', 'before': temperature,
-                            'after': new_temp, 'why': explanation[0], 'why_en': explanation[1]})
-            corrected['reasons'].append(_reason('temperature_c', f'feedback_{signal}',
-                                                 explanation[0], explanation[1]))
+            change('temperature_c', direction, temperature, new_temp, unit='°C')
         new_particle = round(_clamp(particle - direction * rule['particle_step_microns'], 'particle_microns'))
         if new_particle != particle:
             corrected['grind']['target_particle_microns'] = new_particle
@@ -657,23 +851,29 @@ def adjust(recipe, feedback):
                 new_reference = _clamp(reference - direction * rule['reference_step'], 'reference_dial')
                 corrected['grind'].update(_settings(grinder, new_reference))
                 corrected['grind_setting'] = corrected['grind']['setting']
-            changes.append({'parameter': 'grind', 'before': particle,
-                            'after': new_particle, 'why': explanation[0], 'why_en': explanation[1]})
-            corrected['reasons'].append(_reason('grind', f'feedback_{signal}',
-                                                 explanation[0], explanation[1]))
+            change('grind', direction, particle, new_particle, unit='µm',
+                   before_setting=recipe['grind'].get('setting'),
+                   after_setting=corrected['grind'].get('setting'),
+                   scale_label=corrected['grind'].get('scale_label'),
+                   scale_label_en=corrected['grind'].get('scale_label_en'))
     elif signal in ('weak_after_sweet', 'heavy_after_sweet'):
         direction = -1 if signal == 'weak_after_sweet' else 1
         new_water = round(_clamp(dose * _clamp(water / dose + direction * rule['water_ratio_step'], 'ratio'), 'water_g'))
         if new_water != water:
             corrected = rescale(corrected, dose_g=dose, water_g=new_water)
-            changes.append({'parameter': 'water_g', 'before': water,
-                            'after': new_water, 'why': explanation[0], 'why_en': explanation[1]})
-            corrected['reasons'].append(_reason('water_g', f'feedback_{signal}',
-                                                 explanation[0], explanation[1]))
-    corrected['reasons'].append(_reason('adjustment', f'feedback_{signal}',
-                                         diagnosis[0] + ': меняем не больше двух параметров.',
-                                         diagnosis[1] + ': change at most two parameters.'))
+            change('water_g', direction, water, new_water, unit='g',
+                   ratio_before=recipe['ratio'], ratio_after=corrected['ratio'])
+    if changes:
+        corrected['engine_version'] = COEFFICIENTS['version']
+        corrected['revision'] = recipe.get('revision', 0) + 1
+        corrected.pop('edited', None)
+        corrected['reasons'].append(_reason('adjustment', f'feedback_{code}',
+                                             diagnosis[0] + ': меняем не больше двух параметров.',
+                                             diagnosis[1] + ': change at most two parameters.'))
     return {'recipe': corrected, 'diagnosis': diagnosis[0], 'diagnosis_en': diagnosis[1],
-            'explanation': explanation[0], 'explanation_en': explanation[1],
-            'changes': changes, 'feedback_signal': signal, 'extraction_percent': extraction,
-            'measurement_kind': 'measured' if extraction is not None else 'taste_only'}
+            'diagnosis_code': code, 'explanation': explanation[0], 'explanation_en': explanation[1],
+            'changes': changes, 'at_limit': signal != 'hold' and not changes,
+            'feedback_signal': signal, 'extraction_percent': cup['extraction'],
+            'tds_percent': cup['tds'], 'strength': cup['strength'],
+            'measurement_kind': 'measured' if cup['kind'] == 'measured' else 'taste_only',
+            'chart': extraction_chart(recipe, cup)}

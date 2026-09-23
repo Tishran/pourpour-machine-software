@@ -70,13 +70,16 @@
     <section class="screen screen-builder" id="screen-construct" aria-labelledby="builder-title">
       <header class="bar">
         <button class="back" id="builder-back" type="button"></button>
-        <label class="language-switch">
-          <span class="visually-hidden" id="builder-language-label"></span>
-          <select id="builder-language" aria-labelledby="builder-language-label">
-            <option value="ru">RU</option>
-            <option value="en">EN</option>
-          </select>
-        </label>
+        <div class="bar-actions">
+          <label class="language-switch">
+            <span class="visually-hidden" id="builder-language-label"></span>
+            <select id="builder-language" aria-labelledby="builder-language-label">
+              <option value="ru">RU</option>
+              <option value="en">EN</option>
+            </select>
+          </label>
+          <button class="bar-close" id="builder-close" type="button"><span aria-hidden="true">×</span></button>
+        </div>
       </header>
       <div class="builder-progress" aria-live="polite">
         <p id="builder-progress-text"></p>
@@ -94,13 +97,19 @@
             <div id="builder-fields"></div>
             <button class="button builder-rebuild" id="builder-rebuild" type="button" hidden></button>
           </form>
+          <div class="builder-feedback" id="builder-feedback" hidden></div>
         </div>
         <div class="builder-result-pane" id="builder-result-pane" hidden>
           <div id="builder-result"></div>
+          <div id="builder-correction" hidden></div>
         </div>
       </div>
       <div class="cta-bar builder-cta" id="builder-cta">
-        <button type="button" class="button primary big" id="builder-next"></button>
+        <p class="status" id="builder-cta-status" role="status" aria-live="polite"></p>
+        <div class="builder-cta-buttons">
+          <button type="button" class="button primary big" id="builder-next"></button>
+          <button type="button" class="button big" id="builder-secondary" hidden></button>
+        </div>
       </div>
     </section>
 
@@ -184,6 +193,7 @@
         <button type="button" class="button big" id="brew-reset"></button>
       </div>
       <div class="brew-controls" id="brew-done-controls" hidden>
+        <button type="button" class="button primary big" id="brew-rate" hidden></button>
         <button type="button" class="button primary big" id="brew-again"></button>
         <button type="button" class="button big" id="brew-new"></button>
       </div>

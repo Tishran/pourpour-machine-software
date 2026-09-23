@@ -61,6 +61,10 @@ class StaticFileTests(unittest.TestCase):
         for element in ('brew-ready', 'brew-step-count', 'brew-step-tiles',
                         'brew-prev-step', 'brew-next-step'):
             self.assertIn(f'id="{element}"', html)
+        # Result and correction steps of the wizard, and the rating after a brew.
+        for element in ('builder-feedback', 'builder-correction', 'builder-secondary',
+                        'builder-cta-status', 'builder-close', 'brew-rate'):
+            self.assertIn(f'id="{element}"', html)
         self.assertIn('id="recents"', html)
         self.assertNotIn('id="recents-hint"', html)
         self.assertIn('id="scan-preview"', html)
@@ -77,6 +81,12 @@ class StaticFileTests(unittest.TestCase):
             languages[match[1]] = set(re.findall(r'^\s{4}([a-z_]+):', match[2], re.M))
         self.assertEqual(set(languages), {'en', 'ru'})
         self.assertEqual(languages['en'], languages['ru'], 'every string exists in both languages')
+        # Nested taste dictionaries cover the same descriptors in both languages.
+        for key in ('taste_names', 'taste_help', 'taste_columns'):
+            blocks = re.findall(rf'^\s{{4}}{key}: \{{(.*?)\}},$', dictionary, re.M | re.S)
+            self.assertEqual(len(blocks), 2, key)
+            en, ru = (set(re.findall(r'(?:^|\{|, |\n\s+)(\w+): ', block)) for block in blocks)
+            self.assertEqual(en, ru, key)
         used = set(re.findall(r"\bt\('([a-z_]+)'", script))
         used |= {f'{key}_hint' for key in ('vibrate', 'sound')}
         self.assertFalse(used - languages['en'], used - languages['en'])

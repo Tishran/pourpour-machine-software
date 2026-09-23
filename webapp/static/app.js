@@ -161,6 +161,89 @@ const STRINGS = {
       'Контакт воды с кофе раскрывает вкус.': 'Contact with water extracts flavor.',
       'Завершаем контакт воды с кофе.': 'End contact between coffee and water.',
     },
+    builder_close: 'Close the recipe builder',
+    builder_step_result: 'Result',
+    builder_step_correction: 'Correction',
+    builder_rate: 'Rate the cup',
+    builder_get_correction: 'Get a correction',
+    builder_brew_corrected: 'Brew corrected',
+    builder_save_own: 'Save as mine',
+    builder_saved_own: 'Saved',
+    builder_saved_status: 'Recipe saved on this device.',
+    builder_save_error: 'Could not save on this device.',
+    builder_done_text: 'Let it drain, taste the cup and rate it to get a correction.',
+    feedback_intro: 'Mark 1–3 impressions of the cup, or enter refractometer readings.',
+    feedback_rating: 'Rating',
+    feedback_mode: 'How to rate the cup',
+    feedback_by_taste: 'By taste',
+    feedback_by_meter: 'Refractometer',
+    feedback_count: (n, max) => `Selected ${n} of ${max}`,
+    feedback_conflicts_hint: 'Impressions that contradict your choice switch off.',
+    taste_help_label: (name) => `What “${name}” means`,
+    taste_columns: {acidity_sweetness: 'Acidity and sweetness', body_strength: 'Body and strength', finish_clarity: 'Finish and clarity'},
+    taste_names: {sour: 'Sour', sharp: 'Sharp', flat: 'Flat', sweet: 'Sweet', balanced: 'Balanced',
+      watery: 'Watery', hollow: 'Hollow', syrupy: 'Syrupy', heavy: 'Heavy', bitter: 'Bitter', dry: 'Dry',
+      astringent: 'Astringent', muddy: 'Muddy', rough: 'Rough'},
+    taste_help: {
+      sour: 'Tart, unripe-fruit acidity with little sweetness behind it.',
+      sharp: 'Acidity that stings the tongue and fades quickly, without roundness.',
+      flat: 'Flavor is there but dull: nothing stands out.',
+      sweet: 'Natural sweetness comes through: ripe fruit, caramel, honey.',
+      balanced: 'Acidity, sweetness and bitterness sit together; nothing sticks out.',
+      watery: 'Thin, as if extra water were added; flavor fades quickly.',
+      hollow: 'There is a start and an aftertaste, but the middle is empty.',
+      syrupy: 'Dense, coating body: the cup feels thick in the mouth.',
+      heavy: 'Thick and muted: the weight covers the aroma.',
+      bitter: 'Bitterness lingers and covers the rest of the cup.',
+      dry: 'The mouth feels dry after a sip, like after strong tea.',
+      astringent: 'Puckers the tongue and gums, like an unripe persimmon.',
+      muddy: 'Flavors blur together; it is hard to tell anything apart.',
+      rough: 'A scratchy, coarse aftertaste.',
+    },
+    measure_tds: 'Beverage TDS (%)',
+    measure_yield: 'Beverage weight (g)',
+    measure_dose: 'Coffee dose (g)',
+    measure_drawdown: 'Drawdown time (s)',
+    measure_help_tds: 'The refractometer reading of the brewed coffee, not of your water.',
+    measure_help_yield: 'Weigh the finished coffee. It is lighter than the water poured: the grounds keep some.',
+    measure_help_dose: 'The coffee you actually brewed. It must match the recipe.',
+    measure_help_drawdown: 'From the first pour until the water has drained. Kept with the result; it does not change the calculation.',
+    measure_extraction: (value) => `Extraction ≈ ${value} %`,
+    measure_formula: 'Extraction = beverage weight × TDS ÷ dose.',
+    measure_invalid_tds: 'Enter TDS from 0.1 to 5 %.',
+    measure_invalid_yield: (max) => `Beverage weight is 1 g to ${max}: not more than the water poured.`,
+    measure_dose_mismatch: (dose) => `The dose must match the recipe (${dose}). If you brewed another dose, change it on the recipe first.`,
+    measure_invalid_drawdown: 'Enter a drawdown time from 1 to 1200 s.',
+    correction_loading: 'Working out the correction…',
+    correction_by_taste: 'Correction from taste',
+    correction_by_meter: 'Correction from measurement',
+    correction_changes: 'What changes',
+    correction_no_changes: 'Parameters stay the same.',
+    correction_at_limit: 'Parameters are already at the edge of the starting range. Change them by hand if needed.',
+    correction_recipe: 'Corrected recipe',
+    correction_same_recipe: 'Recipe unchanged',
+    correction_placeholder: 'Mark the taste or enter measurements: the diagnosis, chart and corrected recipe appear here.',
+    correction_revision: (n) => `correction ${n}`,
+    correction_edited: 'Changed by hand after the correction.',
+    change_finer: 'finer',
+    change_coarser: 'coarser',
+    change_target: (before, after) => `nominal target ${before} → ${after} µm`,
+    chart_title: 'Extraction and strength',
+    chart_x: 'Extraction, %',
+    chart_y: 'Strength (TDS), %',
+    chart_under: '← Under-extracted',
+    chart_over: 'Over-extracted →',
+    chart_weak: 'Weak',
+    chart_strong: 'Strong',
+    chart_zone: 'Balance reference',
+    chart_cup: (ey, tds) => `Your cup: ${ey} % · ${tds} %`,
+    chart_estimate: 'Taste estimate',
+    chart_recipe: (ratio) => `Recipe line ${ratio}`,
+    chart_note_measured: 'The point comes from your measurement. The zone is the SCA reference (18–22 %, 1.15–1.45 %), not a rule for your taste.',
+    chart_note_estimate: 'Without a refractometer the position is only an estimate: the band sits on your recipe’s ratio line and shows the likely extraction range. Diagonals assume the grounds keep about 2 g of water per gram of coffee.',
+    chart_note_outside: 'The measurement is outside the chart, so the point sits on its edge.',
+    chart_desc_measured: (ey, tds) => `Your cup: extraction ${ey} %, strength ${tds} %.`,
+    chart_desc_estimate: (low, high) => `Estimated from taste: extraction about ${low}–${high} %.`,
     reading_slow: 'Reading the label… Taking longer than usual.',
     cancel: 'Cancel',
     photo_cancelled: 'Recognition cancelled. Your photo is still here.',
@@ -458,6 +541,89 @@ const STRINGS = {
     builder_no_recipe: 'Заполните шаги о кофе и оборудовании, чтобы получить рецепт.',
     builder_actions: {},
     builder_whys: {},
+    builder_close: 'Закрыть конструктор',
+    builder_step_result: 'Результат',
+    builder_step_correction: 'Правка',
+    builder_rate: 'Оценить вкус',
+    builder_get_correction: 'Получить правку',
+    builder_brew_corrected: 'Заварить исправленный',
+    builder_save_own: 'Сохранить как свой',
+    builder_saved_own: 'Сохранено',
+    builder_saved_status: 'Рецепт сохранён на этом устройстве.',
+    builder_save_error: 'Не удалось сохранить на этом устройстве.',
+    builder_done_text: 'Дайте воде стечь, попробуйте чашку и оцените вкус — получите правку.',
+    feedback_intro: 'Отметьте 1–3 ощущения от чашки или введите данные рефрактометра.',
+    feedback_rating: 'Оцениваем',
+    feedback_mode: 'Способ оценки чашки',
+    feedback_by_taste: 'По вкусу',
+    feedback_by_meter: 'Рефрактометр',
+    feedback_count: (n, max) => `Выбрано ${n} из ${max}`,
+    feedback_conflicts_hint: 'Ощущения, которые противоречат выбранным, отключаются.',
+    taste_help_label: (name) => `Что значит «${name}»`,
+    taste_columns: {acidity_sweetness: 'Кислотность и сладость', body_strength: 'Тело и крепость', finish_clarity: 'Финиш и чистота'},
+    taste_names: {sour: 'Кисло', sharp: 'Резко', flat: 'Плоско', sweet: 'Сладко', balanced: 'Сбалансированно',
+      watery: 'Водянисто', hollow: 'Пусто', syrupy: 'Сиропно', heavy: 'Тяжело', bitter: 'Горько', dry: 'Сухо',
+      astringent: 'Терпко', muddy: 'Неясно', rough: 'Грубо'},
+    taste_help: {
+      sour: 'Острая кислинка, как у недозрелого фрукта; сладости за ней почти нет.',
+      sharp: 'Кислотность колет язык и быстро уходит, без мягкости.',
+      flat: 'Вкус есть, но тусклый: ничего не выделяется.',
+      sweet: 'Чувствуется естественная сладость: спелый фрукт, карамель, мёд.',
+      balanced: 'Кислотность, сладость и горчинка в согласии; ничего не выпирает.',
+      watery: 'Жидко, будто добавили воды; вкус быстро пропадает.',
+      hollow: 'Начало и послевкусие есть, а середина вкуса пустая.',
+      syrupy: 'Плотное, обволакивающее тело: чашка ощущается густой.',
+      heavy: 'Густо и глухо: тяжесть заглушает аромат.',
+      bitter: 'Горечь задерживается на языке и перебивает остальное.',
+      dry: 'После глотка во рту сухо, как после крепкого чая.',
+      astringent: 'Вяжет язык и дёсны, как незрелая хурма.',
+      muddy: 'Вкусы смазаны: трудно что-то различить.',
+      rough: 'Шершавое, царапающее послевкусие.',
+    },
+    measure_tds: 'TDS напитка (%)',
+    measure_yield: 'Выход напитка (г)',
+    measure_dose: 'Доза кофе (г)',
+    measure_drawdown: 'Время слива (с)',
+    measure_help_tds: 'Показание рефрактометра для готового кофе, а не для воды.',
+    measure_help_yield: 'Взвесьте готовый напиток. Он легче влитой воды: часть остаётся в кофе.',
+    measure_help_dose: 'Сколько кофе вы заварили. Должно совпадать с рецептом.',
+    measure_help_drawdown: 'От первого вливания до конца слива. Сохраняется с результатом, в расчёт не входит.',
+    measure_extraction: (value) => `Экстракция ≈ ${value} %`,
+    measure_formula: 'Экстракция = выход × TDS ÷ доза.',
+    measure_invalid_tds: 'Введите TDS от 0,1 до 5 %.',
+    measure_invalid_yield: (max) => `Выход — от 1 г до ${max}: не больше влитой воды.`,
+    measure_dose_mismatch: (dose) => `Доза должна совпадать с рецептом (${dose}). Если заваривали другую дозу, сначала измените её в рецепте.`,
+    measure_invalid_drawdown: 'Введите время слива от 1 до 1200 с.',
+    correction_loading: 'Считаем правку…',
+    correction_by_taste: 'Правка по вкусу',
+    correction_by_meter: 'Правка по измерению',
+    correction_changes: 'Что меняем',
+    correction_no_changes: 'Параметры не меняем.',
+    correction_at_limit: 'Параметры уже на границе стартового диапазона. При необходимости меняйте их вручную.',
+    correction_recipe: 'Исправленный рецепт',
+    correction_same_recipe: 'Рецепт без изменений',
+    correction_placeholder: 'Отметьте вкус или введите измерения — здесь появятся диагноз, диаграмма и исправленный рецепт.',
+    correction_revision: (n) => `правка ${n}`,
+    correction_edited: 'Изменено вручную после правки.',
+    change_finer: 'мельче',
+    change_coarser: 'грубее',
+    change_target: (before, after) => `условная цель ${before} → ${after} мкм`,
+    chart_title: 'Экстракция и крепость',
+    chart_x: 'Экстракция, %',
+    chart_y: 'Крепость (TDS), %',
+    chart_under: '← Недоэкстракция',
+    chart_over: 'Переэкстракция →',
+    chart_weak: 'Слабо',
+    chart_strong: 'Крепко',
+    chart_zone: 'Зона баланса',
+    chart_cup: (ey, tds) => `Ваша чашка: ${ey} % · ${tds} %`,
+    chart_estimate: 'Оценка по вкусу',
+    chart_recipe: (ratio) => `Линия рецепта ${ratio}`,
+    chart_note_measured: 'Точка рассчитана по вашему измерению. Зона — ориентир SCA (18–22 %, 1,15–1,45 %), а не правило для вашего вкуса.',
+    chart_note_estimate: 'Без рефрактометра положение только оценочное: полоса лежит на линии соотношения вашего рецепта и показывает вероятный диапазон экстракции. Диагонали считают, что в гуще остаётся около 2 г воды на грамм кофе.',
+    chart_note_outside: 'Измерение за пределами диаграммы, поэтому точка стоит на её краю.',
+    chart_desc_measured: (ey, tds) => `Ваша чашка: экстракция ${ey} %, крепость ${tds} %.`,
+    chart_desc_estimate: (low, high) => `Оценка по вкусу: экстракция примерно ${low}–${high} %.`,
     reading_slow: 'Фото распознаётся… Это дольше обычного.',
     cancel: 'Отмена',
     photo_cancelled: 'Распознавание отменено. Фото осталось на экране.',
@@ -658,7 +824,11 @@ let wakeLock = null, audio = null;
 let brewMode = 'local', machineInfo = null, machineState = null, machineOnline = false, machineEvents = null;
 let machineHeatStart = null, machineLastStep = -1, machineStopped = false;
 const builder = {options: null, step: 0, mode: 'basic', draft: {}, variants: [], selected: 0,
-  request: null, busy: false, updateTimer: null};
+  request: null, busy: false, updateTimer: null,
+  // Result and correction (steps 4–5): the brewed recipe, the feedback and the engine's reply.
+  rated: null, feedbackMode: 'taste', tastes: [], tasteHelp: null,
+  measure: {tds: '', yield: '', dose: '', drawdown: ''},
+  correction: null, correctionRequest: null, correctionTimer: null, savedKey: null};
 const MACHINE_ACTIVE = ['PREHEAT', 'READY', 'BREWING', 'PAUSED'];
 const prefs = {vibrate: true, sound: true};
 
@@ -777,7 +947,7 @@ function show(screen, {push = true} = {}) {
   }
   window.scrollTo(0, 0);
   const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title')
-    : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? $('builder-title') : $('brew-toggle');
+    : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? builderFocusTarget() : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -1059,6 +1229,7 @@ function updateCtaBar() {
   $('machine-start').textContent = t('machine_button');
   $('recipe-cta').dataset.machine = String(available);
   if ($('builder-machine')) $('builder-machine').hidden = !machineConnected();
+  if ($('correction-machine')) $('correction-machine').hidden = !machineConnected();
 }
 
 // ---------------------------------------------------------------------------
@@ -1494,21 +1665,56 @@ function renderBuilderFields() {
 }
 
 function updateBuilderStep() {
-  const titles = ['builder_step_coffee', 'builder_step_tools', 'builder_step_recipe'];
-  $('builder-title').textContent = t(titles[builder.step]);
-  $('builder-intro').textContent = t('builder_intro');
+  const titles = ['builder_step_coffee', 'builder_step_tools', 'builder_step_recipe',
+    'builder_step_result', 'builder_step_correction'];
+  const step = builder.step, rating = step >= 3;
+  const wide = matchMedia('(min-width: 900px)').matches;
+  $('builder-title').textContent = t(titles[step]);
+  $('builder-intro').textContent = t(rating ? 'feedback_intro' : 'builder_intro');
   $('builder-mode').textContent = t(builder.mode === 'basic' ? 'builder_mode_pro' : 'builder_mode_basic');
-  $('builder-progress-text').textContent = `${t('builder_step', builder.step + 1)} · ${t(titles[builder.step])}`;
-  $('builder-progress-fill').style.width = `${(builder.step + 1) * 20}%`;
-  $('screen-construct').dataset.step = String(builder.step);
-  $('builder-coffee-fields')?.classList.toggle('active', builder.step === 0);
-  $('builder-tool-fields')?.classList.toggle('active', builder.step === 1);
-  $('builder-result-pane').hidden = builder.step < 2 && !matchMedia('(min-width: 900px)').matches;
-  $('builder-next').textContent = t(builder.step === 0 ? 'builder_next' : builder.step === 1 ? 'builder_build' : 'builder_brew');
-  $('builder-next').disabled = builder.busy || !builder.options || (builder.step === 2 && !builder.variants[builder.selected]);
+  $('builder-mode').hidden = rating;
+  $('builder-form').hidden = rating;
+  $('builder-feedback').hidden = !rating;
+  $('builder-result').hidden = rating;
+  $('builder-correction').hidden = !rating;
+  $('builder-progress-text').textContent = `${t('builder_step', step + 1)} · ${t(titles[step])}`;
+  $('builder-progress-fill').style.width = `${(step + 1) * 20}%`;
+  $('screen-construct').dataset.step = String(step);
+  $('builder-coffee-fields')?.classList.toggle('active', step === 0);
+  $('builder-tool-fields')?.classList.toggle('active', step === 1);
+  // Phone: one pane per step. Desktop: form or feedback on the left, live result on the right.
+  $('builder-result-pane').hidden = !wide && (step < 2 || step === 3);
+  const variant = builder.variants[builder.selected];
+  const correction = builder.correction;
+  const unchanged = correction && !correction.changes.length;
+  $('builder-next').textContent = t(['builder_next', 'builder_build', 'builder_brew', 'builder_get_correction',
+    unchanged ? 'builder_brew' : 'builder_brew_corrected'][step]);
+  $('builder-next').disabled = builder.busy || !builder.options || (step === 2 && !variant) ||
+    (step === 3 && !feedbackPayload()) || (step === 4 && !correction);
+  const secondary = step === 2 ? variant : step === 4 ? correction : null;
+  const saved = step === 4 && Boolean(correction) && builder.savedKey === ownRecipeKey(correction.recipe);
+  $('builder-secondary').hidden = !secondary;
+  $('builder-secondary').textContent = t(step === 2 ? 'builder_rate' : saved ? 'builder_saved_own' : 'builder_save_own');
+  $('builder-secondary').disabled = saved || builder.busy;
+  document.querySelector('.builder-cta-buttons').classList.toggle('pair', Boolean(secondary));
   $('builder-rebuild').textContent = t('builder_rebuild');
   $('builder-rebuild').hidden = !builder.variants.length;
-  $('builder-cta').dataset.step = String(builder.step);
+  $('builder-cta').dataset.step = String(step);
+}
+
+// Where focus lands after a step change: the visible heading of that step.
+function builderFocusTarget() {
+  const wide = matchMedia('(min-width: 900px)').matches;
+  if (!wide && builder.step === 4) return $('correction-title') || $('builder-title');
+  if (!wide && builder.step === 2) return $('builder-recipe-title') || $('builder-title');
+  return $('builder-title');
+}
+
+// Status next to what the person is looking at: the form, or the sticky action bar.
+function builderStatus(text, error = false) {
+  const inForm = matchMedia('(min-width: 900px)').matches || [0, 1, 3].includes(builder.step);
+  setStatus(inForm ? 'builder-status' : 'builder-cta-status', text, error);
+  setStatus(inForm ? 'builder-cta-status' : 'builder-status', '');
 }
 
 function localToday() {
@@ -1581,6 +1787,8 @@ async function buildBuilderRecipes() {
     if (builder.request !== request) return;
     builder.variants = data.variants;
     builder.selected = Math.min(builder.selected, builder.variants.length - 1);
+    builder.rated = builder.correction = builder.savedKey = null;
+    renderBuilderCorrection();
     builder.step = 2;
     setStatus('builder-status', '');
     renderBuilderResult();
@@ -1621,20 +1829,48 @@ function toggleBuilderFavorite() {
   renderBuilderResult();
 }
 
+// Shared pieces of a calculated recipe: number tiles, the brew table and the reasons.
+function calculatedTiles(recipe, attribute, editableTemperature = false) {
+  const control = (field, delta, label, disabled) => `<button type="button" ${attribute}="${field}:${delta}" aria-label="${escape(label)}"${disabled ? ' disabled' : ''}>${delta < 0 ? '−' : '+'}</button>`;
+  const quantity = (field, step, label, low, high) => `<div class="builder-quantity">${control(field, -step, `${t('builder_decrease')} ${label}`, recipe[field] <= low)}${control(field, step, `${t('builder_increase')} ${label}`, recipe[field] >= high)}</div>`;
+  const grind = recipe.grind.setting == null ? t('builder_grind_unmapped')
+    : `${escape(recipe.grind.setting)} · ${escape(LANG === 'ru' ? recipe.grind.scale_label : recipe.grind.scale_label_en)}`;
+  return `<div class="builder-tiles">
+      <div class="builder-tile"><span>${t('coffee')}</span><strong>${grams(recipe.dose_g)}</strong>${quantity('dose_g', 1, t('coffee'), 5, 40)}</div>
+      <div class="builder-tile"><span>${t('water')}</span><strong>${grams(recipe.water_g)}</strong>${quantity('water_g', 10, t('water'), 80, 600)}</div>
+      <div class="builder-tile"><span>${t('temperature')}</span><strong>${celsius(recipe.temperature_c)}</strong>${editableTemperature ? quantity('temperature_c', 1, t('temperature'), 80, 99) : ''}</div>
+      <div class="builder-tile"><span>${t('ratio')}</span><strong>${escape(num(recipe.ratio))}</strong></div>
+      <div class="builder-tile builder-tile-wide"><span>${t('grind')}</span><strong>${grind}</strong><small>${t('builder_grind_nominal')}: ${num(recipe.grind.target_particle_microns)} µm</small></div>
+    </div>`;
+}
+
+function calculatedSteps(recipe) {
+  const rows = recipe.steps.map(step => {
+    const action = LANG === 'ru' ? step.instruction : STRINGS.en.builder_actions[step.instruction] || step.instruction;
+    const why = LANG === 'ru' ? step.why : STRINGS.en.builder_whys[step.why] || step.why;
+    return `<tr><td>${clock(step.start_seconds)}</td><td>${step.total_water_g == null ? '—' : grams(step.total_water_g)}</td><td><strong>${escape(action)}</strong><small>${escape(why)}</small></td></tr>`;
+  }).join('');
+  return rows ? `<div class="builder-table-wrap"><table class="builder-table"><thead><tr><th>${t('builder_start_col')}</th><th>${t('builder_scale_col')}</th><th>${t('builder_action_col')}</th></tr></thead><tbody>${rows}</tbody></table></div>`
+    : `<p class="note">${t('builder_automatic')}</p>`;
+}
+
+function calculatedReasons(recipe) {
+  const reasons = recipe.reasons.map(reason => `<li>${escape(LANG === 'ru' ? reason.text_ru : reason.text_en)}</li>`).join('');
+  return `<details class="builder-reasons"><summary>${t('builder_reasons')}</summary><ul>${reasons}</ul></details>`;
+}
+
+// Variant name, plus the correction number once the engine has corrected it.
+function calculatedName(recipe) {
+  const name = t(`builder_variant_${recipe.id}`);
+  return recipe.revision ? `${name} · ${t('correction_revision', recipe.revision)}` : name;
+}
+
 function renderBuilderResult() {
   const recipe = builder.variants[builder.selected];
   if (!recipe) { $('builder-result').innerHTML = `<p class="note">${t('builder_no_recipe')}</p>`; return; }
   const chips = builderContext(recipe);
   const shown = chips.slice(0, 2).map(value => `<span class="builder-chip">${escape(value)}</span>`).join('');
   const rest = chips.length > 2 ? `<details class="builder-more"><summary>${t('builder_more_context', chips.length - 2)}</summary>${chips.slice(2).map(value => `<span class="builder-chip">${escape(value)}</span>`).join('')}</details>` : '';
-  const grind = recipe.grind.setting == null ? t('builder_grind_unmapped')
-    : `${escape(recipe.grind.setting)} · ${escape(LANG === 'ru' ? recipe.grind.scale_label : recipe.grind.scale_label_en)}`;
-  const rows = recipe.steps.map(step => {
-    const action = LANG === 'ru' ? step.instruction : STRINGS.en.builder_actions[step.instruction] || step.instruction;
-    const why = LANG === 'ru' ? step.why : STRINGS.en.builder_whys[step.why] || step.why;
-    return `<tr><td>${clock(step.start_seconds)}</td><td>${step.total_water_g == null ? '—' : grams(step.total_water_g)}</td><td><strong>${escape(action)}</strong><small>${escape(why)}</small></td></tr>`;
-  }).join('');
-  const reasons = recipe.reasons.map(reason => `<li>${escape(LANG === 'ru' ? reason.text_ru : reason.text_en)}</li>`).join('');
   const favored = builderFavorites().includes(builderFavoriteKey(recipe));
   $('builder-result').innerHTML = `<div class="builder-recipe">
     <p class="builder-origin">${t('builder_calculated')}</p>
@@ -1643,20 +1879,14 @@ function renderBuilderResult() {
       <span>${t('builder_variant_position', builder.selected + 1, builder.variants.length)}</span>
       <button class="button" type="button" id="builder-next-variant" aria-label="${t('builder_next_variant')}"${builder.selected === builder.variants.length - 1 ? ' disabled' : ''}>→</button>
     </div>
-    <h2 class="title" id="builder-recipe-title">${t(`builder_variant_${recipe.id}`)}</h2>
+    <h2 class="title" id="builder-recipe-title" tabindex="-1">${t(`builder_variant_${recipe.id}`)}</h2>
     <p class="subtitle">${t(`builder_summary_${recipe.id}`)}</p>
     <div class="builder-context">${shown}${rest}</div>
     <p class="note builder-caution">${t('builder_approximate')}</p>
-    <div class="builder-tiles">
-      <div class="builder-tile"><span>${t('coffee')}</span><strong>${grams(recipe.dose_g)}</strong><div class="builder-quantity"><button type="button" data-adjust="dose_g:-1" aria-label="${t('builder_decrease')} ${t('coffee')}"${recipe.dose_g <= 5 ? ' disabled' : ''}>−</button><button type="button" data-adjust="dose_g:1" aria-label="${t('builder_increase')} ${t('coffee')}"${recipe.dose_g >= 40 ? ' disabled' : ''}>+</button></div></div>
-      <div class="builder-tile"><span>${t('water')}</span><strong>${grams(recipe.water_g)}</strong><div class="builder-quantity"><button type="button" data-adjust="water_g:-10" aria-label="${t('builder_decrease')} ${t('water')}"${recipe.water_g <= 80 ? ' disabled' : ''}>−</button><button type="button" data-adjust="water_g:10" aria-label="${t('builder_increase')} ${t('water')}"${recipe.water_g >= 600 ? ' disabled' : ''}>+</button></div></div>
-      <div class="builder-tile"><span>${t('temperature')}</span><strong>${celsius(recipe.temperature_c)}</strong></div>
-      <div class="builder-tile"><span>${t('ratio')}</span><strong>${escape(num(recipe.ratio))}</strong></div>
-      <div class="builder-tile builder-tile-wide"><span>${t('grind')}</span><strong>${grind}</strong><small>${t('builder_grind_nominal')}: ${num(recipe.grind.target_particle_microns)} µm</small></div>
-    </div>
+    ${calculatedTiles(recipe, 'data-adjust')}
     <h3 class="section">${t('builder_process')}</h3>
-    ${rows ? `<div class="builder-table-wrap"><table class="builder-table"><thead><tr><th>${t('builder_start_col')}</th><th>${t('builder_scale_col')}</th><th>${t('builder_action_col')}</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="note">${t('builder_automatic')}</p>`}
-    <details class="builder-reasons"><summary>${t('builder_reasons')}</summary><ul>${reasons}</ul></details>
+    ${calculatedSteps(recipe)}
+    ${calculatedReasons(recipe)}
     <button type="button" class="button builder-favorite" id="builder-favorite" aria-pressed="${favored}">${t(favored ? 'builder_unfavorite' : 'builder_favorite')}</button>
     ${recipe.machine_compatible ? `<button type="button" class="button builder-machine" id="builder-machine"${machineConnected() ? '' : ' hidden'}>${t('builder_machine')}</button>` : ''}
   </div>`;
@@ -1668,7 +1898,7 @@ function renderBuilderResult() {
     startMachineBrew();
   });
   updateBuilderStep();
-  document.querySelectorAll('[data-adjust]').forEach(button => button.addEventListener('click', () => adjustBuilderQuantity(button.dataset.adjust)));
+  $('builder-result').querySelectorAll('[data-adjust]').forEach(button => button.addEventListener('click', () => adjustBuilderQuantity(button.dataset.adjust)));
 }
 
 function brewBuilderRecipe() {
@@ -1695,19 +1925,420 @@ async function adjustBuilderQuantity(spec) {
       return post('/api/recipes/rescale', JSON.stringify({recipe, dose_g, water_g}), 'application/json');
     }));
     builder.variants = replies.map(reply => reply.recipe);
-    setStatus('builder-status', '');
-    renderBuilderResult();
+    builderStatus('');
   } catch (error) {
-    setStatus('builder-status', error.message || t('builder_error'), true);
+    builderStatus(error.message || t('builder_error'), true);
+  } finally {
+    builder.busy = false;
     renderBuilderResult();
-  } finally { builder.busy = false; }
+    $('builder-result').querySelector(`[data-adjust="${spec}"]`)?.focus({preventScroll: true});
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Result → correction: taste or refractometer, diagnosis, chart, corrected recipe.
+// The engine decides; the page only collects feedback and draws the answer.
+// ---------------------------------------------------------------------------
+const OWN_RECIPES_KEY = 'firstbrew.myRecipes.v1';
+const MAX_OWN_RECIPES = 50;
+const MEASURE_FIELDS = {'fb-tds': 'tds', 'fb-yield': 'yield', 'fb-dose': 'dose', 'fb-drawdown': 'drawdown'};
+
+function openBuilderRating(recipe, {fresh = false} = {}) {
+  if (!recipe) return;
+  clearTimeout(builder.correctionTimer);
+  if (fresh || builder.rated !== recipe) {
+    builder.rated = recipe;
+    builder.tastes = [];
+    builder.tasteHelp = null;
+    builder.measure = {tds: '', yield: '', dose: String(recipe.dose_g), drawdown: ''};
+    builder.correction = null;
+  }
+  builder.step = 3;
+  setStatus('builder-cta-status', '');
+  builderStatus('');
+  renderBuilderFeedback();
+  renderBuilderCorrection();
+  updateBuilderStep();
+}
+
+function tasteColumn(id) {
+  return builder.options.tastes.columns.find(column => column.descriptors.includes(id))?.id;
+}
+
+function renderBuilderFeedback() {
+  const recipe = builder.rated, tastes = builder.options?.tastes;
+  if (!recipe || !tastes) { $('builder-feedback').replaceChildren(); return; }
+  const words = STRINGS[LANG];
+  const taste = builder.feedbackMode === 'taste';
+  const m = builder.measure;
+  const columns = tastes.columns.map(column => `<fieldset class="taste-group">
+      <legend>${escape(words.taste_columns[column.id])}</legend>
+      <div class="taste-options">${column.descriptors.map(id => `<div class="taste-option">
+        <label class="taste-choice" title="${escape(words.taste_help[id])}"><input type="checkbox" name="taste" value="${id}"><span>${escape(words.taste_names[id])}</span></label>
+        <button type="button" class="taste-help" data-taste-help="${id}" aria-expanded="false" aria-controls="taste-explain-${column.id}" aria-label="${escape(t('taste_help_label', words.taste_names[id]))}"></button>
+      </div>`).join('')}</div>
+      <p class="taste-explain" id="taste-explain-${column.id}" data-column="${column.id}" aria-live="polite" hidden></p>
+    </fieldset>`).join('');
+  const measureField = (id, key, label, help, extra) =>
+    builderField(id, t(label), builderInput(id, 'number', m[key], `${extra} inputmode="decimal"`), help);
+  $('builder-feedback').innerHTML = `
+    <div class="feedback-rated"><span>${t('feedback_rating')}</span><strong>${escape(calculatedName(recipe))}</strong>
+      <small>${grams(recipe.dose_g)} · ${grams(recipe.water_g)} · ${celsius(recipe.temperature_c)} · ${escape(num(recipe.ratio))}</small></div>
+    <div class="feedback-modes" role="group" aria-label="${t('feedback_mode')}">
+      <button type="button" class="button" data-feedback-mode="taste" aria-pressed="${taste}">${t('feedback_by_taste')}</button>
+      <button type="button" class="button" data-feedback-mode="measure" aria-pressed="${!taste}">${t('feedback_by_meter')}</button>
+    </div>
+    <div id="feedback-taste"${taste ? '' : ' hidden'}>
+      <p class="feedback-count" id="feedback-count"></p>
+      <p class="edit-hint">${t('feedback_conflicts_hint')}</p>
+      <div class="taste-columns">${columns}</div>
+    </div>
+    <div id="feedback-measure"${taste ? ' hidden' : ''}>
+      <div class="builder-pro-grid">
+        ${measureField('fb-tds', 'tds', 'measure_tds', 'measure_help_tds', 'min="0.1" max="5" step="0.01"')}
+        ${measureField('fb-yield', 'yield', 'measure_yield', 'measure_help_yield', `min="1" max="${recipe.water_g}" step="1"`)}
+        ${measureField('fb-dose', 'dose', 'measure_dose', 'measure_help_dose', 'min="5" max="40" step="0.1"')}
+        ${measureField('fb-drawdown', 'drawdown', 'measure_drawdown', 'measure_help_drawdown', 'min="1" max="1200" step="1"')}
+      </div>
+      <p class="feedback-extraction" id="feedback-extraction" aria-live="polite"></p>
+      <p class="edit-hint">${t('measure_formula')}</p>
+      <p class="note error" id="feedback-measure-error" role="alert" hidden></p>
+    </div>`;
+  updateFeedbackState();
+  updateTasteHelp();
+}
+
+// Mirrors the engine: an option is off when it conflicts with a chosen one or the limit is reached.
+function updateFeedbackState() {
+  const tastes = builder.options?.tastes;
+  if (!tastes || !$('feedback-count')) return;
+  const full = builder.tastes.length >= tastes.max_selected;
+  document.querySelectorAll('#builder-feedback [name="taste"]').forEach(input => {
+    const checked = builder.tastes.includes(input.value);
+    const blocked = !checked && (full || builder.tastes.some(id => tastes.conflicts[id]?.includes(input.value)));
+    input.checked = checked;
+    input.disabled = blocked;
+    input.closest('.taste-option').classList.toggle('selected', checked);
+    input.closest('.taste-option').classList.toggle('blocked', blocked);
+  });
+  setText('feedback-count', t('feedback_count', builder.tastes.length, tastes.max_selected));
+  const measured = feedbackMeasurement();
+  setText('feedback-extraction', measured.extraction == null ? '' : t('measure_extraction', num(measured.extraction.toFixed(1))));
+  $('feedback-measure-error').hidden = !measured.error;
+  setText('feedback-measure-error', measured.error || '');
+  updateBuilderStep();
+}
+
+function toggleTasteHelp(id) {
+  builder.tasteHelp = builder.tasteHelp === id ? null : id;
+  updateTasteHelp();
+}
+
+function updateTasteHelp() {
+  const id = builder.tasteHelp, words = STRINGS[LANG];
+  document.querySelectorAll('#builder-feedback [data-taste-help]').forEach(button =>
+    button.setAttribute('aria-expanded', String(button.dataset.tasteHelp === id)));
+  document.querySelectorAll('#builder-feedback .taste-explain').forEach(box => {
+    const shown = Boolean(id) && box.dataset.column === tasteColumn(id);
+    box.hidden = !shown;
+    box.innerHTML = shown ? `<strong>${escape(words.taste_names[id])}</strong> — ${escape(words.taste_help[id])}` : '';
+  });
+}
+
+// The extraction preview uses the same formula as the engine; the engine stays the judge.
+function feedbackMeasurement() {
+  const recipe = builder.rated, m = builder.measure;
+  const read = value => String(value ?? '').trim() === '' ? null : Number(String(value).replace(',', '.'));
+  const tds = read(m.tds), beverage = read(m.yield), dose = read(m.dose), drawdown = read(m.drawdown);
+  let error = null;
+  if (tds != null && !(tds >= 0.1 && tds <= 5)) error = t('measure_invalid_tds');
+  else if (beverage != null && !(beverage >= 1 && beverage <= recipe.water_g)) error = t('measure_invalid_yield', grams(recipe.water_g));
+  else if (dose != null && !(Math.abs(dose - recipe.dose_g) <= 0.1)) error = t('measure_dose_mismatch', grams(recipe.dose_g));
+  else if (drawdown != null && !(drawdown >= 1 && drawdown <= 1200)) error = t('measure_invalid_drawdown');
+  const complete = [tds, beverage, dose, drawdown].every(value => value != null);
+  const extraction = !error && tds != null && beverage != null && dose ? beverage * tds / dose : null;
+  return {error, extraction, value: complete && !error
+    ? {beverage_tds_percent: tds, beverage_g: beverage, dose_g: dose, drawdown_seconds: drawdown} : null};
+}
+
+function feedbackPayload() {
+  if (!builder.rated) return null;
+  if (builder.feedbackMode === 'taste') return builder.tastes.length ? {descriptors: [...builder.tastes]} : null;
+  const measurement = feedbackMeasurement().value;
+  return measurement ? {measurement} : null;
+}
+
+async function requestCorrection({focus = false} = {}) {
+  const feedback = feedbackPayload();
+  if (!feedback) return;
+  clearTimeout(builder.correctionTimer);
+  builder.correctionRequest?.abort();
+  const request = builder.correctionRequest = new AbortController();
+  const rated = builder.rated;
+  builder.busy = true;
+  updateBuilderStep();
+  builderStatus(t('correction_loading'));
+  try {
+    const data = await post('/api/recipes/adjust', JSON.stringify({recipe: rated, feedback}), 'application/json', request.signal);
+    if (builder.correctionRequest !== request) return;
+    builder.correction = {...data, feedback};
+    builder.step = 4;
+    builderStatus('');
+    renderBuilderCorrection();
+    updateBuilderStep();
+    if (focus) builderFocusTarget()?.focus({preventScroll: true});
+  } catch (error) {
+    if (error.name !== 'AbortError') builderStatus(error.message || t('builder_error'), true);
+  } finally {
+    if (builder.correctionRequest === request) { builder.busy = false; updateBuilderStep(); }
+  }
+}
+
+// Desktop keeps the correction live while the feedback on the left changes.
+function scheduleCorrectionUpdate() {
+  clearTimeout(builder.correctionTimer);
+  if (builder.step !== 4 || !matchMedia('(min-width: 900px)').matches || !feedbackPayload()) return;
+  builder.correctionTimer = setTimeout(requestCorrection, 500);
+}
+
+function changeLine(change) {
+  const why = escape(LANG === 'ru' ? change.why : change.why_en);
+  let label, value, detail = '';
+  if (change.parameter === 'temperature_c') {
+    label = t('temperature');
+    value = `${celsius(change.before)} → ${celsius(change.after)}`;
+  } else if (change.parameter === 'water_g') {
+    label = t('water');
+    value = `${grams(change.before)} → ${grams(change.after)}`;
+    detail = `${t('ratio')}: ${escape(num(change.ratio_before))} → ${escape(num(change.ratio_after))}`;
+  } else {
+    label = t('grind');
+    const direction = t(change.after < change.before ? 'change_finer' : 'change_coarser');
+    const settings = change.before_setting && change.after_setting && change.before_setting !== change.after_setting;
+    value = settings ? `${escape(change.before_setting)} → ${escape(change.after_setting)} · ${direction}` : direction;
+    const scale = LANG === 'ru' ? change.scale_label : change.scale_label_en;
+    detail = `${t('change_target', num(change.before), num(change.after))}${settings && scale ? ` · ${escape(scale)}` : ''}`;
+  }
+  return `<span class="change-head"><strong>${label}</strong><span class="change-value">${value}</span></span>${detail ? `<small>${detail}</small>` : ''}<small>${why}</small>`;
+}
+
+// Inline SVG: extraction (x) against strength (y), ratio diagonals, the SCA zone and the cup.
+function extractionChart(chart) {
+  if (!chart) return '';
+  const width = 340, height = 286, left = 46, right = 34, top = 14, bottom = 56;
+  const [x0, x1] = chart.extraction_axis, [y0, y1] = chart.tds_axis;
+  const px = value => left + (value - x0) / (x1 - x0) * (width - left - right);
+  const py = value => height - bottom - (value - y0) / (y1 - y0) * (height - top - bottom);
+  const f = value => value.toFixed(1);
+  const segment = (points, cls) => points ? `<line class="${cls}" x1="${f(px(points[0][0]))}" y1="${f(py(points[0][1]))}" x2="${f(px(points[1][0]))}" y2="${f(py(points[1][1]))}"/>` : '';
+  const label = (x, y, value, cls, anchor = 'middle', extra = '') => `<text class="${cls}" x="${f(x)}" y="${f(y)}" text-anchor="${anchor}"${extra}>${escape(value)}</text>`;
+  let grid = '';
+  for (let value = x0; value <= x1; value += 2) {
+    grid += `<line class="chart-grid" x1="${f(px(value))}" y1="${f(py(y0))}" x2="${f(px(value))}" y2="${f(py(y1))}"/>`;
+    grid += label(px(value), py(y0) + 16, num(value), 'chart-tick');
+  }
+  for (const value of [0.9, 1.2, 1.5, 1.8]) {
+    grid += `<line class="chart-grid" x1="${f(px(x0))}" y1="${f(py(value))}" x2="${f(px(x1))}" y2="${f(py(value))}"/>`;
+    grid += label(left - 6, py(value) + 4, num(value.toFixed(1)), 'chart-tick', 'end');
+  }
+  const zone = chart.balanced;
+  const zoneRect = `<rect class="chart-zone" x="${f(px(zone.extraction[0]))}" y="${f(py(zone.tds[1]))}" width="${f(px(zone.extraction[1]) - px(zone.extraction[0]))}" height="${f(py(zone.tds[0]) - py(zone.tds[1]))}" rx="3"/>`;
+  const ratios = chart.ratio_lines.map(line => {
+    const end = line.points[1];
+    const atTop = end[1] >= y1 - 0.001;
+    const text = line.ratio % 2 ? '' : atTop
+      ? label(px(end[0]), py(end[1]) - 4, `1:${line.ratio}`, 'chart-ratio-label')
+      : label(px(end[0]) + 4, py(end[1]) + 4, `1:${line.ratio}`, 'chart-ratio-label', 'start');
+    return segment(line.points, 'chart-ratio') + text;
+  }).join('');
+  const middle = (x0 + x1) / 2;
+  const zones = label(px(middle), py(y1) + 16, t('chart_strong'), 'chart-zone-label')
+    + label(px(middle), py(y0) - 8, t('chart_weak'), 'chart-zone-label')
+    + label(left, py(y0) + 33, t('chart_under'), 'chart-side-label', 'start')
+    + label(width - right, py(y0) + 33, t('chart_over'), 'chart-side-label', 'end');
+  const axes = label(left + (width - left - right) / 2, height - 4, t('chart_x'), 'chart-axis')
+    + `<text class="chart-axis" transform="rotate(-90)" x="${f(-(top + (height - top - bottom) / 2))}" y="13" text-anchor="middle">${escape(t('chart_y'))}</text>`;
+  let cup = '', legend = '', note = t('chart_note_estimate'), description = '';
+  if (chart.cup?.kind === 'measured') {
+    const x = px(Math.min(x1, Math.max(x0, chart.cup.extraction_percent)));
+    const y = py(Math.min(y1, Math.max(y0, chart.cup.tds_percent)));
+    const ey = num(chart.cup.extraction_percent.toFixed(1)), tds = num(chart.cup.tds_percent.toFixed(2));
+    cup = `<circle class="chart-cup-halo" cx="${f(x)}" cy="${f(y)}" r="12"/><circle class="chart-cup" cx="${f(x)}" cy="${f(y)}" r="6.5"/>`;
+    legend = `<li><i class="legend-cup" aria-hidden="true"></i>${escape(t('chart_cup', ey, tds))}</li>`;
+    note = `${t('chart_note_measured')}${chart.cup.inside ? '' : ` ${t('chart_note_outside')}`}`;
+    description = t('chart_desc_measured', ey, tds);
+  } else if (chart.cup) {
+    cup = segment(chart.cup.points, 'chart-estimate');
+    legend = `<li><i class="legend-estimate" aria-hidden="true"></i>${escape(t('chart_estimate'))}</li>`;
+    description = t('chart_desc_estimate', num(chart.cup.extraction_range[0]), num(chart.cup.extraction_range[1]));
+  }
+  return `<figure class="extraction-chart">
+    <svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="chart-title chart-desc">
+      <title id="chart-title">${escape(t('chart_title'))}</title><desc id="chart-desc">${escape(description)}</desc>
+      <rect class="chart-plot" x="${left}" y="${top}" width="${width - left - right}" height="${height - top - bottom}"/>
+      ${grid}${zoneRect}${ratios}${segment(chart.recipe_line.points, 'chart-recipe')}${zones}${cup}${axes}
+    </svg>
+    <figcaption>
+      <ul class="chart-legend">
+        <li><i class="legend-zone" aria-hidden="true"></i>${escape(t('chart_zone'))}</li>
+        <li><i class="legend-recipe" aria-hidden="true"></i>${escape(t('chart_recipe', num(chart.recipe_line.ratio)))}</li>
+        ${legend}
+      </ul>
+      <p>${escape(note)}</p>
+    </figcaption>
+  </figure>`;
+}
+
+function renderBuilderCorrection() {
+  const pane = $('builder-correction');
+  const data = builder.correction;
+  if (!data) { pane.innerHTML = `<p class="note">${t('correction_placeholder')}</p>`; return; }
+  const recipe = data.recipe, ru = LANG === 'ru';
+  const changes = data.changes.map(change => `<li>${changeLine(change)}</li>`).join('');
+  pane.innerHTML = `<div class="builder-recipe correction">
+    <p class="builder-origin">${t('builder_calculated')}</p>
+    <p class="correction-kind">${t(data.measurement_kind === 'measured' ? 'correction_by_meter' : 'correction_by_taste')}</p>
+    <h2 class="title" id="correction-title" tabindex="-1">${escape(ru ? data.diagnosis : data.diagnosis_en)}</h2>
+    <p class="correction-explanation">${escape(ru ? data.explanation : data.explanation_en)}</p>
+    ${extractionChart(data.chart)}
+    <h3 class="section">${t('correction_changes')}</h3>
+    ${changes ? `<ul class="correction-changes">${changes}</ul>` : `<p class="note">${t(data.at_limit ? 'correction_at_limit' : 'correction_no_changes')}</p>`}
+    <h3 class="section">${t(data.changes.length ? 'correction_recipe' : 'correction_same_recipe')}</h3>
+    <p class="correction-name">${escape(calculatedName(recipe))}</p>
+    ${recipe.edited ? `<p class="note">${t('correction_edited')}</p>` : ''}
+    <p class="note builder-caution">${t('builder_approximate')}</p>
+    ${calculatedTiles(recipe, 'data-correction-adjust', true)}
+    <h3 class="section">${t('builder_process')}</h3>
+    ${calculatedSteps(recipe)}
+    ${calculatedReasons(recipe)}
+    ${recipe.machine_compatible ? `<button type="button" class="button builder-machine" id="correction-machine"${machineConnected() ? '' : ' hidden'}>${t('builder_machine')}</button>` : ''}
+  </div>`;
+}
+
+// Editable corrected recipe: dose and water through the engine, temperature within its bounds.
+async function adjustCorrectionQuantity(spec) {
+  const data = builder.correction;
+  if (!data || builder.busy) return;
+  const [field, deltaText] = spec.split(':');
+  const delta = Number(deltaText), recipe = data.recipe;
+  if (field === 'temperature_c') {
+    const value = recipe.temperature_c + delta;
+    if (value < 80 || value > 99) return;
+    data.recipe = {...recipe, temperature_c: value, edited: true};
+  } else {
+    builder.busy = true;
+    updateBuilderStep();
+    try {
+      const target = recipe[field] + delta;
+      const reply = await post('/api/recipes/rescale', JSON.stringify({recipe,
+        dose_g: field === 'dose_g' ? target : null, water_g: field === 'water_g' ? target : null}), 'application/json');
+      if (builder.correction !== data) return;
+      data.recipe = {...reply.recipe, edited: true};
+      builderStatus('');
+    } catch (error) {
+      builderStatus(error.message || t('builder_error'), true);
+    } finally { builder.busy = false; }
+  }
+  renderBuilderCorrection();
+  updateBuilderStep();
+  $('builder-correction').querySelector(`[data-correction-adjust="${spec}"]`)?.focus({preventScroll: true});
+}
+
+// Saved recipes stay on this device; each entry is self-contained so it can move to a server later.
+function ownRecipes() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(OWN_RECIPES_KEY) || '[]');
+    return Array.isArray(stored) ? stored.filter(entry => entry && typeof entry === 'object') : [];
+  } catch (error) { return []; }
+}
+function ownRecipeKey(recipe) {
+  return JSON.stringify([recipe.device_id, recipe.id, recipe.revision || 0, recipe.dose_g, recipe.water_g,
+    recipe.temperature_c, recipe.grind?.target_particle_microns, recipe.grind?.setting]);
+}
+function saveOwnRecipe() {
+  const data = builder.correction;
+  if (!data) return;
+  const recipe = data.recipe, key = ownRecipeKey(recipe);
+  const entry = {format: 'firstbrew.recipe', version: 1, key,
+    id: `own-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    saved_at: new Date().toISOString(), recipe, context_chips: builderContext(recipe),
+    feedback: data.feedback, diagnosis_code: data.diagnosis_code, measurement_kind: data.measurement_kind,
+    extraction_percent: data.extraction_percent};
+  try {
+    const entries = [entry, ...ownRecipes().filter(item => item.key !== key)].slice(0, MAX_OWN_RECIPES);
+    localStorage.setItem(OWN_RECIPES_KEY, JSON.stringify(entries));
+    builder.savedKey = key;
+    setStatus('builder-cta-status', t('builder_saved_status'));
+  } catch (error) {
+    setStatus('builder-cta-status', t('builder_save_error'), true);
+  }
+  updateBuilderStep();
+}
+
+function brewCorrectedRecipe() {
+  const recipe = builder.correction?.recipe;
+  if (!recipe) return;
+  currentRecipe = recipe;
+  if (brewMode === 'machine') leaveMachineMode();
+  resetTimer();
+  show('brew');
+}
+
+function wireFeedback() {
+  const feedback = $('builder-feedback');
+  feedback.addEventListener('click', event => {
+    const mode = event.target.closest('[data-feedback-mode]');
+    if (mode) {
+      builder.feedbackMode = mode.dataset.feedbackMode;
+      renderBuilderFeedback();
+      feedback.querySelector(`[data-feedback-mode="${builder.feedbackMode}"]`).focus({preventScroll: true});
+      scheduleCorrectionUpdate();
+      return;
+    }
+    const help = event.target.closest('[data-taste-help]');
+    if (help) toggleTasteHelp(help.dataset.tasteHelp);
+  });
+  feedback.addEventListener('change', event => {
+    if (event.target.name !== 'taste') return;
+    const id = event.target.value;
+    builder.tastes = builder.tastes.filter(value => value !== id);
+    if (event.target.checked) builder.tastes.push(id);
+    updateFeedbackState();
+    scheduleCorrectionUpdate();
+  });
+  feedback.addEventListener('input', event => {
+    const key = MEASURE_FIELDS[event.target.id];
+    if (!key) return;
+    builder.measure[key] = event.target.value;
+    updateFeedbackState();
+    scheduleCorrectionUpdate();
+  });
+  $('builder-correction').addEventListener('click', event => {
+    const control = event.target.closest('[data-correction-adjust]');
+    if (control) { adjustCorrectionQuantity(control.dataset.correctionAdjust); return; }
+    if (event.target.closest('#correction-machine')) {
+      currentRecipe = builder.correction.recipe;
+      startMachineBrew();
+    }
+  });
 }
 
 function wireBuilder() {
   $('open-builder').addEventListener('click', beginBuilder);
   $('builder-back').addEventListener('click', () => {
-    if (builder.step > 0) { captureBuilderDraft(); builder.step--; updateBuilderStep(); $('builder-title').focus({preventScroll: true}); }
-    else back('find');
+    if (builder.step > 0) {
+      if (builder.step <= 2) captureBuilderDraft();
+      clearTimeout(builder.correctionTimer);
+      builder.correctionRequest?.abort();
+      builder.step--;
+      setStatus('builder-cta-status', '');
+      updateBuilderStep();
+      builderFocusTarget()?.focus({preventScroll: true});
+    } else back('find');
+  });
+  $('builder-close').addEventListener('click', () => {
+    clearTimeout(builder.correctionTimer);
+    show('find');
   });
   $('builder-mode').addEventListener('click', () => {
     captureBuilderDraft();
@@ -1720,9 +2351,18 @@ function wireBuilder() {
   $('builder-next').addEventListener('click', () => {
     if (builder.step === 0) { captureBuilderDraft(); builder.step = 1; updateBuilderStep(); $('builder-title').focus({preventScroll: true}); }
     else if (builder.step === 1) buildBuilderRecipes();
-    else brewBuilderRecipe();
+    else if (builder.step === 2) brewBuilderRecipe();
+    else if (builder.step === 3) requestCorrection({focus: true});
+    else brewCorrectedRecipe();
+  });
+  $('builder-secondary').addEventListener('click', () => {
+    if (builder.step === 2) {
+      openBuilderRating(builder.variants[builder.selected]);
+      $('builder-title').focus({preventScroll: true});
+    } else if (builder.step === 4) saveOwnRecipe();
   });
   $('builder-rebuild').addEventListener('click', buildBuilderRecipes);
+  wireFeedback();
 }
 
 function scheduleBuilderUpdate() {
@@ -1804,7 +2444,7 @@ function renderCalculatedTimer(seconds, duration) {
   $('brew-clock').classList.toggle('builder-clock', !ready);
   if (ready) {
     setText('brew-ready-origin', t('builder_calculated'));
-    setText('brew-ready-name', t(`builder_variant_${recipe.id}`));
+    setText('brew-ready-name', calculatedName(recipe));
     setText('brew-ready-summary', t(`builder_summary_${recipe.id}`));
     const grindScale = LANG === 'ru' ? recipe.grind?.scale_label : recipe.grind?.scale_label_en;
     $('brew-ready-grid').innerHTML = [
@@ -1863,8 +2503,17 @@ function jumpCalculatedStep(delta) {
   updateTimer();
 }
 
+// A finished calculated brew leads to the taste rating; roaster recipes keep their old ending.
+function updateDoneActions() {
+  const calculated = currentRecipe?.origin === 'calculated';
+  $('brew-rate').hidden = !calculated;
+  $('brew-again').classList.toggle('primary', !calculated);
+  setText('brew-done-text', t(calculated ? 'builder_done_text' : brewMode === 'machine' ? 'machine_done_text' : 'done_text'));
+}
+
 function updateTimer() {
   if (!currentRecipe || brewMode === 'machine') return;
+  updateDoneActions();
   const steps = currentRecipe.steps, duration = currentRecipe.duration_seconds;
   let seconds = elapsed + (running ? (Date.now() - startedAt) / 1000 : 0);
   if (duration && seconds >= duration) {
@@ -2019,8 +2668,8 @@ async function startMachineBrew() {
     renderMachine();
   } catch (error) {
     brewMode = 'local';
-    setStatus(currentRecipe?.origin === 'calculated' ? 'builder-status' : 'cta-status',
-      error.message || t('builder_machine_error'), true);
+    if (currentRecipe?.origin === 'calculated') builderStatus(error.message || t('builder_machine_error'), true);
+    else setStatus('cta-status', error.message || t('builder_machine_error'), true);
   } finally {
     $('machine-start').disabled = false;
     updateCtaBar();
@@ -2111,7 +2760,7 @@ function renderMachine() {
   setText('brew-toggle', toggle);
   $('brew-toggle').disabled = toggleDisabled;
   setText('brew-reset', t('machine_stop'));
-  setText('brew-done-text', t('machine_done_text'));
+  updateDoneActions();
   $('brew-face').hidden = done;
   $('brew-controls').hidden = done;
   $('brew-done').hidden = !done;
@@ -2223,11 +2872,15 @@ function localize() {
   $('survey-link').textContent = `${t('survey_button')} ↗`;
   $('open-builder').textContent = t('builder_open');
   $('builder-back').textContent = t('back');
+  $('builder-close').setAttribute('aria-label', t('builder_close'));
+  $('builder-close').title = t('builder_close');
   $('builder-language-label').textContent = t('language');
   $('builder-language').value = LANG;
   if (builder.options) {
     renderBuilderFields();
     if (builder.variants.length) renderBuilderResult();
+    renderBuilderFeedback();
+    renderBuilderCorrection();
   } else updateBuilderStep();
   $('confirm-photo').alt = t('photo_alt');
   $('scan-image').alt = t('photo_alt');
@@ -2255,6 +2908,7 @@ function localize() {
   $('brew-toggle').textContent = t('resume');
   $('brew-done-title').textContent = t('done_title');
   $('brew-done-text').textContent = t('done_text');
+  $('brew-rate').textContent = t('builder_rate');
   $('brew-again').textContent = t('brew_again');
   $('brew-new').textContent = t('another_coffee');
   setToggle('brew-vibrate', 'vibrate');
@@ -2331,6 +2985,13 @@ function init() {
     if (brewMode === 'machine') { machineStop(); return; }
     resetTimer();
     $('brew-toggle').focus({preventScroll: true});
+  });
+  $('brew-rate').addEventListener('click', () => {
+    const recipe = currentRecipe;
+    if (brewMode === 'machine') leaveMachineMode();
+    resetTimer();
+    openBuilderRating(recipe, {fresh: true});
+    back('construct');
   });
   $('brew-again').addEventListener('click', () => {
     if (brewMode === 'machine') { back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'); startMachineBrew(); return; }
