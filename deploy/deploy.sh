@@ -24,7 +24,7 @@ chmod 755 "$work"
 chmod -R a+rX "$work"
 
 rsync -az --delete \
-  --exclude 'data/' --exclude 'docs/screens/' --exclude 'firmware/' --exclude '.github/' \
+  --exclude '/data/' --exclude 'docs/screens/' --exclude 'firmware/' --exclude '.github/' \
   --exclude '.venv/' --exclude 'webapp/.cache/' --exclude '**/__pycache__/' \
   -e "ssh -p $PORT" "$work/" "$HOST:$TARGET/"
 
