@@ -11,6 +11,8 @@ from pourpour import CoffeeService, SourceError, scan_label
 from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel, RECOMMENDATION_POLICY, COUNTRIES, PROCESSING, VARIETIES
 from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
+from brew_catalog import load_catalog, unique_object
+from brewing_engine import BrewingInputError, adjust, build
 
 ROOT = Path(__file__).parent / 'static'
 STATIC_FILES = {
@@ -27,6 +29,10 @@ service = CoffeeService()
 model = None
 machine = None  # set by set_machine(); None means `--machine none`
 MACHINE_COMMANDS = ('start', 'pause', 'resume', 'abort', 'tare')
+
+
+def reject_nonfinite_json(value):
+    raise ValueError(f'Invalid JSON number: {value}.')
 
 
 def set_machine(instance):
@@ -71,6 +77,8 @@ class Handler(BaseHTTPRequestHandler):
                                             'dataset_snapshot': fitted.model['dataset_snapshot'],
                                             'coffees': len(fitted.rows), 'ocr': ocr_status(),
                                             'countries': COUNTRIES, 'processing': PROCESSING, 'varieties': VARIETIES})
+            if url.path == '/api/catalog/options':
+                return self.send_json(200, {'schema_version': 1, **load_catalog()})
             if url.path == '/api/search':
                 query = parse_qs(url.query).get('q', [''])[0].strip()
                 if len(query) > 120:
@@ -100,7 +108,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if url.path.startswith('/api/machine/'):
                 return self.machine_post(url.path.removeprefix('/api/machine/'))
-            if url.path not in ('/api/label', '/api/scan', '/api/recommend'):
+            if url.path not in ('/api/label', '/api/scan', '/api/recommend',
+                                '/api/recipes/build', '/api/recipes/adjust'):
                 return self.send_json(404, {'error': 'Page not found.'})
             if not self.same_origin():
                 return self.send_json(403, {'error': 'The request must come from this application.'})
@@ -134,7 +143,22 @@ class Handler(BaseHTTPRequestHandler):
                 return self.send_json(200, {**scan, 'photo_state': 'unreadable' if unreadable else 'confirmation',
                                             'candidates': recommendation['candidates'],
                                             'message': recommendation['message'], 'recommendation': recommendation})
-            body = json.loads(payload)
+            try:
+                if url.path in ('/api/recipes/build', '/api/recipes/adjust'):
+                    body = json.loads(payload, object_pairs_hook=unique_object,
+                                      parse_constant=reject_nonfinite_json)
+                else:
+                    body = json.loads(payload)
+            except json.JSONDecodeError as exc:
+                raise ValueError('Invalid JSON.') from exc
+            if url.path == '/api/recipes/build':
+                if not isinstance(body, dict) or set(body) != {'params'}:
+                    raise BrewingInputError('Expected an object with a params field.')
+                return self.send_json(200, {'variants': build(body['params'])})
+            if url.path == '/api/recipes/adjust':
+                if not isinstance(body, dict) or set(body) != {'recipe', 'feedback'}:
+                    raise BrewingInputError('Expected recipe and feedback fields.')
+                return self.send_json(200, adjust(body['recipe'], body['feedback']))
             if not isinstance(body, dict) or not isinstance(body.get('text'), str):
                 raise ValueError('Label text is required.')
             selected = body.get('selected_coffee_id')

@@ -30,6 +30,10 @@ COEFFICIENTS = {
              'minimum_seconds': 8, 'final_wait_seconds': 28},
     'immersion_timing': {'fill_max_seconds': 20, 'drain_seconds': 20},
     'machine_water_max_g': 400,
+    'adjustment': {'temperature_step_c': 2, 'particle_step_microns': 30,
+                   'reference_step': 0.5, 'water_ratio_step': 0.5,
+                   'balanced_extraction_min_percent': 18,
+                   'balanced_extraction_max_percent': 22},
     'roast': {
         'light': {},
         'medium': {'temperature_c': -2, 'particle_microns': 40,
@@ -83,7 +87,13 @@ class BrewingInputError(ValueError):
 
 
 def _number(value, name, minimum, maximum):
-    if not isinstance(value, (float, int)) or isinstance(value, bool) or not math.isfinite(value):
+    if not isinstance(value, (float, int)) or isinstance(value, bool):
+        raise BrewingInputError(f'{name}: expected a finite number')
+    try:
+        finite = math.isfinite(value)
+    except (OverflowError, ValueError):
+        finite = False
+    if not finite:
         raise BrewingInputError(f'{name}: expected a finite number')
     if not minimum <= value <= maximum:
         raise BrewingInputError(f'{name}: expected {minimum}–{maximum}')
@@ -378,7 +388,8 @@ def build(params):
         chips = [row['name_ru'] for row in (country, processing, device) if row]
         chips.append({'light': 'Светлая', 'medium': 'Средняя', 'dark': 'Тёмная'}[roast])
         result = {
-            'schema_version': 1, 'origin': 'calculated', 'engine_version': COEFFICIENTS['version'],
+            'schema_version': 1, 'catalog_schema_version': 1,
+            'origin': 'calculated', 'engine_version': COEFFICIENTS['version'],
             'id': variant_id, 'name': name, 'summary': summary, 'device_id': device['id'],
             'grinder_id': grinder['id'] if grinder else None,
             'method': device['method'], 'dose_g': dose, 'coffee_g': dose,
@@ -455,3 +466,203 @@ def rescale(recipe, dose_g=None, water_g=None):
                                      'Вода пересчитана пропорционально; время оставлено стартовым ориентиром.',
                                      'Water scaled proportionally; timing remains a starting point.'))
     return result
+
+
+_TASTE_GROUPS = {
+    'under': {'sour', 'sharp', 'flat', 'hollow'},
+    'over': {'bitter', 'dry', 'astringent', 'muddy', 'rough', 'heavy'},
+    'weak': {'watery'},
+    'heavy': {'syrupy'},
+    'positive': {'sweet', 'balanced'},
+}
+_ALL_TASTES = set().union(*_TASTE_GROUPS.values())
+
+
+def _feedback_signal(feedback, recipe):
+    if not isinstance(feedback, dict):
+        raise BrewingInputError('feedback: expected an object')
+    has_taste = 'descriptors' in feedback
+    has_measurement = 'measurement' in feedback
+    if has_taste == has_measurement or set(feedback) - {'descriptors', 'measurement'}:
+        raise BrewingInputError('feedback: supply descriptors or measurement, not both')
+    if has_taste:
+        tastes = feedback['descriptors']
+        if (not isinstance(tastes, list) or not 1 <= len(tastes) <= 3 or
+                any(not isinstance(item, str) or item not in _ALL_TASTES for item in tastes) or
+                len(set(tastes)) != len(tastes)):
+            raise BrewingInputError('descriptors: choose 1–3 distinct known tastes')
+        selected = set(tastes)
+        if ({'sweet', 'balanced'} <= selected or
+                ('balanced' in selected and len(selected) > 1) or
+                selected & _TASTE_GROUPS['under'] and selected & _TASTE_GROUPS['over'] or
+                selected & _TASTE_GROUPS['under'] and 'sweet' in selected):
+            raise BrewingInputError('descriptors: contradictory tastes')
+        if selected & _TASTE_GROUPS['under']:
+            return 'under', None
+        if selected & _TASTE_GROUPS['over']:
+            return 'over', None
+        if 'sweet' in selected and 'watery' in selected:
+            return 'weak_after_sweet', None
+        if 'sweet' in selected and 'syrupy' in selected:
+            return 'heavy_after_sweet', None
+        return 'hold', None
+    measurement = feedback['measurement']
+    if not isinstance(measurement, dict) or set(measurement) != {
+            'beverage_tds_percent', 'beverage_g', 'dose_g', 'drawdown_seconds'}:
+        raise BrewingInputError('measurement: expected beverage TDS, yield, dose and drawdown')
+    tds = _number(measurement['beverage_tds_percent'], 'beverage_tds_percent', 0.1, 5)
+    beverage = _number(measurement['beverage_g'], 'beverage_g', 1, recipe['water_g'])
+    dose = _number(measurement['dose_g'], 'measurement.dose_g', *COEFFICIENTS['bounds']['dose_g'])
+    _number(measurement['drawdown_seconds'], 'drawdown_seconds', 1, 1200)
+    if abs(dose - recipe['dose_g']) > 0.1:
+        raise BrewingInputError('measurement.dose_g: must match the brewed recipe')
+    extraction = round(beverage * tds / dose, 2)
+    _number(extraction, 'extraction_percent', 0, 100)
+    rule = COEFFICIENTS['adjustment']
+    if extraction < rule['balanced_extraction_min_percent']:
+        return 'under', extraction
+    if extraction > rule['balanced_extraction_max_percent']:
+        return 'over', extraction
+    return 'hold', extraction
+
+
+def _check_adjustable_recipe(recipe):
+    if (not isinstance(recipe, dict) or recipe.get('origin') != 'calculated' or
+            recipe.get('schema_version') != 1 or recipe.get('catalog_schema_version') != 1 or
+            recipe.get('engine_version') != COEFFICIENTS['version'] or
+            not isinstance(recipe.get('id'), str) or
+            recipe['id'] not in COEFFICIENTS['variants']):
+        raise BrewingInputError('recipe: expected a current calculated recipe')
+    device = _choice(recipe.get('device_id'), 'devices', 'recipe.device_id')
+    if device is None or recipe.get('method') != device['method']:
+        raise BrewingInputError('recipe: device and method disagree')
+    dose = _number(recipe.get('dose_g'), 'recipe.dose_g', *COEFFICIENTS['bounds']['dose_g'])
+    water = _number(recipe.get('water_g'), 'recipe.water_g', *COEFFICIENTS['bounds']['water_g'])
+    temperature = _number(recipe.get('temperature_c'), 'recipe.temperature_c',
+                          *COEFFICIENTS['bounds']['temperature_c'])
+    duration = _number(recipe.get('duration_seconds'), 'recipe.duration_seconds',
+                       *COEFFICIENTS['bounds']['duration_seconds'])
+    if (recipe.get('coffee_g') != dose or recipe.get('total_seconds') != duration or
+            recipe.get('ratio') != _ratio(dose, water) or
+            not isinstance(recipe.get('reasons'), list)):
+        raise BrewingInputError('recipe: inconsistent dose, duration, ratio or reasons')
+    grind = recipe.get('grind')
+    if not isinstance(grind, dict):
+        raise BrewingInputError('recipe.grind: expected an object')
+    particle = _number(grind.get('target_particle_microns'), 'recipe.grind.target_particle_microns',
+                       *COEFFICIENTS['bounds']['particle_microns'])
+    if grind.get('microns') != particle:
+        raise BrewingInputError('recipe.grind: inconsistent particle target')
+    grinder = _choice(recipe.get('grinder_id'), 'grinders', 'recipe.grinder_id')
+    reference = None
+    if grinder:
+        reference = _number(grind.get('reference_ek43_dial'), 'recipe.grind.reference_ek43_dial',
+                            *COEFFICIENTS['bounds']['reference_dial'])
+        if recipe.get('grind_setting') != grind.get('setting'):
+            raise BrewingInputError('recipe.grind: inconsistent setting')
+    elif grind.get('setting') is not None or recipe.get('grind_setting') is not None:
+        raise BrewingInputError('recipe.grind: setting needs a grinder')
+    steps = recipe.get('steps')
+    if not isinstance(steps, list):
+        raise BrewingInputError('recipe.steps: expected a list')
+    if device['method'] == 'automatic_drip':
+        if steps:
+            raise BrewingInputError('recipe.steps: automatic drip has no manual steps')
+    else:
+        expected = ({'pour'} if device['method'] == 'percolation' else
+                    {'fill', 'steep', 'press', 'drain'})
+        if not steps or len(steps) > 12:
+            raise BrewingInputError('recipe.steps: expected 1–12 steps')
+        cumulative, previous_stop = 0, 0
+        for index, step in enumerate(steps):
+            if not isinstance(step, dict) or step.get('kind') not in expected:
+                raise BrewingInputError('recipe.steps: invalid step')
+            start = _number(step.get('start_seconds'), 'recipe.steps.start_seconds', 0, duration)
+            stop = _number(step.get('stop_seconds'), 'recipe.steps.stop_seconds', 0, duration)
+            amount = _number(step.get('water_g'), 'recipe.steps.water_g', 0, water)
+            if start < previous_stop or stop <= start or step.get('pour_g') != amount:
+                raise BrewingInputError('recipe.steps: overlapping times or inconsistent water')
+            if device['method'] == 'percolation' and amount <= 0:
+                raise BrewingInputError('recipe.steps: pour must add water')
+            if device['method'] in ('immersion', 'hybrid') and amount != (water if index == 0 else 0):
+                raise BrewingInputError('recipe.steps: immersion adds water only in fill')
+            cumulative += amount
+            if step.get('total_water_g') != cumulative:
+                raise BrewingInputError('recipe.steps: cumulative water is inconsistent')
+            previous_stop = stop
+        if cumulative != water:
+            raise BrewingInputError('recipe.steps: total water is inconsistent')
+        if device['method'] in ('immersion', 'hybrid') and (
+                len(steps) != 3 or [step['kind'] for step in steps[:2]] != ['fill', 'steep'] or
+                steps[2]['kind'] not in ('press', 'drain')):
+            raise BrewingInputError('recipe.steps: expected fill, steep and finish')
+    return dose, water, temperature, particle, reference, grinder
+
+
+def adjust(recipe, feedback):
+    """One conservative correction from taste or measured extraction.
+
+    This phase-3 rule set does not estimate TDS/extraction from taste and never
+    changes concentration before the user has reported sweetness.
+    """
+    dose, water, temperature, particle, reference, grinder = _check_adjustable_recipe(recipe)
+    signal, extraction = _feedback_signal(feedback, recipe)
+    corrected = deepcopy(recipe)
+    changes = []
+    rule = COEFFICIENTS['adjustment']
+    diagnosis = {
+        'under': ('Нужно больше раскрытия', 'Try more extraction'),
+        'over': ('Нужно мягче извлекать', 'Try gentler extraction'),
+        'weak_after_sweet': ('Можно добавить плотности', 'Add body after sweetness'),
+        'heavy_after_sweet': ('Можно сделать чашку легче', 'Lighten the cup after sweetness'),
+        'hold': ('Пока оставим рецепт', 'Keep the recipe for now'),
+    }[signal]
+    explanation = {
+        'under': ('Есть признаки недоэкстракции: пробуем горячее и мельче.',
+                  'Possible under-extraction: try hotter and finer.'),
+        'over': ('Есть признаки переэкстракции: пробуем прохладнее и грубее.',
+                 'Possible over-extraction: try cooler and coarser.'),
+        'weak_after_sweet': ('Сладость уже есть: можно уменьшить воду для плотности.',
+                             'Sweetness is present: use less water for more body.'),
+        'heavy_after_sweet': ('Сладость уже есть: можно добавить воды для лёгкости.',
+                              'Sweetness is present: use more water for a lighter cup.'),
+        'hold': ('Недостаточно оснований менять параметры; повторите заваривание или уточните вкус.',
+                 'Not enough evidence to change parameters; brew again or describe the taste.'),
+    }[signal]
+    if signal in ('under', 'over'):
+        direction = 1 if signal == 'under' else -1
+        new_temp = round(_clamp(temperature + direction * rule['temperature_step_c'], 'temperature_c'))
+        if new_temp != temperature:
+            corrected['temperature_c'] = new_temp
+            changes.append({'parameter': 'temperature_c', 'before': temperature,
+                            'after': new_temp, 'why': explanation[0], 'why_en': explanation[1]})
+            corrected['reasons'].append(_reason('temperature_c', f'feedback_{signal}',
+                                                 explanation[0], explanation[1]))
+        new_particle = round(_clamp(particle - direction * rule['particle_step_microns'], 'particle_microns'))
+        if new_particle != particle:
+            corrected['grind']['target_particle_microns'] = new_particle
+            corrected['grind']['microns'] = new_particle
+            if reference is not None:
+                new_reference = _clamp(reference - direction * rule['reference_step'], 'reference_dial')
+                corrected['grind'].update(_settings(grinder, new_reference))
+                corrected['grind_setting'] = corrected['grind']['setting']
+            changes.append({'parameter': 'grind', 'before': particle,
+                            'after': new_particle, 'why': explanation[0], 'why_en': explanation[1]})
+            corrected['reasons'].append(_reason('grind', f'feedback_{signal}',
+                                                 explanation[0], explanation[1]))
+    elif signal in ('weak_after_sweet', 'heavy_after_sweet'):
+        direction = -1 if signal == 'weak_after_sweet' else 1
+        new_water = round(_clamp(dose * _clamp(water / dose + direction * rule['water_ratio_step'], 'ratio'), 'water_g'))
+        if new_water != water:
+            corrected = rescale(corrected, dose_g=dose, water_g=new_water)
+            changes.append({'parameter': 'water_g', 'before': water,
+                            'after': new_water, 'why': explanation[0], 'why_en': explanation[1]})
+            corrected['reasons'].append(_reason('water_g', f'feedback_{signal}',
+                                                 explanation[0], explanation[1]))
+    corrected['reasons'].append(_reason('adjustment', f'feedback_{signal}',
+                                         diagnosis[0] + ': меняем не больше двух параметров.',
+                                         diagnosis[1] + ': change at most two parameters.'))
+    return {'recipe': corrected, 'diagnosis': diagnosis[0], 'diagnosis_en': diagnosis[1],
+            'explanation': explanation[0], 'explanation_en': explanation[1],
+            'changes': changes, 'feedback_signal': signal, 'extraction_percent': extraction,
+            'measurement_kind': 'measured' if extraction is not None else 'taste_only'}
