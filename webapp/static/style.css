@@ -502,3 +502,35 @@ select { font: inherit; color: var(--ink); background: var(--card); min-height: 
 @media (min-width: 900px) {
   #screen-mine, #screen-own { grid-column: 1 / -1; width: 100%; max-width: 720px; margin: 0 auto; }
 }
+
+/* Country and grinder: a field with its own list. */
+.combo { position: relative; }
+.combo input[role="combobox"] { padding-right: 52px; }
+.combo-toggle {
+  position: absolute; top: 0; right: 0; display: grid; place-items: center; width: 48px; height: 100%; min-height: 52px;
+  padding: 0; border: 0; background: none; color: var(--muted);
+}
+.combo-toggle::before { content: ""; width: 9px; height: 9px; margin-top: -4px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); }
+.combo input[aria-expanded="true"] + .combo-toggle::before { margin-top: 4px; transform: rotate(-135deg); }
+.combo-list {
+  position: absolute; z-index: 5; top: calc(100% + 4px); left: 0; right: 0; max-height: min(300px, 45vh); margin: 0; padding: 4px;
+  overflow-y: auto; list-style: none; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, .16);
+}
+.combo-list [role="option"] { display: flex; align-items: center; min-height: 48px; padding: 6px 12px; border-radius: 8px; cursor: pointer; }
+.combo-list [role="option"]:hover, .combo-list [role="option"].active { background: var(--accent-soft); color: var(--accent-ink); }
+.combo-list [aria-selected="true"] { font-weight: 700; }
+.combo-list .combo-empty { color: var(--muted); cursor: default; }
+
+/* Fields filled from the photo or the catalog. */
+.builder-recognized {
+  display: inline-flex; align-items: center; min-height: 26px; margin: 0 0 6px; padding: 2px 10px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent-ink); font-size: .85rem; font-weight: 600;
+}
+.builder-recognized::before { content: "✓"; margin-right: 6px; }
+
+/* A roaster recipe offers the calculated alternative second. */
+.recipe-alt { margin: 18px 0 4px; padding: 14px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); }
+.recipe-alt p { margin: 0 0 10px; font-size: .95rem; }
+.recipe-alt .button { width: 100%; }
+.recognition-actions .button.primary { order: -1; }

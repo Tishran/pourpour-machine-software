@@ -148,6 +148,7 @@
         <div id="unreadable-help" hidden><p id="photo-tips"></p></div>
       </div>
       <div class="cta-bar recognition-actions">
+        <button class="button big" id="confirm-builder" type="button"></button>
         <button class="button primary big" id="confirm-recipe" type="button"></button>
         <button class="button" id="not-this-coffee" type="button"></button>
         <button class="button primary big" id="photo-retake" type="button" hidden></button>
@@ -171,7 +172,10 @@
       <div class="cta-bar" id="recipe-cta" hidden>
         <p class="status" id="cta-status" role="status" aria-live="polite"></p>
         <button type="button" class="button primary big" id="machine-start" hidden></button>
-        <button type="button" class="button primary big" id="brew-start"></button>
+        <div class="builder-cta-buttons pair">
+          <button type="button" class="button primary big" id="brew-start"></button>
+          <button type="button" class="button big" id="recipe-rate"></button>
+        </div>
       </div>
     </section>
 

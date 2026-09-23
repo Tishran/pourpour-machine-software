@@ -20,6 +20,115 @@ const smallText = (page, selector) => page.evaluate(selector => [...document.que
   .filter(el => el.offsetParent !== null && parseFloat(getComputedStyle(el).fontSize) < 14)
   .map(el => el.textContent.trim().slice(0, 30)), selector);
 
+// Phase 8: any coffee can be rated. Roaster recipes keep their numbers; the builder is
+// prefilled from the catalog or the photo; country and grinder open a real list.
+async function checkAnyCoffee(browser) {
+  const context = await browser.newContext({viewport: {width: 375, height: 812}});
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  await page.goto(baseURL);
+  await page.evaluate(() => localStorage.clear());
+  // Country and grinder lists.
+  await page.locator('#open-builder').click();
+  await page.waitForSelector('#cb-country');
+  await page.locator('#cb-country').click();
+  assert.equal(await page.locator('#cb-country').getAttribute('aria-expanded'), 'true');
+  const countries = await page.locator('#cb-country-list [role="option"]').allTextContents();
+  assert.equal(countries.length, 40);
+  assert.deepEqual(countries, [...countries].sort((a, b) => a.localeCompare(b, 'ru')), 'alphabetical');
+  await page.locator('#cb-country').fill('кол');
+  assert.deepEqual(await page.locator('#cb-country-list [role="option"]').allTextContents(), ['Колумбия']);
+  await page.keyboard.press('ArrowDown');
+  assert.match(await page.locator('#cb-country').getAttribute('aria-activedescendant'), /cb-country-option-0/);
+  await page.keyboard.press('Enter');
+  assert.equal(await page.locator('#cb-country').inputValue(), 'Колумбия');
+  assert.equal(await page.locator('#cb-country').getAttribute('aria-expanded'), 'false');
+  assert.equal(await page.locator('#screen-construct').getAttribute('data-step'), '0', 'Enter picks, it does not submit');
+  await page.locator('#cb-country').fill('zzz');
+  assert.match(await page.locator('#cb-country-list').textContent(), /Ничего не найдено/);
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#cb-country-list').isVisible(), false);
+  await page.locator('#cb-country').fill('');
+  await page.locator('#builder-next').click();
+  await page.locator('[data-combo-toggle="cb-grinder"]').click();
+  assert.equal(await page.locator('#cb-grinder-list [role="option"]').count(), 6);
+  await page.locator('#cb-grinder-list [role="option"]', {hasText: 'Baratza Encore'}).click();
+  assert.equal(await page.locator('#cb-grinder').inputValue(), 'Baratza Encore');
+  assert.equal(await page.locator('#cb-grinder-list').isVisible(), false);
+  assert.deepEqual(await smallTargets(page), []);
+  await page.locator('#builder-next').click();
+  await page.waitForSelector('#builder-result .builder-recipe');
+  assert.match(await page.locator('#builder-result .builder-tile-wide').textContent(), /Baratza Encore/);
+  await page.locator('#builder-close').click();
+  // A roaster recipe from the catalog: rate it without changing it.
+  await page.locator('#query').fill('Гондурас');
+  await page.locator('#results .coffee').first().waitFor();
+  await page.locator('#results .coffee').first().click();
+  await page.waitForFunction(() => document.body.dataset.screen === 'recipe' && !document.getElementById('recipe-cta').hidden);
+  const roasterName = await page.locator('#recipe-title').textContent();
+  assert.ok(await page.locator('#recipe-rate').isVisible(), 'the roaster recipe can be rated');
+  assert.ok(await page.locator('#recipe-builder').isVisible(), 'the calculated recipe is offered second');
+  await page.locator('#brew-start').click();
+  await page.evaluate(() => window.firstBrew.seek(100000));
+  assert.ok(await page.locator('#brew-rate').isVisible(), 'a finished roaster brew offers the rating');
+  assert.match(await page.locator('#brew-done-text').textContent(), /оцените вкус/);
+  await page.locator('#brew-rate').click();
+  await page.waitForFunction(() => document.getElementById('screen-construct').dataset.step === '3' &&
+    document.body.dataset.screen === 'construct');
+  assert.match(await page.locator('.feedback-rated').textContent(), new RegExp(`${roasterName}[\\s\\S]*Рецепт обжарщика без изменений`));
+  await page.locator('[name="taste"][value="bitter"]').check();
+  await page.locator('#builder-next').click();
+  await page.waitForFunction(() => document.getElementById('screen-construct').dataset.step === '4');
+  assert.match(await page.locator('#builder-correction .builder-origin').textContent(), /на основе рецепта обжарщика, уже не его рецепт/);
+  assert.match(await page.locator('.correction-name').textContent(), new RegExp(`${roasterName} · правка 1`));
+  assert.match(await page.locator('.correction-changes').textContent(), /Температура[\s\S]*Помол\s*\d+(\.\d)? → \d+(\.\d)? · грубее/);
+  assert.equal(await page.locator('.chart-estimate').count(), 1);
+  await page.locator('#builder-secondary').click();
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('firstbrew.myRecipes.v1')));
+  assert.equal(saved[0].recipe.basis, 'roaster');
+  assert.equal(saved[0].recipe.source.name, roasterName);
+  assert.ok(await noHorizontalScroll(page));
+  await screenshot(page, 'roaster-correction-mobile.png');
+  // Back from the rating returns to the roaster recipe, which is unchanged.
+  await page.locator('#builder-back').click();
+  await page.locator('#builder-back').click();
+  await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+  assert.equal(await page.locator('#recipe-title').textContent(), roasterName);
+  // The builder, prefilled from the catalog.
+  await page.locator('#recipe-builder').click();
+  await page.waitForFunction(() => document.body.dataset.screen === 'construct');
+  assert.equal(await page.locator('#cb-country').inputValue(), 'Гондурас');
+  assert.match(await page.locator('#cb-country-recognized').textContent(), /Из каталога обжарщика/);
+  assert.match(await page.locator('#builder-status').textContent(), /Мы заполнили то, что известно/);
+  await page.locator('#cb-country').fill('Кения');
+  await page.locator('#cb-country').press('Tab');
+  assert.equal(await page.locator('#cb-country-recognized').count(), 0, 'a corrected field loses its mark');
+  await screenshot(page, 'builder-prefill-mobile.png');
+  // Photos: a catalog coffee shows the roaster recipe first; another coffee goes to the builder.
+  await page.goto(baseURL);
+  for (const [fixture, found] of [['rwanda-label.png', true], ['colombia-label.png', false]]) {
+    await page.locator('#gallery-input').setInputFiles(path.join(__dirname, 'fixtures', fixture));
+    await page.waitForFunction(() => document.body.dataset.screen === 'confirm', null, {timeout: 60000});
+    const kind = await page.locator('#confirm-recipe').evaluate(button => button.classList.contains('primary'));
+    assert.equal(kind, found, `${fixture}: roaster recipe first only when the coffee is in the catalog`);
+    assert.match(await page.locator('#confirm-builder').textContent(), found ? /Собрать по параметрам/ : /Собрать рецепт для этого кофе/);
+    if (!found) {
+      assert.match(await page.locator('#confirm-recipe').textContent(), /похожий рецепт обжарщика/);
+      await page.locator('#confirm-builder').click();
+      await page.waitForFunction(() => document.body.dataset.screen === 'construct');
+      assert.equal(await page.locator('#cb-country').inputValue(), 'Колумбия');
+      assert.match(await page.locator('#cb-country-recognized').textContent(), /Распознано по фото/);
+      await screenshot(page, 'photo-prefill-mobile.png');
+    } else {
+      await page.locator('#confirm-back').click();
+      await page.waitForFunction(() => document.body.dataset.screen === 'find');
+    }
+  }
+  assert.deepEqual(errors, []);
+  await context.close();
+}
+
 // Phase 7: saved recipes on the device, reuse, text and link export, deletion and import.
 async function checkOwnRecipes(browser) {
   const context = await browser.newContext({viewport: {width: 375, height: 812}});
@@ -465,7 +574,8 @@ async function run() {
     assert.equal(await machinePage.locator('#brew-ready').isVisible(), false);
     await checkFeedback(browser);
     await checkOwnRecipes(browser);
-    console.log('PASS constructor: recipe timer, wait/steep/automatic, taste and refractometer corrections, my recipes and share links, navigation, 375×812 and desktop.');
+    await checkAnyCoffee(browser);
+    console.log('PASS constructor: recipe timer, wait/steep/automatic, taste and refractometer corrections, my recipes and share links, roaster recipes and photo prefill, navigation, 375×812 and desktop.');
   } finally {
     await browser.close();
   }

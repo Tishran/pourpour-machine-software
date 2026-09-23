@@ -12,8 +12,8 @@ from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel, RECOMMENDATION_POLICY, COUNTRIES, PROCESSING, VARIETIES
 from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
 from brew_catalog import load_catalog, unique_object
-from brewing_engine import (BrewingInputError, adjust, build, rescale, restore_recipe, taste_options,
-                            validate_calculated_recipe)
+from brewing_engine import (BrewingInputError, adjust, adopt_roaster_recipe, build, rescale, restore_recipe,
+                            taste_options, validate_calculated_recipe)
 
 ROOT = Path(__file__).parent / 'static'
 STATIC_FILES = {
@@ -78,6 +78,14 @@ class Handler(BaseHTTPRequestHandler):
                                             'dataset_snapshot': fitted.model['dataset_snapshot'],
                                             'coffees': len(fitted.rows), 'ocr': ocr_status(),
                                             'countries': COUNTRIES, 'processing': PROCESSING, 'varieties': VARIETIES})
+            if url.path == '/api/coffee/profile':
+                # What the saved dataset knows about a catalog coffee, to prefill the builder.
+                target = parse_qs(url.query).get('url', [''])[0]
+                if len(target) > 300:
+                    return self.send_json(400, {'error': 'Invalid coffee address.'})
+                row = next((r for r in get_model().rows if r['coffee']['url'] == target), None)
+                profile = row and {key: row['profile'].get(key) for key in ('country', 'processing', 'variety', 'region')}
+                return self.send_json(200, {'profile': profile})
             if url.path == '/api/catalog/options':
                 return self.send_json(200, {'schema_version': 1, **load_catalog(), 'tastes': taste_options()})
             if url.path == '/api/search':
@@ -110,7 +118,8 @@ class Handler(BaseHTTPRequestHandler):
             if url.path.startswith('/api/machine/'):
                 return self.machine_post(url.path.removeprefix('/api/machine/'))
             if url.path not in ('/api/label', '/api/scan', '/api/recommend', '/api/recipes/build',
-                                '/api/recipes/adjust', '/api/recipes/rescale', '/api/recipes/import'):
+                                '/api/recipes/adjust', '/api/recipes/rescale', '/api/recipes/import',
+                                '/api/recipes/adopt'):
                 return self.send_json(404, {'error': 'Page not found.'})
             if not self.same_origin():
                 return self.send_json(403, {'error': 'The request must come from this application.'})
@@ -165,6 +174,10 @@ class Handler(BaseHTTPRequestHandler):
                     raise BrewingInputError('Expected recipe, dose_g and water_g fields.')
                 validate_calculated_recipe(body['recipe'])
                 return self.send_json(200, {'recipe': rescale(body['recipe'], body['dose_g'], body['water_g'])})
+            if url.path == '/api/recipes/adopt':
+                if not isinstance(body, dict) or set(body) != {'recipe', 'source'}:
+                    raise BrewingInputError('Expected recipe and source fields.')
+                return self.send_json(200, {'recipe': adopt_roaster_recipe(body['recipe'], body['source'])})
             if url.path == '/api/recipes/import':
                 if not isinstance(body, dict) or set(body) != {'recipe'}:
                     raise BrewingInputError('Expected an object with a recipe field.')

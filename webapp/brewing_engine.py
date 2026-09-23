@@ -8,6 +8,7 @@ from copy import deepcopy
 from datetime import date
 from itertools import combinations
 import math
+import re
 
 from brew_catalog import load_catalog
 
@@ -33,6 +34,10 @@ COEFFICIENTS = {
              'minimum_seconds': 8, 'final_wait_seconds': 28},
     'immersion_timing': {'fill_max_seconds': 20, 'drain_seconds': 20},
     'machine_water_max_g': 400,
+    # A roaster recipe is corrected relative to the roaster's own grinder setting:
+    # one step is half a division on an EK43 dial, otherwise one division/click.
+    # Lower numbers are assumed to be finer, as on EK43, Comandante and 1Zpresso.
+    'roaster': {'grind_step': {'ek43': 0.5}, 'grind_default_step': 1, 'grind_max_steps': 6},
     'adjustment': {'temperature_step_c': 2, 'particle_step_microns': 30,
                    'reference_step': 0.5, 'water_ratio_step': 0.5,
                    'balanced_extraction_min_percent': 18,
@@ -744,14 +749,77 @@ def extraction_chart(recipe, cup=None):
     return result
 
 
+_ROASTER_ID = 'roaster'
+_ROASTER_WHY = 'Шаг из рецепта обжарщика.'
+_ROASTER_KINDS = {'catalog', 'catalog_match', 'closest_reference', 'suggested_baseline'}
+_ROASTER_URL = re.compile(r'https://theweldercatherine\.ru/catalog/[\w\-./%]{1,250}')
+
+
+def _text(value, name, limit):
+    """Optional short single-line text from a source; never interpreted, only shown."""
+    if value is None or value == '':
+        return None
+    if not isinstance(value, str) or len(value) > limit or any(ord(char) < 32 for char in value):
+        raise BrewingInputError(f'{name}: expected text up to {limit} characters')
+    return value.strip() or None
+
+
+def _roaster_source(source):
+    if not isinstance(source, dict) or set(source) - {'name', 'url', 'kind'}:
+        raise BrewingInputError('source: expected name, url and kind')
+    name = _text(source.get('name'), 'source.name', 180)
+    url = source.get('url')
+    if not name or source.get('kind') not in _ROASTER_KINDS or (
+            url is not None and (not isinstance(url, str) or not _ROASTER_URL.fullmatch(url))):
+        raise BrewingInputError('source: expected the roaster recipe it came from')
+    return {'name': name, 'url': url, 'kind': source['kind']}
+
+
+def _roaster_setting(source_setting, grinder_label, offset):
+    """The roaster's setting moved by whole steps; None when it is not a plain number."""
+    if offset == 0 or source_setting is None:
+        return source_setting
+    if not re.fullmatch(r'\d{1,3}(?:[.,]\d{1,2})?', source_setting):
+        return None
+    rule = COEFFICIENTS['roaster']
+    step = next((size for key, size in rule['grind_step'].items() if key in (grinder_label or '').lower()),
+                rule['grind_default_step'])
+    value = float(source_setting.replace(',', '.')) + offset * step
+    if value <= 0:
+        return None
+    decimals = max(len(source_setting.replace(',', '.').partition('.')[2]), 1 if step % 1 else 0)
+    return f'{value:.{decimals}f}'
+
+
+def _validate_roaster_grind(recipe):
+    grind = recipe['grind']
+    if grind.get('basis') != 'roaster' or recipe.get('grinder_id') is not None:
+        raise BrewingInputError('recipe.grind: expected the roaster setting')
+    label = _text(grind.get('grinder_label'), 'recipe.grind.grinder_label', 120)
+    source_setting = _text(grind.get('source_setting'), 'recipe.grind.source_setting', 40)
+    offset = grind.get('steps_from_source')
+    limit = COEFFICIENTS['roaster']['grind_max_steps']
+    if not isinstance(offset, int) or isinstance(offset, bool) or not -limit <= offset <= limit:
+        raise BrewingInputError('recipe.grind.steps_from_source: expected a small whole number')
+    setting = _roaster_setting(source_setting, label, offset)
+    if grind.get('setting') != setting or recipe.get('grind_setting') != setting:
+        raise BrewingInputError('recipe.grind: inconsistent setting')
+    return label, source_setting, offset
+
+
 def validate_calculated_recipe(recipe):
     """Reject malformed calculated recipes before accepting client-side edits."""
     if (not isinstance(recipe, dict) or recipe.get('origin') != 'calculated' or
             recipe.get('schema_version') != 1 or recipe.get('catalog_schema_version') != 1 or
             recipe.get('engine_version') not in COEFFICIENTS['compatible_versions'] or
             not isinstance(recipe.get('id'), str) or
-            recipe['id'] not in COEFFICIENTS['variants']):
+            recipe['id'] not in (*COEFFICIENTS['variants'], _ROASTER_ID) or
+            (recipe['id'] == _ROASTER_ID) != (recipe.get('basis') == 'roaster')):
         raise BrewingInputError('recipe: expected a current calculated recipe')
+    roaster = recipe['id'] == _ROASTER_ID
+    if roaster:
+        _roaster_source(recipe.get('source'))
+        _text(recipe.get('device_label'), 'recipe.device_label', 120)
     revision = recipe.get('revision', 0)
     if not isinstance(revision, int) or isinstance(revision, bool) or not 0 <= revision <= 1000:
         raise BrewingInputError('recipe.revision: expected a whole number')
@@ -771,19 +839,23 @@ def validate_calculated_recipe(recipe):
     grind = recipe.get('grind')
     if not isinstance(grind, dict):
         raise BrewingInputError('recipe.grind: expected an object')
-    particle = _number(grind.get('target_particle_microns'), 'recipe.grind.target_particle_microns',
-                       *COEFFICIENTS['bounds']['particle_microns'])
-    if grind.get('microns') != particle:
-        raise BrewingInputError('recipe.grind: inconsistent particle target')
-    grinder = _choice(recipe.get('grinder_id'), 'grinders', 'recipe.grinder_id')
-    reference = None
-    if grinder:
-        reference = _number(grind.get('reference_ek43_dial'), 'recipe.grind.reference_ek43_dial',
-                            *COEFFICIENTS['bounds']['reference_dial'])
-        if recipe.get('grind_setting') != grind.get('setting'):
-            raise BrewingInputError('recipe.grind: inconsistent setting')
-    elif grind.get('setting') is not None or recipe.get('grind_setting') is not None:
-        raise BrewingInputError('recipe.grind: setting needs a grinder')
+    particle = reference = grinder = None
+    if roaster:
+        # The roaster's grinder setting has no particle target; corrections move it in steps.
+        _validate_roaster_grind(recipe)
+    else:
+        particle = _number(grind.get('target_particle_microns'), 'recipe.grind.target_particle_microns',
+                           *COEFFICIENTS['bounds']['particle_microns'])
+        if grind.get('microns') != particle:
+            raise BrewingInputError('recipe.grind: inconsistent particle target')
+        grinder = _choice(recipe.get('grinder_id'), 'grinders', 'recipe.grinder_id')
+        if grinder:
+            reference = _number(grind.get('reference_ek43_dial'), 'recipe.grind.reference_ek43_dial',
+                                *COEFFICIENTS['bounds']['reference_dial'])
+            if recipe.get('grind_setting') != grind.get('setting'):
+                raise BrewingInputError('recipe.grind: inconsistent setting')
+        elif grind.get('setting') is not None or recipe.get('grind_setting') is not None:
+            raise BrewingInputError('recipe.grind: setting needs a grinder')
     steps = recipe.get('steps')
     if not isinstance(steps, list):
         raise BrewingInputError('recipe.steps: expected a list')
@@ -799,6 +871,9 @@ def validate_calculated_recipe(recipe):
         for index, step in enumerate(steps):
             if not isinstance(step, dict) or step.get('kind') not in expected:
                 raise BrewingInputError('recipe.steps: invalid step')
+            if roaster and (not _text(step.get('instruction'), 'recipe.steps.instruction', 80) or
+                            step.get('why') != _ROASTER_WHY):
+                raise BrewingInputError('recipe.steps: invalid roaster step')
             start = _number(step.get('start_seconds'), 'recipe.steps.start_seconds', 0, duration)
             stop = _number(step.get('stop_seconds'), 'recipe.steps.stop_seconds', 0, duration)
             amount = _number(step.get('water_g'), 'recipe.steps.water_g', 0, water)
@@ -848,7 +923,20 @@ def adjust(recipe, feedback):
         if new_temp != temperature:
             corrected['temperature_c'] = new_temp
             change('temperature_c', direction, temperature, new_temp, unit='°C')
-        new_particle = round(_clamp(particle - direction * rule['particle_step_microns'], 'particle_microns'))
+        if recipe['id'] == _ROASTER_ID:
+            label, source_setting, offset = _validate_roaster_grind(recipe)
+            limit = COEFFICIENTS['roaster']['grind_max_steps']
+            new_offset = max(-limit, min(limit, offset - direction))
+            if new_offset != offset:
+                setting = _roaster_setting(source_setting, label, new_offset)
+                corrected['grind'].update(steps_from_source=new_offset, setting=setting)
+                corrected['grind_setting'] = setting
+                change('grind', direction, offset, new_offset, unit='steps', basis='roaster',
+                       before_setting=recipe['grind'].get('setting'), after_setting=setting,
+                       source_setting=source_setting, grinder_label=label)
+            new_particle = particle
+        else:
+            new_particle = round(_clamp(particle - direction * rule['particle_step_microns'], 'particle_microns'))
         if new_particle != particle:
             corrected['grind']['target_particle_microns'] = new_particle
             corrected['grind']['microns'] = new_particle
@@ -901,22 +989,30 @@ def restore_recipe(recipe):
     with a link, so the restored recipe says so instead of inventing them.
     """
     dose, water, temperature, particle, reference, grinder = validate_calculated_recipe(recipe)
+    roaster = recipe['id'] == _ROASTER_ID
     known_texts = set(_STEP_TEXTS.values())
     steps = []
     for step in recipe['steps']:
-        if (step.get('instruction'), step.get('why')) not in known_texts:
+        if not roaster and (step.get('instruction'), step.get('why')) not in known_texts:
             raise BrewingInputError('recipe.steps: unknown step text')
         clean = {key: step[key] for key in ('kind', 'start_seconds', 'stop_seconds', 'pour_g',
                                               'water_g', 'total_water_g', 'instruction', 'why')}
         if clean['kind'] == 'pour':
             clean['pour_rate_g_s'] = round(clean['pour_g'] / (clean['stop_seconds'] - clean['start_seconds']), 2)
         steps.append(clean)
-    grind = _settings(grinder, reference)
-    grind.update({'target_particle_microns': particle, 'microns': particle})
+    if roaster:
+        label, source_setting, offset = _validate_roaster_grind(recipe)
+        grind = {'basis': 'roaster', 'grinder_label': label, 'source_setting': source_setting,
+                 'setting': _roaster_setting(source_setting, label, offset), 'steps_from_source': offset,
+                 'target_particle_microns': None, 'microns': None, 'accuracy': 'approximate'}
+    else:
+        grind = _settings(grinder, reference)
+        grind.update({'target_particle_microns': particle, 'microns': particle})
     edited = recipe.get('edited', False)
     if not isinstance(edited, bool):
         raise BrewingInputError('recipe.edited: expected true or false')
-    name, summary = _VARIANT_TEXTS[recipe['id']]
+    source = _roaster_source(recipe['source']) if roaster else None
+    name, summary = (source['name'], 'Рецепт обжарщика в формате для оценки и правки.') if roaster else _VARIANT_TEXTS[recipe['id']]
     result = {
         'schema_version': 1, 'catalog_schema_version': 1, 'origin': 'calculated',
         'engine_version': recipe['engine_version'], 'id': recipe['id'], 'name': name, 'summary': summary,
@@ -931,6 +1027,9 @@ def restore_recipe(recipe):
                             'Рецепт получен по ссылке: объяснения исходных поправок не передаются.',
                             'Recipe opened from a link: the original explanations are not included.')],
     }
+    if roaster:
+        result.update(basis='roaster', source=source,
+                      device_label=_text(recipe.get('device_label'), 'recipe.device_label', 120))
     result['machine_compatible'] = _machine_compatible(result)
     if recipe['method'] == 'automatic_drip':
         result['automatic_mode'] = 'standard'
@@ -938,4 +1037,64 @@ def restore_recipe(recipe):
         result['revision'] = recipe['revision']
     if edited:
         result['edited'] = True
+    return result
+
+
+def adopt_roaster_recipe(recipe, source):
+    """Put a roaster's pour-over recipe into the engine format without changing it.
+
+    Only this copy can be rated and corrected; the roaster's own recipe stays
+    as published. Incomplete or contradictory source data is refused, never filled.
+    """
+    if not isinstance(recipe, dict):
+        raise BrewingInputError('recipe: expected an object')
+    source = _roaster_source(source)
+    bounds = COEFFICIENTS['bounds']
+    dose = _number(recipe.get('coffee_g'), 'recipe.coffee_g', *bounds['dose_g'])
+    water = _number(recipe.get('water_g'), 'recipe.water_g', *bounds['water_g'])
+    temperature = _number(recipe.get('temperature_c'), 'recipe.temperature_c', *bounds['temperature_c'])
+    duration = _number(recipe.get('duration_seconds'), 'recipe.duration_seconds', *bounds['duration_seconds'])
+    raw_steps = recipe.get('steps')
+    if not isinstance(raw_steps, list) or not 1 <= len(raw_steps) <= 12:
+        raise BrewingInputError('recipe.steps: expected 1–12 pours')
+    steps, cumulative, previous = [], 0, 0
+    for step in raw_steps:
+        if not isinstance(step, dict):
+            raise BrewingInputError('recipe.steps: each step must be an object')
+        amount = _number(step.get('water_g'), 'recipe.steps.water_g', 0.1, water)
+        start = _number(step.get('start_seconds'), 'recipe.steps.start_seconds', 0, duration)
+        stop = _number(step.get('stop_seconds'), 'recipe.steps.stop_seconds', 0, duration)
+        if start < previous or stop <= start:
+            raise BrewingInputError('recipe.steps: pour times overlap or are missing')
+        cumulative += amount
+        steps.append({'kind': 'pour', 'start_seconds': start, 'stop_seconds': stop,
+                      'pour_g': amount, 'water_g': amount, 'total_water_g': cumulative,
+                      'pour_rate_g_s': round(amount / (stop - start), 2),
+                      'instruction': _text(step.get('instruction'), 'recipe.steps.instruction', 80) or 'Вливание',
+                      'why': _ROASTER_WHY})
+        previous = stop
+    if abs(cumulative - water) > 0.01:
+        raise BrewingInputError('recipe: the pours do not add up to the total water')
+    water = cumulative
+    device_label = _text(recipe.get('device'), 'recipe.device', 120)
+    device = next((row for row in _CATALOG['devices'] if device_label and row['method'] == 'percolation' and
+                   device_label.lower() in (row['name_ru'].lower(), row['name_en'].lower())), None)
+    label = _text(recipe.get('grinder'), 'recipe.grinder', 120)
+    setting = _text(recipe.get('grind_setting'), 'recipe.grind_setting', 40)
+    result = {
+        'schema_version': 1, 'catalog_schema_version': 1, 'origin': 'calculated', 'basis': 'roaster',
+        'engine_version': COEFFICIENTS['version'], 'id': _ROASTER_ID, 'name': source['name'],
+        'summary': 'Рецепт обжарщика в формате для оценки и правки.', 'source': source,
+        'device_id': device['id'] if device else 'custom_dripper', 'device_label': device_label,
+        'grinder_id': None, 'method': 'percolation', 'dose_g': dose, 'coffee_g': dose, 'water_g': water,
+        'ratio': _ratio(dose, water), 'temperature_c': temperature,
+        'grind': {'basis': 'roaster', 'grinder_label': label, 'source_setting': setting, 'setting': setting,
+                  'steps_from_source': 0, 'target_particle_microns': None, 'microns': None,
+                  'accuracy': 'approximate'},
+        'grind_setting': setting, 'total_seconds': duration, 'duration_seconds': duration, 'steps': steps,
+        'context_chips': [], 'assumptions': ['Помол обжарщика подобран под его кофемолку; на своей подстройте по вкусу.'],
+        'reasons': [_reason('recipe', 'roaster_source', 'Параметры взяты из рецепта обжарщика без изменений.',
+                            'Parameters are taken from the roaster recipe unchanged.')],
+    }
+    result['machine_compatible'] = _machine_compatible(result)
     return result

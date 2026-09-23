@@ -69,6 +69,10 @@ class StaticFileTests(unittest.TestCase):
         for element in ('open-mine', 'screen-mine', 'mine-list', 'screen-own', 'own-body',
                         'own-primary', 'own-secondary', 'own-status'):
             self.assertIn(f'id="{element}"', html)
+        # Any coffee: rating a roaster recipe and building from a photo or the catalog.
+        for element in ('recipe-rate', 'confirm-builder'):
+            self.assertIn(f'id="{element}"', html)
+        self.assertNotIn('<datalist', (ROOT / 'app.js').read_text(encoding='utf-8'), 'country and grinder use a real list')
         self.assertIn('id="recents"', html)
         self.assertNotIn('id="recents-hint"', html)
         self.assertIn('id="scan-preview"', html)

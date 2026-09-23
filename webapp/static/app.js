@@ -160,6 +160,7 @@ const STRINGS = {
       'Весь кофе настаивается одновременно.': 'All the coffee steeps at the same time.',
       'Контакт воды с кофе раскрывает вкус.': 'Contact with water extracts flavor.',
       'Завершаем контакт воды с кофе.': 'End contact between coffee and water.',
+      'Шаг из рецепта обжарщика.': 'Step from the roaster recipe.',
     },
     builder_close: 'Close the recipe builder',
     builder_step_result: 'Result',
@@ -244,6 +245,25 @@ const STRINGS = {
     chart_note_outside: 'The measurement is outside the chart, so the point sits on its edge.',
     chart_desc_measured: (ey, tds) => `Your cup: extraction ${ey} %, strength ${tds} %.`,
     chart_desc_estimate: (low, high) => `Estimated from taste: extraction about ${low}–${high} %.`,
+    combo_show: 'Show the list',
+    combo_empty: 'Nothing found',
+    rate_incomplete: 'The roaster recipe is missing pour times or amounts, so it cannot be rated and corrected. Build a recipe from parameters instead.',
+    recipe_builder_title: 'Want a recipe for your own brewer and grinder?',
+    recipe_builder_text: 'Build one from parameters: what we know about this coffee is already filled in.',
+    recipe_builder: 'Build from parameters',
+    confirm_builder: 'Build a recipe for this coffee',
+    confirm_reference: 'Show a similar roaster recipe',
+    builder_manual: 'Enter the details by hand',
+    prefill_photo: 'Recognized from the photo',
+    prefill_catalog: 'From the roaster catalog',
+    prefill_note: 'We filled in what we know about this coffee. Check it and add the rest: roast date, roast level and your equipment.',
+    origin_roaster: 'Roaster recipe, unchanged',
+    origin_roaster_corrected: 'Corrected from your rating · based on the roaster recipe, no longer the roaster’s',
+    builder_summary_roaster: 'Based on the roaster recipe.',
+    grind_roaster_source: 'The roaster’s setting for their grinder. On yours, adjust by taste.',
+    grind_roaster_moved: (n, finer) => `${n} step${n === 1 ? '' : 's'} ${finer ? 'finer' : 'coarser'} than the roaster setting`,
+    change_roaster_own: 'on your grinder, move one step the same way',
+    own_text_origin_roaster: (name) => `Corrected in First Brew from the roaster recipe “${name}”. It is no longer the roaster’s recipe.`,
     mine_open: (n) => `My recipes · ${n}`,
     mine_title: 'My recipes',
     mine_intro: 'Stored only on this device. No account needed.',
@@ -658,6 +678,25 @@ const STRINGS = {
     chart_note_outside: 'Измерение за пределами диаграммы, поэтому точка стоит на её краю.',
     chart_desc_measured: (ey, tds) => `Ваша чашка: экстракция ${ey} %, крепость ${tds} %.`,
     chart_desc_estimate: (low, high) => `Оценка по вкусу: экстракция примерно ${low}–${high} %.`,
+    combo_show: 'Показать список',
+    combo_empty: 'Ничего не найдено',
+    rate_incomplete: 'В рецепте обжарщика не хватает времени или объёма вливаний, поэтому его нельзя оценить и исправить. Соберите рецепт по параметрам.',
+    recipe_builder_title: 'Нужен рецепт под вашу воронку и кофемолку?',
+    recipe_builder_text: 'Соберите по параметрам — то, что известно об этом кофе, уже заполнено.',
+    recipe_builder: 'Собрать по параметрам',
+    confirm_builder: 'Собрать рецепт для этого кофе',
+    confirm_reference: 'Показать похожий рецепт обжарщика',
+    builder_manual: 'Заполнить параметры вручную',
+    prefill_photo: 'Распознано по фото',
+    prefill_catalog: 'Из каталога обжарщика',
+    prefill_note: 'Мы заполнили то, что известно об этом кофе. Проверьте и добавьте остальное: дату и степень обжарки, своё оборудование.',
+    origin_roaster: 'Рецепт обжарщика без изменений',
+    origin_roaster_corrected: 'Исправлено по вашей оценке · на основе рецепта обжарщика, уже не его рецепт',
+    builder_summary_roaster: 'На основе рецепта обжарщика.',
+    grind_roaster_source: 'Настройка обжарщика для его кофемолки. На своей подстройте по вкусу.',
+    grind_roaster_moved: (n, finer) => `${finer ? 'Мельче' : 'Грубее'} настройки обжарщика на ${n} ${n === 1 ? 'шаг' : n < 5 ? 'шага' : 'шагов'}`,
+    change_roaster_own: 'на своей кофемолке — на шаг в ту же сторону',
+    own_text_origin_roaster: (name) => `Исправлено в First Brew на основе рецепта обжарщика «${name}» — это уже не рецепт обжарщика.`,
     mine_open: (n) => `Мои рецепты · ${n}`,
     mine_title: 'Мои рецепты',
     mine_intro: 'Хранятся только на этом устройстве, без регистрации.',
@@ -1181,12 +1220,20 @@ function renderRecipe(index, editedRecipe = null) {
     <h2 class="section">${t('pours')}</h2>
     ${steps ? `<ol class="pours">${steps}</ol>` : `<p class="status">${t('no_steps')}</p>`}
     ${recipe.notes ? `<p class="note">${escape(sourceNote(recipe.notes))}</p>` : ''}
+    <div class="recipe-alt"><p><strong>${t('recipe_builder_title')}</strong> ${t('recipe_builder_text')}</p>
+      <button type="button" class="button" id="recipe-builder">${t('recipe_builder')}</button></div>
     <p class="source"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${suggested ? t('reference_page') : t('coffee_page')} ↗</a></p></div>`;
   document.querySelectorAll('[data-variant]').forEach(button => button.addEventListener('click', () => {
     renderRecipe(Number(button.dataset.variant));
     $('recipe-title').focus({preventScroll: true});
   }));
   $('edit-recipe').addEventListener('click', () => openRecipeEditor(index));
+  $('recipe-builder').addEventListener('click', () => {
+    // A reference recipe belongs to another coffee: only the confirmed label describes this one.
+    const sameCoffee = ['catalog_match', undefined, null].includes(currentData.recommendation_kind);
+    openPrefilledBuilder({label: currentData.confirmed_label || null, url: sameCoffee ? currentData.product?.url : null,
+      name: sameCoffee ? currentData.product?.name || '' : ''});
+  });
   renderRecipeRecognition();
   $('recipe-cta').hidden = false;
   $('brew-start').disabled = !recipe.duration_seconds;
@@ -1444,6 +1491,7 @@ function renderConfirmation() {
     ['photo-retake', 'retake'], ['type-name', 'type_name'], ['general-recipe', 'general_recipe']]) $(id).textContent = t(key);
   $('confirm-recipe').hidden = unreadable;
   $('confirm-recipe').disabled = false;
+  updateConfirmActions();
   $('not-this-coffee').hidden = unreadable || isExactRecognition();
   ['photo-retake', 'type-name', 'general-recipe'].forEach(id => { $(id).hidden = !unreadable; $(id).disabled = false; });
   setStatus('confirm-status', unreadable ? '' : t(recognition.ocr.needs_review ? 'recognition_review' : 'recognition_check'));
@@ -1477,6 +1525,7 @@ function renderConfirmation() {
     updateChipSummary('name-chip', 'coffee_name', t('no_catalog_name'));
     $('confirm-recipe').disabled = false;
     $('not-this-coffee').hidden = false;
+    updateConfirmActions();
   };
   $('confirm-country').addEventListener('change', event => {
     changed(); draft.country = event.target.value || null;
@@ -1498,6 +1547,16 @@ function renderConfirmation() {
     if (!query) { renderNameCandidates(recognition.recommendation.candidates || []); return; }
     nameTimer = setTimeout(() => searchConfirmationNames(query), 300);
   });
+}
+// Found in the catalog: the roaster recipe comes first. Otherwise: build from what was read.
+function updateConfirmActions() {
+  const unreadable = isUnreadable();
+  const found = !unreadable && recognition?.recommendation.kind === 'catalog_match' && !draftChanged;
+  $('confirm-builder').textContent = t(unreadable ? 'builder_manual' : found ? 'recipe_builder' : 'confirm_builder');
+  $('confirm-recipe').textContent = t(found ? 'confirm_recipe' : 'confirm_reference');
+  $('confirm-builder').classList.toggle('primary', !found && !unreadable);
+  $('confirm-recipe').classList.toggle('primary', found);
+  $('confirm-builder').disabled = false;
 }
 function updateChipSummary(id, label, value) {
   const summary = $(id).querySelector('summary');
@@ -1589,6 +1648,13 @@ function searchInstead(useText) {
 function wireRecognition() {
   $('confirm-back').addEventListener('click', () => back('find'));
   $('confirm-recipe').addEventListener('click', () => confirmRecipe());
+  $('confirm-builder').addEventListener('click', () => {
+    const unreadable = isUnreadable();
+    const found = !unreadable && recognition.recommendation.kind === 'catalog_match' && !draftChanged;
+    $('confirm-builder').disabled = true;
+    openPrefilledBuilder({label: unreadable ? null : structuredClone(draft),
+      url: found ? recognition.recommendation.recipe_data?.product?.url : null, name: found ? draftName : ''});
+  });
   $('not-this-coffee').addEventListener('click', () => searchInstead(true));
   $('type-name').addEventListener('click', () => searchInstead(false));
   $('general-recipe').addEventListener('click', () => confirmRecipe({general: true}));
@@ -1655,7 +1721,17 @@ async function handlePhoto(file) {
 const builderOptionName = item => item?.[LANG === 'ru' ? 'name_ru' : 'name_en'] || '';
 const builderOption = (item, selected) => `<option value="${escape(item.id)}"${item.id === selected ? ' selected' : ''}>${escape(builderOptionName(item))}</option>`;
 const builderHelp = (label, key) => `<details class="builder-help"><summary aria-label="${escape(t('builder_help', label))}">?</summary><p>${escape(t(key))}</p></details>`;
-const builderField = (id, label, control, help) => `<div class="builder-field"><div class="builder-field-head"><label for="${id}">${escape(label)}</label>${builderHelp(label, help)}</div>${control}</div>`;
+const builderField = (id, label, control, help) => {
+  const origin = builder.prefill?.fields.get(id);
+  const badge = origin ? `<span class="builder-recognized" id="${id}-recognized">${t(origin === 'photo' ? 'prefill_photo' : 'prefill_catalog')}</span>` : '';
+  return `<div class="builder-field"><div class="builder-field-head"><label for="${id}">${escape(label)}</label>${builderHelp(label, help)}</div>${badge}${control}</div>`;
+};
+// A text field with its own list: opens on focus or tap, filters while typing (RU and EN names).
+const builderCombo = (id, value) => `<div class="combo">
+  <input id="${id}" type="text" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="${id}-list" autocomplete="off" autocapitalize="off" spellcheck="false" value="${escape(value)}">
+  <button type="button" class="combo-toggle" data-combo-toggle="${id}" tabindex="-1" aria-label="${escape(t('combo_show'))}"></button>
+  <ul class="combo-list" id="${id}-list" role="listbox" hidden></ul>
+</div>`;
 const builderSelect = (id, options, selected = '') => `<select id="${id}">${options}</select>`;
 const builderInput = (id, type, value = '', extra = '') => `<input id="${id}" type="${type}" value="${escape(value)}" ${extra}>`;
 const builderUnknownOption = () => `<option value="">${escape(t('builder_unknown'))}</option>`;
@@ -1683,8 +1759,6 @@ function renderBuilderFields() {
   if (!builder.options) return;
   const d = builder.draft;
   const items = builder.options;
-  const countryValues = items.countries.map(item => `<option value="${escape(builderOptionName(item))}"></option>`).join('');
-  const grinderValues = items.grinders.map(item => `<option value="${escape(builderOptionName(item))}"></option>`).join('');
   const processingOptions = builderUnknownOption() + items.processing.map(item => builderOption(item, d.processing)).join('');
   const materialOptions = builderUnknownOption() + items.materials.map(item => builderOption(item, d.material)).join('');
   const filterOptions = builderUnknownOption() + items.filters.map(item => builderOption(item, d.filter)).join('');
@@ -1704,7 +1778,7 @@ function renderBuilderFields() {
   const roastOptions = ['light', 'medium', 'dark'].map(value => `<label class="builder-roast-choice"><input type="radio" name="cb-roast" value="${value}"${(d.roast || 'light') === value ? ' checked' : ''}><span>${escape(t(`builder_${value}`))}</span></label>`).join('');
   const pro = builder.mode === 'pro';
   $('builder-fields').innerHTML = `<div class="builder-field-group" id="builder-coffee-fields">
-    ${builderField('cb-country', t('builder_country'), `${builderInput('cb-country', 'search', d.country || '', 'list="builder-countries" autocomplete="off"')}<datalist id="builder-countries">${countryValues}</datalist>`, 'builder_help_country')}
+    ${builderField('cb-country', t('builder_country'), builderCombo('cb-country', d.country || ''), 'builder_help_country')}
     ${builderField('cb-processing', t('builder_processing'), builderSelect('cb-processing', processingOptions), 'builder_help_processing')}
     ${builderField('cb-age', t('builder_roast_age'), builderSelect('cb-age', ageOptions), 'builder_help_roast_age')}
     <div id="builder-date-field"${d.age === 'date' ? '' : ' hidden'}>${builderField('cb-date', t('builder_roast_date'), builderInput('cb-date', 'date', d.date || ''), 'builder_help_roast_date')}</div>
@@ -1720,7 +1794,7 @@ function renderBuilderFields() {
     </div>` : ''}
   </div><div class="builder-field-group" id="builder-tool-fields">
     ${builderField('cb-device', t('builder_device'), builderSelect('cb-device', deviceGroups, d.device || 'v60'), 'builder_help_device')}
-    ${builderField('cb-grinder', t('builder_grinder'), `${builderInput('cb-grinder', 'search', d.grinder || '', 'list="builder-grinders" autocomplete="off"')}<datalist id="builder-grinders">${grinderValues}</datalist>`, 'builder_help_grinder')}
+    ${builderField('cb-grinder', t('builder_grinder'), builderCombo('cb-grinder', d.grinder || ''), 'builder_help_grinder')}
     ${builderField('cb-material', t('builder_material'), builderSelect('cb-material', materialOptions), 'builder_help_material')}
     ${pro ? builderField('cb-filter', t('builder_filter'), builderSelect('cb-filter', filterOptions), 'builder_help_filter') : ''}
     <div id="builder-custom-fields"${(d.device || 'v60') === 'custom_dripper' ? '' : ' hidden'}>
@@ -1792,6 +1866,180 @@ function builderStatus(text, error = false) {
   setStatus(inForm ? 'builder-cta-status' : 'builder-status', '');
 }
 
+const COMBO_SOURCES = {'cb-country': 'countries', 'cb-grinder': 'grinders'};
+function comboOptions(input) {
+  const query = input.value.trim().toLowerCase();
+  const items = builder.options[COMBO_SOURCES[input.id]].map(item => ({label: builderOptionName(item),
+    keys: [item.id, item.name_ru, item.name_en].map(value => value.toLowerCase())}))
+    .sort((a, b) => a.label.localeCompare(b.label, LANG));
+  // An exact choice shows the whole list again, so another value is one tap away.
+  if (!query || items.some(item => item.keys.includes(query))) return items;
+  return items.filter(item => item.keys.some(key => key.includes(query)));
+}
+function openCombo(input) {
+  const list = $(`${input.id}-list`);
+  const items = comboOptions(input);
+  list.innerHTML = items.length
+    ? items.map((item, index) => `<li role="option" id="${input.id}-option-${index}" data-value="${escape(item.label)}" aria-selected="${item.label === input.value}">${escape(item.label)}</li>`).join('')
+    : `<li class="combo-empty" role="option" aria-disabled="true">${escape(t('combo_empty'))}</li>`;
+  list.hidden = false;
+  input.setAttribute('aria-expanded', 'true');
+  input.removeAttribute('aria-activedescendant');
+}
+function closeCombo(input) {
+  const list = $(`${input.id}-list`);
+  if (!list || list.hidden) return;
+  list.hidden = true;
+  input.setAttribute('aria-expanded', 'false');
+  input.removeAttribute('aria-activedescendant');
+}
+function moveCombo(input, delta) {
+  if ($(`${input.id}-list`).hidden) openCombo(input);
+  const options = [...$(`${input.id}-list`).querySelectorAll('[role="option"]:not([aria-disabled])')];
+  if (!options.length) return;
+  const current = options.findIndex(option => option.id === input.getAttribute('aria-activedescendant'));
+  const next = options[Math.max(0, Math.min(options.length - 1, current + delta))];
+  options.forEach(option => option.classList.toggle('active', option === next));
+  input.setAttribute('aria-activedescendant', next.id);
+  next.scrollIntoView({block: 'nearest'});
+}
+function pickCombo(input, value) {
+  input.value = value;
+  closeCombo(input);
+  input.dispatchEvent(new Event('change', {bubbles: true}));
+}
+function wireCombos() {
+  const fields = $('builder-fields');
+  const comboInput = target => target?.matches?.('[role="combobox"]') ? target : null;
+  fields.addEventListener('focusin', event => { const input = comboInput(event.target); if (input) openCombo(input); });
+  fields.addEventListener('focusout', event => {
+    const input = comboInput(event.target);
+    if (input) setTimeout(() => { if (document.activeElement !== input) closeCombo(input); }, 120);
+  });
+  fields.addEventListener('input', event => { const input = comboInput(event.target); if (input) openCombo(input); });
+  fields.addEventListener('keydown', event => {
+    const input = comboInput(event.target);
+    if (!input) return;
+    const list = $(`${input.id}-list`);
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault();
+      moveCombo(input, event.key === 'ArrowDown' ? 1 : -1);
+    } else if (event.key === 'Enter' && !list.hidden) {
+      event.preventDefault();
+      const active = $(input.getAttribute('aria-activedescendant') || '');
+      if (active) pickCombo(input, active.dataset.value); else closeCombo(input);
+    } else if (event.key === 'Escape' && !list.hidden) {
+      event.preventDefault();
+      closeCombo(input);
+    } else if (event.key === 'Tab') closeCombo(input);
+  });
+  // Keep focus in the field while an option or the arrow is pressed.
+  fields.addEventListener('mousedown', event => {
+    if (event.target.closest('.combo-list, .combo-toggle')) event.preventDefault();
+  });
+  fields.addEventListener('click', event => {
+    const option = event.target.closest('.combo-list [role="option"]:not([aria-disabled])');
+    if (option) { pickCombo($(option.closest('.combo-list').id.replace(/-list$/, '')), option.dataset.value); return; }
+    const toggle = event.target.closest('[data-combo-toggle]');
+    if (!toggle) return;
+    const input = $(toggle.dataset.comboToggle);
+    if ($(`${input.id}-list`).hidden) { input.focus({preventScroll: true}); openCombo(input); } else closeCombo(input);
+  });
+}
+
+// Prefill the builder from what is known about a coffee: the confirmed photo label first,
+// then the saved catalog profile. Anything unknown stays empty for the person to fill in.
+const PROCESSING_FROM_LABEL = [[['anaerobic', 'washed'], 'washed_anaerobic'], [['anaerobic', 'natural'], 'natural_anaerobic'],
+  [['washed'], 'washed'], [['natural'], 'natural'], [['honey'], 'honey']];
+async function openPrefilledBuilder({label = null, url = null, name = ''} = {}) {
+  if (!await ensureBuilderOptions()) { setStatus(currentScreen() === 'confirm' ? 'confirm-status' : 'cta-status', t('builder_error'), true); return; }
+  let profile = null;
+  if (url) {
+    try { profile = (await api(`/api/coffee/profile?url=${encodeURIComponent(url)}`)).profile; } catch (error) { profile = null; }
+  }
+  const known = value => Array.isArray(value) ? value.length > 0 : typeof value === 'string' && value.trim() !== '';
+  const pick = (photo, catalog) => known(photo) ? ['photo', photo] : known(catalog) ? ['catalog', catalog] : [null, null];
+  const lowerName = name.toLowerCase();
+  const nameCountry = builder.options.countries.filter(item => lowerName.startsWith(item.name_ru.toLowerCase()))
+    .sort((a, b) => b.name_ru.length - a.name_ru.length)[0]?.id;
+  const draft = {}, fields = new Map();
+  const [countryFrom, country] = pick(label?.country, profile?.country || nameCountry);
+  const countryItem = builder.options.countries.find(item => item.id === country);
+  if (countryItem) { draft.country = builderOptionName(countryItem); fields.set('cb-country', countryFrom); }
+  const [processingFrom, processing] = pick(label?.processing, profile?.processing);
+  const processingId = processing && PROCESSING_FROM_LABEL.find(([keys]) => keys.every(key => processing.includes(key)))?.[1];
+  if (processingId) { draft.processing = processingId; fields.set('cb-processing', processingFrom); }
+  const [varietyFrom, variety] = pick(label?.variety, profile?.variety);
+  if (variety) { draft.variety = variety.map(key => featureName('varieties', key)).join(', ').slice(0, 120); fields.set('cb-variety', varietyFrom); }
+  const [regionFrom, region] = pick(label?.region, profile?.region);
+  if (region) { draft.region = region.trim().slice(0, 120); fields.set('cb-region', regionFrom); }
+  if (label?.espresso_or_dark) {
+    Object.assign(draft, {roast: 'dark', roast_pro: '6'});
+    fields.set('cb-roast', 'photo').set('cb-roast-pro', 'photo');
+  }
+  Object.assign(builder, {draft, prefill: {fields}, variants: [], selected: 0, correction: null, rated: null,
+    step: 0, ratingOrigin: 'builder'});
+  renderBuilderFields();
+  renderBuilderResult();
+  renderBuilderCorrection();
+  show('construct');
+  setStatus('builder-status', fields.size ? t('prefill_note') : '');
+}
+
+// Any roaster recipe can be rated: the engine takes an unchanged copy, the correction is a new recipe.
+const ROASTER_PAGE = /^https:\/\/theweldercatherine\.ru\/catalog\/[\w\-./%]{1,250}$/;
+function roasterSource() {
+  const kind = currentData.recommendation_kind || 'catalog';
+  const reference = ['closest_reference', 'suggested_baseline'].includes(kind);
+  const url = currentData.product?.url || '';
+  return {name: ((reference && currentData.reference_name) || currentData.product.name).slice(0, 180),
+    url: ROASTER_PAGE.test(url) ? url : null, kind};
+}
+function roasterChips() {
+  const label = currentData.confirmed_label, chips = [];
+  if (label?.country) chips.push(featureName('countries', label.country));
+  (label?.processing || []).forEach(key => chips.push(featureName('processing', key)));
+  if (!label && currentData.product?.region?.trim()) chips.push(currentData.product.region.trim());
+  if (currentRecipe?.device) chips.push(currentRecipe.device);
+  return chips.slice(0, 5);
+}
+async function rateRoasterRecipe() {
+  const recipe = currentRecipe, onBrew = currentScreen() === 'brew';
+  if (!recipe || !currentData) return;
+  const fail = message => onBrew ? setText('brew-done-text', message) : setStatus('cta-status', message, true);
+  if (!await ensureBuilderOptions()) { fail(t('builder_error')); return; }
+  let reply;
+  try {
+    const payload = {device: recipe.device, grinder: recipe.grinder, grind_setting: recipe.grind_setting,
+      coffee_g: recipe.coffee_g, water_g: recipe.water_g, temperature_c: recipe.temperature_c,
+      duration_seconds: recipe.duration_seconds, steps: recipe.steps.map(step => ({instruction: step.instruction,
+        water_g: step.water_g, start_seconds: step.start_seconds, stop_seconds: step.stop_seconds}))};
+    reply = await post('/api/recipes/adopt', JSON.stringify({recipe: payload, source: roasterSource()}), 'application/json');
+  } catch (error) { fail(t('rate_incomplete')); return; }
+  setStatus('cta-status', '');
+  openBuilderRating(reply.recipe, {fresh: true, origin: 'recipe', chips: roasterChips()});
+  if (onBrew) {
+    history.replaceState({screen: 'construct'}, '', '#construct');
+    show('construct', {push: false});
+  } else show('construct');
+}
+
+// Where a calculated recipe comes from, in one line.
+function calculatedOrigin(recipe) {
+  if (recipe.basis !== 'roaster') return t('builder_calculated');
+  return t(recipe.revision ? 'origin_roaster_corrected' : 'origin_roaster');
+}
+function grindInfo(recipe) {
+  const grind = recipe.grind || {};
+  if (recipe.basis === 'roaster') {
+    const offset = grind.steps_from_source || 0;
+    return {value: grind.setting ?? grind.source_setting ?? null, scale: grind.grinder_label || '',
+      note: offset ? t('grind_roaster_moved', Math.abs(offset), offset < 0) : t('grind_roaster_source')};
+  }
+  return {value: grind.setting ?? null, scale: (LANG === 'ru' ? grind.scale_label : grind.scale_label_en) || '',
+    note: `${t('builder_grind_nominal')}: ${num(grind.target_particle_microns)} µm`};
+}
+
 function localToday() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -1837,6 +2085,7 @@ function builderParams() {
 async function beginBuilder() {
   builder.step = 0;
   builder.ratingOrigin = 'builder';
+  builder.prefill = null;
   show('construct');
   setStatus('builder-status', builder.options ? '' : t('builder_options_loading'));
   if (!builder.options) {
@@ -1907,20 +2156,20 @@ function toggleBuilderFavorite() {
 function calculatedTiles(recipe, attribute, editableTemperature = false) {
   const control = (field, delta, label, disabled) => `<button type="button" ${attribute}="${field}:${delta}" aria-label="${escape(label)}"${disabled ? ' disabled' : ''}>${delta < 0 ? '−' : '+'}</button>`;
   const quantity = (field, step, label, low, high) => !attribute ? '' : `<div class="builder-quantity">${control(field, -step, `${t('builder_decrease')} ${label}`, recipe[field] <= low)}${control(field, step, `${t('builder_increase')} ${label}`, recipe[field] >= high)}</div>`;
-  const grind = recipe.grind.setting == null ? t('builder_grind_unmapped')
-    : `${escape(recipe.grind.setting)} · ${escape(LANG === 'ru' ? recipe.grind.scale_label : recipe.grind.scale_label_en)}`;
+  const info = grindInfo(recipe);
+  const grind = info.value == null ? t('builder_grind_unmapped') : [info.value, info.scale].filter(Boolean).map(escape).join(' · ');
   return `<div class="builder-tiles">
       <div class="builder-tile"><span>${t('coffee')}</span><strong>${grams(recipe.dose_g)}</strong>${quantity('dose_g', 1, t('coffee'), 5, 40)}</div>
       <div class="builder-tile"><span>${t('water')}</span><strong>${grams(recipe.water_g)}</strong>${quantity('water_g', 10, t('water'), 80, 600)}</div>
       <div class="builder-tile"><span>${t('temperature')}</span><strong>${celsius(recipe.temperature_c)}</strong>${editableTemperature ? quantity('temperature_c', 1, t('temperature'), 80, 99) : ''}</div>
       <div class="builder-tile"><span>${t('ratio')}</span><strong>${escape(num(recipe.ratio))}</strong></div>
-      <div class="builder-tile builder-tile-wide"><span>${t('grind')}</span><strong>${grind}</strong><small>${t('builder_grind_nominal')}: ${num(recipe.grind.target_particle_microns)} µm</small></div>
+      <div class="builder-tile builder-tile-wide"><span>${t('grind')}</span><strong>${grind}</strong><small>${escape(info.note)}</small></div>
     </div>`;
 }
 
 function calculatedSteps(recipe) {
   const rows = recipe.steps.map(step => {
-    const action = LANG === 'ru' ? step.instruction : STRINGS.en.builder_actions[step.instruction] || step.instruction;
+    const action = stepName(step.instruction);
     const why = LANG === 'ru' ? step.why : STRINGS.en.builder_whys[step.why] || step.why;
     return `<tr><td>${clock(step.start_seconds)}</td><td>${step.total_water_g == null ? '—' : grams(step.total_water_g)}</td><td><strong>${escape(action)}</strong><small>${escape(why)}</small></td></tr>`;
   }).join('');
@@ -1935,7 +2184,7 @@ function calculatedReasons(recipe) {
 
 // Variant name, plus the correction number once the engine has corrected it.
 function calculatedName(recipe) {
-  const name = t(`builder_variant_${recipe.id}`);
+  const name = recipe.basis === 'roaster' ? recipe.source?.name || '' : t(`builder_variant_${recipe.id}`);
   return recipe.revision ? `${name} · ${t('correction_revision', recipe.revision)}` : name;
 }
 
@@ -2061,6 +2310,7 @@ function renderBuilderFeedback() {
     builderField(id, t(label), builderInput(id, 'number', m[key], `${extra} inputmode="decimal"`), help);
   $('builder-feedback').innerHTML = `
     <div class="feedback-rated"><span>${t('feedback_rating')}</span><strong>${escape(builder.ratedName || calculatedName(recipe))}</strong>
+      ${recipe.basis === 'roaster' ? `<small>${escape(calculatedOrigin(recipe))}</small>` : ''}
       <small>${grams(recipe.dose_g)} · ${grams(recipe.water_g)} · ${celsius(recipe.temperature_c)} · ${escape(num(recipe.ratio))}</small></div>
     <div class="feedback-modes" role="group" aria-label="${t('feedback_mode')}">
       <button type="button" class="button" data-feedback-mode="taste" aria-pressed="${taste}">${t('feedback_by_taste')}</button>
@@ -2189,6 +2439,12 @@ function changeLine(change) {
     label = t('water');
     value = `${grams(change.before)} → ${grams(change.after)}`;
     detail = `${t('ratio')}: ${escape(num(change.ratio_before))} → ${escape(num(change.ratio_after))}`;
+  } else if (change.basis === 'roaster') {
+    label = t('grind');
+    const direction = t(change.after < change.before ? 'change_finer' : 'change_coarser');
+    value = change.before_setting && change.after_setting
+      ? `${escape(change.before_setting)} → ${escape(change.after_setting)} · ${direction}` : direction;
+    detail = [change.grinder_label ? escape(change.grinder_label) : '', t('change_roaster_own')].filter(Boolean).join(' · ');
   } else {
     label = t('grind');
     const direction = t(change.after < change.before ? 'change_finer' : 'change_coarser');
@@ -2274,7 +2530,7 @@ function renderBuilderCorrection() {
   const recipe = data.recipe, ru = LANG === 'ru';
   const changes = data.changes.map(change => `<li>${changeLine(change)}</li>`).join('');
   pane.innerHTML = `<div class="builder-recipe correction">
-    <p class="builder-origin">${t('builder_calculated')}</p>
+    <p class="builder-origin">${escape(calculatedOrigin(recipe))}</p>
     <p class="correction-kind">${t(data.measurement_kind === 'measured' ? 'correction_by_meter' : 'correction_by_taste')}</p>
     <h2 class="title" id="correction-title" tabindex="-1">${escape(ru ? data.diagnosis : data.diagnosis_en)}</h2>
     <p class="correction-explanation">${escape(ru ? data.explanation : data.explanation_en)}</p>
@@ -2388,7 +2644,7 @@ function wireFeedback() {
 function wireBuilder() {
   $('open-builder').addEventListener('click', beginBuilder);
   $('builder-back').addEventListener('click', () => {
-    if (builder.step === 3 && builder.ratingOrigin === 'own') { back('own'); return; }
+    if (builder.step === 3 && ['own', 'recipe'].includes(builder.ratingOrigin)) { back(builder.ratingOrigin); return; }
     if (builder.step > 0) {
       if (builder.step <= 2) captureBuilderDraft();
       clearTimeout(builder.correctionTimer);
@@ -2410,7 +2666,12 @@ function wireBuilder() {
     renderBuilderFields();
     scheduleBuilderUpdate();
   });
-  $('builder-form').addEventListener('change', scheduleBuilderUpdate);
+  $('builder-form').addEventListener('change', event => {
+    const id = event.target.name === 'cb-roast' ? 'cb-roast' : event.target.id;
+    if (builder.prefill?.fields.delete(id)) $(`${id}-recognized`)?.remove();
+    scheduleBuilderUpdate();
+  });
+  wireCombos();
   $('builder-next').addEventListener('click', () => {
     if (builder.step === 0) { captureBuilderDraft(); builder.step = 1; updateBuilderStep(); $('builder-title').focus({preventScroll: true}); }
     else if (builder.step === 1) buildBuilderRecipes();
@@ -2446,16 +2707,17 @@ const own = {entry: null, from: 'mine', confirmDelete: false, notice: ''};
 
 function validOwnEntry(entry) {
   const recipe = entry?.recipe, finite = Number.isFinite;
+  const roaster = recipe?.id === 'roaster' && recipe.basis === 'roaster' && typeof recipe.source?.name === 'string';
   return entry.format === 'firstbrew.recipe' && entry.version === 1 &&
     typeof entry.id === 'string' && entry.id.length <= 64 && typeof entry.key === 'string' &&
     typeof entry.saved_at === 'string' && !Number.isNaN(Date.parse(entry.saved_at)) &&
     (entry.title == null || (typeof entry.title === 'string' && entry.title.length <= 80)) &&
     (entry.context_chips == null || (Array.isArray(entry.context_chips) && entry.context_chips.every(chip => typeof chip === 'string'))) &&
-    recipe?.origin === 'calculated' && ['brighter', 'sweeter'].includes(recipe.id) &&
+    recipe?.origin === 'calculated' && (['brighter', 'sweeter'].includes(recipe.id) || roaster) &&
     typeof recipe.device_id === 'string' && typeof recipe.ratio === 'string' &&
     ['dose_g', 'water_g', 'temperature_c', 'duration_seconds'].every(key => finite(recipe[key])) &&
     (recipe.revision == null || Number.isInteger(recipe.revision)) &&
-    finite(recipe.grind?.target_particle_microns) && Array.isArray(recipe.reasons) &&
+    (roaster || finite(recipe.grind?.target_particle_microns)) && Array.isArray(recipe.reasons) &&
     Array.isArray(recipe.steps) && recipe.steps.length <= 12 && recipe.steps.every(step => step &&
       ['start_seconds', 'stop_seconds', 'pour_g', 'total_water_g'].every(key => finite(step[key])));
 }
@@ -2561,7 +2823,7 @@ function renderOwn() {
     entry.brew_count ? t('own_brewed', entry.brew_count) : ''].filter(Boolean).join(' · ');
   const feedback = ownFeedback(entry);
   $('own-body').innerHTML = `<div class="builder-recipe own-recipe">
-    <p class="builder-origin">${t('builder_calculated')}</p>
+    <p class="builder-origin">${escape(calculatedOrigin(recipe))}</p>
     <h1 class="title" id="own-title" tabindex="-1">${escape(ownName(entry))}</h1>
     <p class="subtitle">${escape(meta)}</p>
     ${chips ? `<div class="builder-context">${chips}</div>` : ''}
@@ -2598,15 +2860,14 @@ function renderOwn() {
 // Plain text for messengers and notes: the numbers, the steps and the honest origin.
 function ownText(entry, link = '') {
   const recipe = entry.recipe;
-  const grind = recipe.grind.setting == null ? t('builder_grind_unmapped')
-    : `${recipe.grind.setting} · ${LANG === 'ru' ? recipe.grind.scale_label : recipe.grind.scale_label_en}`;
-  const steps = recipe.steps.map(step => {
-    const action = LANG === 'ru' ? step.instruction : STRINGS.en.builder_actions[step.instruction] || step.instruction;
-    return `${clock(step.start_seconds)} · ${grams(step.total_water_g)} · ${action}`;
-  });
-  const head = [ownName(entry), t('own_text_origin'), (entry.context_chips || []).join(' · '),
+  const info = grindInfo(recipe);
+  const grind = info.value == null ? t('builder_grind_unmapped') : [info.value, info.scale].filter(Boolean).join(' · ');
+  const note = recipe.basis === 'roaster' ? info.note : t('own_text_target', recipe.grind.target_particle_microns);
+  const steps = recipe.steps.map(step => `${clock(step.start_seconds)} · ${grams(step.total_water_g)} · ${stepName(step.instruction)}`);
+  const origin = recipe.basis === 'roaster' ? t('own_text_origin_roaster', recipe.source.name) : t('own_text_origin');
+  const head = [ownName(entry), origin, (entry.context_chips || []).join(' · '),
     `${t('coffee')} ${grams(recipe.dose_g)} · ${t('water')} ${grams(recipe.water_g)} · ${num(recipe.ratio)} · ${celsius(recipe.temperature_c)}`,
-    `${t('grind')}: ${grind} (${t('own_text_target', recipe.grind.target_particle_microns)})`,
+    `${t('grind')}: ${grind} (${note})`,
     `${t('builder_total_time')}: ${clock(recipe.duration_seconds)}`].filter(Boolean);
   const tail = [t('builder_approximate'), link ? t('own_text_link', link) : ''].filter(Boolean);
   return [...head, '', ...(steps.length ? steps : [t('builder_automatic')]), '', ...tail].join('\n');
@@ -2889,15 +3150,15 @@ function renderCalculatedTimer(seconds, duration) {
   $('brew-done-controls').hidden = !finished;
   $('brew-clock').classList.toggle('builder-clock', !ready);
   if (ready) {
-    setText('brew-ready-origin', t('builder_calculated'));
+    setText('brew-ready-origin', calculatedOrigin(recipe));
     setText('brew-ready-name', brewName || calculatedName(recipe));
     setText('brew-ready-summary', t(`builder_summary_${recipe.id}`));
-    const grindScale = LANG === 'ru' ? recipe.grind?.scale_label : recipe.grind?.scale_label_en;
+    const grind = grindInfo(recipe);
     $('brew-ready-grid').innerHTML = [
       [t('coffee'), grams(recipe.dose_g)], [t('water'), grams(recipe.water_g)],
       [t('temperature'), celsius(recipe.temperature_c)],
-      [t('grind'), recipe.grind?.setting == null ? t('builder_not_applicable') : escape(recipe.grind.setting)],
-    ].map(([label, value], index) => `<div><span>${label}</span><strong>${value}</strong>${index === 3 ? `<small>${escape(recipe.grind?.setting == null ? t('builder_grind_unmapped') : grindScale)}</small>` : ''}</div>`).join('');
+      [t('grind'), grind.value == null ? t('builder_not_applicable') : escape(grind.value)],
+    ].map(([label, value], index) => `<div><span>${label}</span><strong>${value}</strong>${index === 3 ? `<small>${escape(grind.value == null ? t('builder_grind_unmapped') : grind.scale || grind.note)}</small>` : ''}</div>`).join('');
     setText('brew-ready-duration', `${t('builder_total_time')}: ${clock(duration)}`);
     setText('brew-toggle', t('builder_start_timer'));
     return;
@@ -2949,12 +3210,12 @@ function jumpCalculatedStep(delta) {
   updateTimer();
 }
 
-// A finished calculated brew leads to the taste rating; roaster recipes keep their old ending.
+// Every finished brew, calculated or the roaster's, leads to the taste rating.
 function updateDoneActions() {
-  const calculated = currentRecipe?.origin === 'calculated';
-  $('brew-rate').hidden = !calculated;
-  $('brew-again').classList.toggle('primary', !calculated);
-  setText('brew-done-text', t(calculated ? 'builder_done_text' : brewMode === 'machine' ? 'machine_done_text' : 'done_text'));
+  const rateable = currentRecipe?.origin === 'calculated' || (brewOrigin === 'recipe' && Boolean(currentData));
+  $('brew-rate').hidden = !rateable;
+  $('brew-again').classList.toggle('primary', !rateable);
+  setText('brew-done-text', t(rateable ? 'builder_done_text' : brewMode === 'machine' ? 'machine_done_text' : 'done_text'));
 }
 
 function updateTimer() {
@@ -3354,6 +3615,7 @@ function localize() {
     $('recipe-placeholder').classList.add('desktop-only');
   }
   $('brew-start').textContent = t('start_brew');
+  $('recipe-rate').textContent = t('builder_rate');
   setText('brew-pour-label', t('builder_pour_now'));
   setText('brew-scale-label', t('builder_on_scale'));
   setText('brew-rate-label', t('builder_pour_rate'));
@@ -3437,6 +3699,7 @@ function init() {
     if (!running && elapsed === 0) { saveRecent(); toggleTimer(); }
   });
   $('machine-start').addEventListener('click', () => { brewOrigin = 'recipe'; startMachineBrew(); });
+  $('recipe-rate').addEventListener('click', rateRoasterRecipe);
   $('brew-back').addEventListener('click', () => back(brewOrigin));
   $('brew-toggle').addEventListener('click', () => brewMode === 'machine' ? machineToggle() : toggleTimer());
   $('brew-prev-step').addEventListener('click', () => jumpCalculatedStep(-1));
@@ -3448,6 +3711,7 @@ function init() {
   });
   $('brew-rate').addEventListener('click', async () => {
     const recipe = currentRecipe;
+    if (brewOrigin === 'recipe') { rateRoasterRecipe(); return; }
     if (brewMode === 'machine') leaveMachineMode();
     resetTimer();
     if (brewOrigin === 'construct') {
