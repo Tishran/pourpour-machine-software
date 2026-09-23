@@ -1,5 +1,5 @@
-// Constructor smoke check at 375×812: parameter wizard, calculated timer, machine handoff,
-// then the taste/refractometer rating and the corrected recipe (phase 6).
+// Constructor check at 375×812 and desktop: parameter wizard, calculated timer, machine handoff,
+// taste/refractometer correction (phase 6), my recipes (phase 7), any coffee and photo prefill (phase 8).
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -12,7 +12,7 @@ const screenshot = async (page, name) => {
   if (process.env.POURPOUR_SCREEN_DIR) await page.screenshot({path: path.join(process.env.POURPOUR_SCREEN_DIR, name), fullPage: true});
 };
 const smallTargets = page => page.evaluate(() => [...document.querySelectorAll('#screen-construct button, #screen-construct select, #screen-construct input')]
-  .filter(el => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden' && !el.matches('input[type=radio]'))
+  .filter(el => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden' && !el.matches('input[type=radio], input[type=file]'))
   .map(el => ({id: el.id || el.dataset.tasteHelp || el.value || el.className, rect: el.getBoundingClientRect()}))
   .filter(({rect}) => rect.width < 48 || rect.height < 48)
   .map(({id}) => id));
@@ -125,6 +125,31 @@ async function checkAnyCoffee(browser) {
       await page.waitForFunction(() => document.body.dataset.screen === 'find');
     }
   }
+  // Quick mode inside the builder: the photo fills the coffee and keeps the chosen equipment.
+  await page.goto(baseURL);
+  await page.locator('#open-builder').click();
+  await page.waitForSelector('#cb-country');
+  await page.locator('#builder-photo').waitFor();
+  assert.match(await page.locator('#builder-photo').textContent(), /Заполнить по фото пачки/);
+  await page.locator('#builder-next').click();
+  assert.equal(await page.locator('#builder-photo').isVisible(), false, 'the photo belongs to the coffee step');
+  await page.locator('#cb-device').selectOption('kalita_wave');
+  await page.locator('#builder-back').click();
+  await page.locator('#builder-photo-input').setInputFiles(path.join(__dirname, 'fixtures', 'colombia-label.png'));
+  await page.waitForFunction(() => document.getElementById('cb-country-recognized'), null, {timeout: 60000});
+  assert.equal(await page.locator('#cb-country').inputValue(), 'Колумбия');
+  assert.equal(await page.locator('#cb-device').inputValue(), 'kalita_wave');
+  assert.equal(await page.locator('#builder-catalog').isVisible(), false);
+  await page.locator('#builder-photo-input').setInputFiles(path.join(__dirname, 'fixtures', 'rwanda-label.png'));
+  await page.locator('#builder-catalog').waitFor({timeout: 60000});
+  assert.match(await page.locator('#builder-catalog-text').textContent(), /Руанда Суса[\s\S]*каталоге обжарщика/);
+  assert.equal(await page.locator('#cb-country').inputValue(), 'Руанда');
+  assert.ok(await noHorizontalScroll(page));
+  assert.deepEqual(await smallTargets(page), []);
+  await screenshot(page, 'builder-photo-mobile.png');
+  await page.locator('#builder-catalog-open').click();
+  await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
+  assert.equal(await page.locator('#recipe-title').textContent(), 'Руанда Суса');
   assert.deepEqual(errors, []);
   await context.close();
 }
@@ -529,7 +554,7 @@ async function run() {
     assert.equal(await page.locator('#builder-next').isDisabled(), false);
     assert.ok(await noHorizontalScroll(page));
     const small = await page.evaluate(() => [...document.querySelectorAll('#screen-construct button, #screen-construct select, #screen-construct input')]
-      .filter(el => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden' && !el.matches('input[type=radio]'))
+      .filter(el => el.offsetParent !== null && getComputedStyle(el).visibility !== 'hidden' && !el.matches('input[type=radio], input[type=file]'))
       .map(el => ({id: el.id || el.className, rect: el.getBoundingClientRect()}))
       .filter(({rect}) => rect.width < 48 || rect.height < 48)
       .map(({id}) => id));

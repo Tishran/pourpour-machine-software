@@ -279,7 +279,7 @@ async function recognitionChecks(browser) {
     assert.ok(!body.text.includes('Colombia'));
     await page.waitForFunction(() => document.body.dataset.screen === 'recipe');
     assert.equal(await text(page, '#recipe-title'), 'Ethiopia · washed');
-    assert.match(await text(page, '.subtitle'), /Starting recipe based on/);
+    assert.match(await text(page, '#recipe-body .subtitle'), /Starting recipe based on/);
     await page.goBack();
     await page.locator('#not-this-coffee').click();
     assert.equal(await page.locator('#query').inputValue(), 'Colombia washed');

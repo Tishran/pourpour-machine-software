@@ -173,6 +173,7 @@ const STRINGS = {
     builder_saved_status: 'Recipe saved on this device.',
     builder_save_error: 'Could not save on this device.',
     builder_done_text: 'Let it drain, taste the cup and rate it to get a correction.',
+    builder_machine_done_text: 'The machine has finished. Let it drain, taste the cup and rate it to get a correction.',
     feedback_intro: 'Mark 1–3 impressions of the cup, or enter refractometer readings.',
     feedback_rating: 'Rating',
     feedback_mode: 'How to rate the cup',
@@ -245,6 +246,10 @@ const STRINGS = {
     chart_note_outside: 'The measurement is outside the chart, so the point sits on its edge.',
     chart_desc_measured: (ey, tds) => `Your cup: extraction ${ey} %, strength ${tds} %.`,
     chart_desc_estimate: (low, high) => `Estimated from taste: extraction about ${low}–${high} %.`,
+    builder_photo: 'Fill in from a photo of the bag',
+    builder_photo_unreadable: 'Could not read the label. Fill in the fields by hand or try another photo.',
+    builder_catalog_found: (name) => `“${name}” is in the roaster catalog: try the roaster recipe first.`,
+    builder_catalog_open: 'Open the roaster recipe',
     combo_show: 'Show the list',
     combo_empty: 'Nothing found',
     rate_incomplete: 'The roaster recipe is missing pour times or amounts, so it cannot be rated and corrected. Build a recipe from parameters instead.',
@@ -606,6 +611,7 @@ const STRINGS = {
     builder_saved_status: 'Рецепт сохранён на этом устройстве.',
     builder_save_error: 'Не удалось сохранить на этом устройстве.',
     builder_done_text: 'Дайте воде стечь, попробуйте чашку и оцените вкус — получите правку.',
+    builder_machine_done_text: 'Машина закончила. Дайте воде стечь, попробуйте чашку и оцените вкус — получите правку.',
     feedback_intro: 'Отметьте 1–3 ощущения от чашки или введите данные рефрактометра.',
     feedback_rating: 'Оцениваем',
     feedback_mode: 'Способ оценки чашки',
@@ -678,6 +684,10 @@ const STRINGS = {
     chart_note_outside: 'Измерение за пределами диаграммы, поэтому точка стоит на её краю.',
     chart_desc_measured: (ey, tds) => `Ваша чашка: экстракция ${ey} %, крепость ${tds} %.`,
     chart_desc_estimate: (low, high) => `Оценка по вкусу: экстракция примерно ${low}–${high} %.`,
+    builder_photo: 'Заполнить по фото пачки',
+    builder_photo_unreadable: 'Не удалось прочитать этикетку. Заполните поля вручную или попробуйте другое фото.',
+    builder_catalog_found: (name) => `«${name}» есть в каталоге обжарщика — сначала стоит попробовать его рецепт.`,
+    builder_catalog_open: 'Открыть рецепт обжарщика',
     combo_show: 'Показать список',
     combo_empty: 'Ничего не найдено',
     rate_incomplete: 'В рецепте обжарщика не хватает времени или объёма вливаний, поэтому его нельзя оценить и исправить. Соберите рецепт по параметрам.',
@@ -1848,6 +1858,14 @@ function updateBuilderStep() {
   document.querySelector('.builder-cta-buttons').classList.toggle('pair', Boolean(secondary));
   $('builder-rebuild').textContent = t('builder_rebuild');
   $('builder-rebuild').hidden = !builder.variants.length;
+  $('builder-photo').textContent = t('builder_photo');
+  $('builder-photo').hidden = step !== 0 || !modelOptions?.ocr?.available;
+  const match = builder.catalogMatch;
+  $('builder-catalog').hidden = !match || step > 1;
+  if (match) {
+    setText('builder-catalog-text', t('builder_catalog_found', match.recipe_data.product.name));
+    setText('builder-catalog-open', t('builder_catalog_open'));
+  }
   $('builder-cta').dataset.step = String(step);
 }
 
@@ -1951,7 +1969,7 @@ function wireCombos() {
 // then the saved catalog profile. Anything unknown stays empty for the person to fill in.
 const PROCESSING_FROM_LABEL = [[['anaerobic', 'washed'], 'washed_anaerobic'], [['anaerobic', 'natural'], 'natural_anaerobic'],
   [['washed'], 'washed'], [['natural'], 'natural'], [['honey'], 'honey']];
-async function openPrefilledBuilder({label = null, url = null, name = ''} = {}) {
+async function openPrefilledBuilder({label = null, url = null, name = '', keep = false, catalogMatch = null} = {}) {
   if (!await ensureBuilderOptions()) { setStatus(currentScreen() === 'confirm' ? 'confirm-status' : 'cta-status', t('builder_error'), true); return; }
   let profile = null;
   if (url) {
@@ -1977,13 +1995,41 @@ async function openPrefilledBuilder({label = null, url = null, name = ''} = {}) 
     Object.assign(draft, {roast: 'dark', roast_pro: '6'});
     fields.set('cb-roast', 'photo').set('cb-roast-pro', 'photo');
   }
-  Object.assign(builder, {draft, prefill: {fields}, variants: [], selected: 0, correction: null, rated: null,
-    step: 0, ratingOrigin: 'builder'});
+  if (keep) captureBuilderDraft();
+  Object.assign(builder, {draft: keep ? {...builder.draft, ...draft} : draft, prefill: {fields}, catalogMatch,
+    variants: [], selected: 0, correction: null, rated: null, step: 0, ratingOrigin: 'builder'});
   renderBuilderFields();
   renderBuilderResult();
   renderBuilderCorrection();
   show('construct');
   setStatus('builder-status', fields.size ? t('prefill_note') : '');
+}
+
+// Quick mode: a photo of the bag fills the coffee fields without leaving the builder.
+// A coffee from the catalog is offered with its roaster recipe first.
+async function builderPhoto(file) {
+  if (!file) return;
+  $('builder-photo').disabled = true;
+  setStatus('builder-status', t('status_reading'));
+  try {
+    const data = await post('/api/label', await photoBlob(file), 'image/jpeg');
+    const recommendation = data.recommendation;
+    if (data.photo_state === 'unreadable') { setStatus('builder-status', t('builder_photo_unreadable'), true); return; }
+    const found = recommendation.kind === 'catalog_match' && recommendation.recipe_data;
+    await openPrefilledBuilder({label: recommendation.label, keep: true, catalogMatch: found ? recommendation : null,
+      url: found ? recommendation.recipe_data.product.url : null, name: found ? recommendation.recipe_data.product.name : ''});
+  } catch (error) {
+    setStatus('builder-status', error.message || t('err_label'), true);
+  } finally { $('builder-photo').disabled = false; }
+}
+function openCatalogRecommendation(recommendation) {
+  resetTimer();
+  currentData = {...recommendation.recipe_data, confirmed_label: structuredClone(recommendation.label)};
+  currentProduct = currentData.product;
+  recipeLoading = false;
+  markSelected();
+  renderRecipe(0);
+  show('recipe');
 }
 
 // Any roaster recipe can be rated: the engine takes an unchanged copy, the correction is a new recipe.
@@ -2085,7 +2131,7 @@ function builderParams() {
 async function beginBuilder() {
   builder.step = 0;
   builder.ratingOrigin = 'builder';
-  builder.prefill = null;
+  builder.prefill = builder.catalogMatch = null;
   show('construct');
   setStatus('builder-status', builder.options ? '' : t('builder_options_loading'));
   if (!builder.options) {
@@ -2686,6 +2732,9 @@ function wireBuilder() {
     } else if (builder.step === 4) saveOwnRecipe();
   });
   $('builder-rebuild').addEventListener('click', buildBuilderRecipes);
+  $('builder-photo').addEventListener('click', () => $('builder-photo-input').click());
+  $('builder-photo-input').addEventListener('change', event => { builderPhoto(event.target.files[0]); event.target.value = ''; });
+  $('builder-catalog-open').addEventListener('click', () => { if (builder.catalogMatch) openCatalogRecommendation(builder.catalogMatch); });
   wireFeedback();
 }
 
@@ -3215,7 +3264,9 @@ function updateDoneActions() {
   const rateable = currentRecipe?.origin === 'calculated' || (brewOrigin === 'recipe' && Boolean(currentData));
   $('brew-rate').hidden = !rateable;
   $('brew-again').classList.toggle('primary', !rateable);
-  setText('brew-done-text', t(rateable ? 'builder_done_text' : brewMode === 'machine' ? 'machine_done_text' : 'done_text'));
+  const machine = brewMode === 'machine';
+  setText('brew-done-text', t(rateable ? (machine ? 'builder_machine_done_text' : 'builder_done_text')
+    : machine ? 'machine_done_text' : 'done_text'));
 }
 
 function updateTimer() {
@@ -3750,6 +3801,7 @@ function init() {
   setStatus('status', t('status_checking'));
   modelOptionsReady = api('/api/model').then(data => {
     modelOptions = data;
+    updateBuilderStep();
     if (photoGeneration) return;
     setStatus('status', data.ocr.available ? t('status_ready', data.coffees) : t('status_no_ocr'));
   }).catch(() => {

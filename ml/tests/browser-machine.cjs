@@ -21,6 +21,8 @@ const machineState = (page) => page.evaluate(() => window.firstBrew.state().mach
     if (status.state !== 'IDLE') await page.request.post('/api/machine/abort');
 
     await page.goto('/');
+    // Russian is the default for every locale; these checks read the English strings.
+    await page.locator('#language').selectOption('en');
     await page.locator('#query').fill('суса');
     await page.locator('#results .coffee').first().click();
     await page.waitForFunction(() => document.querySelector('.figures'), null, {timeout: 30000});

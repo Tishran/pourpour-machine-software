@@ -534,3 +534,10 @@ select { font: inherit; color: var(--ink); background: var(--card); min-height: 
 .recipe-alt p { margin: 0 0 10px; font-size: .95rem; }
 .recipe-alt .button { width: 100%; }
 .recognition-actions .button.primary { order: -1; }
+
+/* Quick mode: fill the coffee from a photo inside the builder. */
+.builder-photo { width: 100%; margin: 0 0 14px; }
+.builder-photo::before { content: "📷"; }
+.builder-catalog { border-color: var(--orange); }
+.builder-catalog p { margin: 0 0 10px; }
+.builder-catalog .button { width: 100%; }

@@ -93,7 +93,13 @@
             <button class="button" type="button" id="builder-mode"></button>
           </div>
           <p class="subtitle" id="builder-intro"></p>
+          <button class="button builder-photo" id="builder-photo" type="button" hidden></button>
+          <input class="visually-hidden" id="builder-photo-input" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
           <p class="status" id="builder-status" role="status" aria-live="polite"></p>
+          <div class="note builder-catalog" id="builder-catalog" hidden>
+            <p id="builder-catalog-text"></p>
+            <button class="button primary" id="builder-catalog-open" type="button"></button>
+          </div>
           <form id="builder-form" novalidate>
             <div id="builder-fields"></div>
             <button class="button builder-rebuild" id="builder-rebuild" type="button" hidden></button>

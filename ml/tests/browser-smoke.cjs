@@ -12,6 +12,8 @@ const assert = require('node:assert/strict');
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(baseURL);
     assert.equal(await page.title(), 'First Brew');
+    // Russian is the default for every locale; these checks read the English strings.
+    await page.locator('#language').selectOption('en');
     const chooser = page.waitForEvent('filechooser');
     await page.locator('#photo-button').click();
     await (await chooser).setFiles(path.join(__dirname, 'fixtures/rwanda-label.png'));
