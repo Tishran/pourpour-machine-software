@@ -60,6 +60,7 @@
       </form>
       <p class="status" id="catalog-status" role="status" aria-live="polite"></p>
       <button class="button builder-entry" id="open-builder" type="button"></button>
+      <button class="button mine-entry" id="open-mine" type="button" hidden></button>
       <section class="recents" id="recents" aria-labelledby="recents-title" hidden>
         <h2 class="section" id="recents-title"></h2>
         <div class="results" id="recent-list" role="list"></div>
@@ -109,6 +110,30 @@
         <div class="builder-cta-buttons">
           <button type="button" class="button primary big" id="builder-next"></button>
           <button type="button" class="button big" id="builder-secondary" hidden></button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen screen-mine" id="screen-mine" aria-labelledby="mine-title">
+      <header class="bar"><button class="back" id="mine-back" type="button"></button></header>
+      <h1 class="title" id="mine-title" tabindex="-1"></h1>
+      <p class="subtitle" id="mine-intro"></p>
+      <p class="status" id="mine-status" role="status" aria-live="polite"></p>
+      <div class="results" id="mine-list" role="list"></div>
+      <div class="mine-empty" id="mine-empty" hidden>
+        <p class="note" id="mine-empty-text"></p>
+        <button class="button builder-entry" id="mine-builder" type="button"></button>
+      </div>
+    </section>
+
+    <section class="screen screen-own" id="screen-own" aria-labelledby="own-title">
+      <header class="bar"><button class="back" id="own-back" type="button"></button></header>
+      <div class="own-body" id="own-body"></div>
+      <div class="cta-bar own-cta">
+        <p class="status" id="own-status" role="status" aria-live="polite"></p>
+        <div class="builder-cta-buttons pair">
+          <button type="button" class="button primary big" id="own-primary"></button>
+          <button type="button" class="button big" id="own-secondary"></button>
         </div>
       </div>
     </section>

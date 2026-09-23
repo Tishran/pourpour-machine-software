@@ -122,8 +122,8 @@ const STRINGS = {
     builder_action_col: 'Action and reason',
     builder_automatic: 'Set the brewer to its standard mode. There are no manual pours.',
     builder_reasons: 'Why these values?',
-    builder_favorite: 'Add to favorites',
-    builder_unfavorite: 'Remove from favorites',
+    builder_favorite: 'Save to my recipes',
+    builder_unfavorite: 'Remove from my recipes',
     builder_brew: 'Brew this recipe',
     builder_machine: 'Send to First Brew machine',
     builder_machine_error: 'Could not send the recipe to the machine.',
@@ -244,6 +244,40 @@ const STRINGS = {
     chart_note_outside: 'The measurement is outside the chart, so the point sits on its edge.',
     chart_desc_measured: (ey, tds) => `Your cup: extraction ${ey} %, strength ${tds} %.`,
     chart_desc_estimate: (low, high) => `Estimated from taste: extraction about ${low}–${high} %.`,
+    mine_open: (n) => `My recipes · ${n}`,
+    mine_title: 'My recipes',
+    mine_intro: 'Stored only on this device. No account needed.',
+    mine_empty: 'Nothing here yet. Build a recipe, then save it or its corrected version.',
+    mine_deleted: 'Recipe deleted.',
+    own_source_built: 'Starting recipe',
+    own_source_shared: 'Opened from a link',
+    own_saved_on: (date) => `Saved ${date}`,
+    own_brewed: (n) => `Brewed: ${n}`,
+    own_unsaved: 'This recipe came from a link and is not saved on this device yet.',
+    own_feedback_taste: (list) => `Corrected from taste: ${list}.`,
+    own_feedback_meter: (value) => `Corrected from a measurement: extraction ${value} %.`,
+    own_name: 'Name',
+    own_name_help: 'Your own name to tell recipes apart. Leave it empty to use the default.',
+    own_name_saved: 'Name saved.',
+    own_share_title: 'Share',
+    own_share: 'Share…',
+    own_copy_text: 'Copy text',
+    own_copy_link: 'Copy link',
+    own_show_text: 'Show recipe text',
+    own_text_label: 'Recipe text',
+    own_copied_text: 'Text copied.',
+    own_copied_link: 'Link copied. The recipe travels inside the link; the server does not store it.',
+    own_copy_failed: 'Could not copy. Select the text below by hand.',
+    own_text_origin: 'Calculated from parameters in First Brew. Not a roaster recipe.',
+    own_text_target: (n) => `nominal target ${n} µm`,
+    own_text_link: (url) => `Open in First Brew: ${url}`,
+    own_delete: 'Delete recipe',
+    own_delete_question: (name) => `Delete “${name}” from this device? This cannot be undone.`,
+    own_delete_confirm: 'Delete',
+    own_save: 'Save to my recipes',
+    own_link_loading: 'Opening the shared recipe…',
+    own_link_broken: 'The recipe link is damaged or out of date.',
+    own_link_unsupported: 'This browser cannot open a compressed link. Update it or open the link in another browser.',
     reading_slow: 'Reading the label… Taking longer than usual.',
     cancel: 'Cancel',
     photo_cancelled: 'Recognition cancelled. Your photo is still here.',
@@ -517,8 +551,8 @@ const STRINGS = {
     builder_action_col: 'Действие и причина',
     builder_automatic: 'Включите стандартный режим кофеварки. Ручных вливаний нет.',
     builder_reasons: 'Почему именно так?',
-    builder_favorite: 'В избранное',
-    builder_unfavorite: 'Убрать из избранного',
+    builder_favorite: 'Сохранить в мои рецепты',
+    builder_unfavorite: 'Убрать из моих рецептов',
     builder_brew: 'Заварить',
     builder_machine: 'Отправить на машину First Brew',
     builder_machine_error: 'Не удалось передать рецепт на машину.',
@@ -624,6 +658,40 @@ const STRINGS = {
     chart_note_outside: 'Измерение за пределами диаграммы, поэтому точка стоит на её краю.',
     chart_desc_measured: (ey, tds) => `Ваша чашка: экстракция ${ey} %, крепость ${tds} %.`,
     chart_desc_estimate: (low, high) => `Оценка по вкусу: экстракция примерно ${low}–${high} %.`,
+    mine_open: (n) => `Мои рецепты · ${n}`,
+    mine_title: 'Мои рецепты',
+    mine_intro: 'Хранятся только на этом устройстве, без регистрации.',
+    mine_empty: 'Пока пусто. Соберите рецепт в конструкторе и сохраните его или исправленную версию.',
+    mine_deleted: 'Рецепт удалён.',
+    own_source_built: 'Стартовый вариант',
+    own_source_shared: 'Получено по ссылке',
+    own_saved_on: (date) => `Сохранён ${date}`,
+    own_brewed: (n) => `Заварено: ${n}`,
+    own_unsaved: 'Рецепт открыт по ссылке и пока не сохранён на этом устройстве.',
+    own_feedback_taste: (list) => `Исправлен по вкусу: ${list}.`,
+    own_feedback_meter: (value) => `Исправлен по измерению: экстракция ${value} %.`,
+    own_name: 'Название',
+    own_name_help: 'Своё название, чтобы отличать рецепты. Пустое поле — название по умолчанию.',
+    own_name_saved: 'Название сохранено.',
+    own_share_title: 'Поделиться',
+    own_share: 'Поделиться…',
+    own_copy_text: 'Скопировать текст',
+    own_copy_link: 'Скопировать ссылку',
+    own_show_text: 'Показать текст рецепта',
+    own_text_label: 'Текст рецепта',
+    own_copied_text: 'Текст скопирован.',
+    own_copied_link: 'Ссылка скопирована. Рецепт передаётся в самой ссылке, сервер его не хранит.',
+    own_copy_failed: 'Не удалось скопировать. Выделите текст ниже вручную.',
+    own_text_origin: 'Собрано по параметрам в First Brew — не рецепт обжарщика.',
+    own_text_target: (n) => `условная цель ${n} мкм`,
+    own_text_link: (url) => `Открыть в First Brew: ${url}`,
+    own_delete: 'Удалить рецепт',
+    own_delete_question: (name) => `Удалить «${name}» с этого устройства? Отменить это нельзя.`,
+    own_delete_confirm: 'Удалить',
+    own_save: 'Сохранить себе',
+    own_link_loading: 'Открываем рецепт по ссылке…',
+    own_link_broken: 'Ссылка на рецепт повреждена или устарела.',
+    own_link_unsupported: 'Этот браузер не может открыть сжатую ссылку. Обновите его или откройте ссылку в другом браузере.',
     reading_slow: 'Фото распознаётся… Это дольше обычного.',
     cancel: 'Отмена',
     photo_cancelled: 'Распознавание отменено. Фото осталось на экране.',
@@ -821,6 +889,8 @@ let timerInterval, running = false, elapsed = 0, startedAt = 0, lastActiveStep =
 let timerStarted = false;
 let wakeLock = null, audio = null;
 // Machine mode: the brew screen mirrors telemetry from the machine instead of the local timer.
+let brewOrigin = 'recipe';  // screen the timer returns to: recipe, construct or own
+let brewName = null;  // a saved recipe's own name on the timer
 let brewMode = 'local', machineInfo = null, machineState = null, machineOnline = false, machineEvents = null;
 let machineHeatStart = null, machineLastStep = -1, machineStopped = false;
 const builder = {options: null, step: 0, mode: 'basic', draft: {}, variants: [], selected: 0,
@@ -828,7 +898,8 @@ const builder = {options: null, step: 0, mode: 'basic', draft: {}, variants: [],
   // Result and correction (steps 4–5): the brewed recipe, the feedback and the engine's reply.
   rated: null, feedbackMode: 'taste', tastes: [], tasteHelp: null,
   measure: {tds: '', yield: '', dose: '', drawdown: ''},
-  correction: null, correctionRequest: null, correctionTimer: null, savedKey: null};
+  correction: null, correctionRequest: null, correctionTimer: null,
+  ratingOrigin: 'builder', ratedChips: null, ratedName: null};
 const MACHINE_ACTIVE = ['PREHEAT', 'READY', 'BREWING', 'PAUSED'];
 const prefs = {vibrate: true, sound: true};
 
@@ -929,7 +1000,7 @@ function selectRecent(entry) {
 // ---------------------------------------------------------------------------
 // Screens and browser history
 // ---------------------------------------------------------------------------
-const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew'];
+const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
@@ -937,9 +1008,12 @@ function show(screen, {push = true} = {}) {
   if (screen === 'confirm' && !recognition) screen = 'find';
   if (screen === 'recipe' && !currentData && !recipeLoading) screen = 'find';
   if (screen === 'brew' && !currentRecipe) screen = currentData ? 'recipe' : 'find';
+  if (screen === 'own' && !own.entry) screen = 'mine';
   if (currentScreen() === 'confirm' && screen !== 'confirm') cancelConfirmation();
   document.body.dataset.screen = screen;
   if (screen === 'confirm') renderConfirmation();
+  if (screen === 'mine') renderMine();
+  if (screen === 'own') renderOwn();
   if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
   if (screen === 'brew' && brewMode === 'machine') renderMachine();
   if (push && history.state?.screen !== screen) {
@@ -947,7 +1021,8 @@ function show(screen, {push = true} = {}) {
   }
   window.scrollTo(0, 0);
   const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title')
-    : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? builderFocusTarget() : $('brew-toggle');
+    : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? builderFocusTarget()
+    : screen === 'mine' ? $('mine-title') : screen === 'own' ? $('own-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -1230,6 +1305,7 @@ function updateCtaBar() {
   $('recipe-cta').dataset.machine = String(available);
   if ($('builder-machine')) $('builder-machine').hidden = !machineConnected();
   if ($('correction-machine')) $('correction-machine').hidden = !machineConnected();
+  if ($('own-machine')) $('own-machine').hidden = !machineConnected();
 }
 
 // ---------------------------------------------------------------------------
@@ -1576,7 +1652,6 @@ async function handlePhoto(file) {
 // Parameter builder: coffee → equipment → calculated starting recipes.
 // The roaster/catalog flow above stays separate and unchanged.
 // ---------------------------------------------------------------------------
-const BUILDER_FAVORITES_KEY = 'firstbrew.favorites.v1';
 const builderOptionName = item => item?.[LANG === 'ru' ? 'name_ru' : 'name_en'] || '';
 const builderOption = (item, selected) => `<option value="${escape(item.id)}"${item.id === selected ? ' selected' : ''}>${escape(builderOptionName(item))}</option>`;
 const builderHelp = (label, key) => `<details class="builder-help"><summary aria-label="${escape(t('builder_help', label))}">?</summary><p>${escape(t(key))}</p></details>`;
@@ -1692,7 +1767,7 @@ function updateBuilderStep() {
   $('builder-next').disabled = builder.busy || !builder.options || (step === 2 && !variant) ||
     (step === 3 && !feedbackPayload()) || (step === 4 && !correction);
   const secondary = step === 2 ? variant : step === 4 ? correction : null;
-  const saved = step === 4 && Boolean(correction) && builder.savedKey === ownRecipeKey(correction.recipe);
+  const saved = step === 4 && Boolean(correction) && ownEntries().some(entry => entry.key === ownRecipeKey(correction.recipe));
   $('builder-secondary').hidden = !secondary;
   $('builder-secondary').textContent = t(step === 2 ? 'builder_rate' : saved ? 'builder_saved_own' : 'builder_save_own');
   $('builder-secondary').disabled = saved || builder.busy;
@@ -1761,6 +1836,7 @@ function builderParams() {
 
 async function beginBuilder() {
   builder.step = 0;
+  builder.ratingOrigin = 'builder';
   show('construct');
   setStatus('builder-status', builder.options ? '' : t('builder_options_loading'));
   if (!builder.options) {
@@ -1787,7 +1863,7 @@ async function buildBuilderRecipes() {
     if (builder.request !== request) return;
     builder.variants = data.variants;
     builder.selected = Math.min(builder.selected, builder.variants.length - 1);
-    builder.rated = builder.correction = builder.savedKey = null;
+    builder.rated = builder.correction = null;
     renderBuilderCorrection();
     builder.step = 2;
     setStatus('builder-status', '');
@@ -1811,28 +1887,26 @@ function builderContext(recipe) {
   return chips.filter(Boolean);
 }
 
-function builderFavoriteKey(recipe) {
-  return JSON.stringify([recipe.device_id, recipe.id, recipe.dose_g, recipe.water_g,
-    recipe.temperature_c, recipe.grind?.target_particle_microns]);
-}
-function builderFavorites() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(BUILDER_FAVORITES_KEY) || '[]');
-    return Array.isArray(stored) ? stored.filter(value => typeof value === 'string').slice(0, 100) : [];
-  } catch (error) { return []; }
+// "Save to my recipes" on a starting recipe: the same list as corrected recipes.
+function builderFavored(recipe) {
+  const key = ownRecipeKey(recipe);
+  return ownEntries().some(entry => entry.key === key);
 }
 function toggleBuilderFavorite() {
-  const key = builderFavoriteKey(builder.variants[builder.selected]);
-  const saved = builderFavorites();
-  const next = saved.includes(key) ? saved.filter(value => value !== key) : [key, ...saved].slice(0, 100);
-  try { localStorage.setItem(BUILDER_FAVORITES_KEY, JSON.stringify(next)); } catch (error) { /* storage unavailable */ }
+  const recipe = builder.variants[builder.selected];
+  const key = ownRecipeKey(recipe);
+  const entries = ownEntries();
+  const saved = entries.some(entry => entry.key === key)
+    ? writeOwnEntries(entries.filter(entry => entry.key !== key))
+    : saveOwnEntry(newOwnEntry(recipe, {source: 'built', context_chips: builderContext(recipe)}));
+  builderStatus(saved ? '' : t('builder_save_error'), !saved);
   renderBuilderResult();
 }
 
 // Shared pieces of a calculated recipe: number tiles, the brew table and the reasons.
 function calculatedTiles(recipe, attribute, editableTemperature = false) {
   const control = (field, delta, label, disabled) => `<button type="button" ${attribute}="${field}:${delta}" aria-label="${escape(label)}"${disabled ? ' disabled' : ''}>${delta < 0 ? '−' : '+'}</button>`;
-  const quantity = (field, step, label, low, high) => `<div class="builder-quantity">${control(field, -step, `${t('builder_decrease')} ${label}`, recipe[field] <= low)}${control(field, step, `${t('builder_increase')} ${label}`, recipe[field] >= high)}</div>`;
+  const quantity = (field, step, label, low, high) => !attribute ? '' : `<div class="builder-quantity">${control(field, -step, `${t('builder_decrease')} ${label}`, recipe[field] <= low)}${control(field, step, `${t('builder_increase')} ${label}`, recipe[field] >= high)}</div>`;
   const grind = recipe.grind.setting == null ? t('builder_grind_unmapped')
     : `${escape(recipe.grind.setting)} · ${escape(LANG === 'ru' ? recipe.grind.scale_label : recipe.grind.scale_label_en)}`;
   return `<div class="builder-tiles">
@@ -1871,7 +1945,7 @@ function renderBuilderResult() {
   const chips = builderContext(recipe);
   const shown = chips.slice(0, 2).map(value => `<span class="builder-chip">${escape(value)}</span>`).join('');
   const rest = chips.length > 2 ? `<details class="builder-more"><summary>${t('builder_more_context', chips.length - 2)}</summary>${chips.slice(2).map(value => `<span class="builder-chip">${escape(value)}</span>`).join('')}</details>` : '';
-  const favored = builderFavorites().includes(builderFavoriteKey(recipe));
+  const favored = builderFavored(recipe);
   $('builder-result').innerHTML = `<div class="builder-recipe">
     <p class="builder-origin">${t('builder_calculated')}</p>
     <div class="builder-variant-bar" role="group" aria-label="${t('variant')}">
@@ -1895,6 +1969,7 @@ function renderBuilderResult() {
   $('builder-favorite').addEventListener('click', toggleBuilderFavorite);
   $('builder-machine')?.addEventListener('click', () => {
     currentRecipe = recipe;
+    brewOrigin = 'construct';
     startMachineBrew();
   });
   updateBuilderStep();
@@ -1905,6 +1980,8 @@ function brewBuilderRecipe() {
   const recipe = builder.variants[builder.selected];
   if (!recipe) return;
   currentRecipe = recipe;
+  brewOrigin = 'construct';
+  brewName = null;
   if (brewMode === 'machine') leaveMachineMode();
   resetTimer();
   show('brew');
@@ -1939,13 +2016,14 @@ async function adjustBuilderQuantity(spec) {
 // Result → correction: taste or refractometer, diagnosis, chart, corrected recipe.
 // The engine decides; the page only collects feedback and draws the answer.
 // ---------------------------------------------------------------------------
-const OWN_RECIPES_KEY = 'firstbrew.myRecipes.v1';
-const MAX_OWN_RECIPES = 50;
 const MEASURE_FIELDS = {'fb-tds': 'tds', 'fb-yield': 'yield', 'fb-dose': 'dose', 'fb-drawdown': 'drawdown'};
 
-function openBuilderRating(recipe, {fresh = false} = {}) {
+function openBuilderRating(recipe, {fresh = false, origin = 'builder', chips = null, name = null} = {}) {
   if (!recipe) return;
   clearTimeout(builder.correctionTimer);
+  builder.ratingOrigin = origin;
+  builder.ratedName = name;
+  builder.ratedChips = chips || (origin === 'builder' ? builderContext(recipe) : null);
   if (fresh || builder.rated !== recipe) {
     builder.rated = recipe;
     builder.tastes = [];
@@ -1982,7 +2060,7 @@ function renderBuilderFeedback() {
   const measureField = (id, key, label, help, extra) =>
     builderField(id, t(label), builderInput(id, 'number', m[key], `${extra} inputmode="decimal"`), help);
   $('builder-feedback').innerHTML = `
-    <div class="feedback-rated"><span>${t('feedback_rating')}</span><strong>${escape(calculatedName(recipe))}</strong>
+    <div class="feedback-rated"><span>${t('feedback_rating')}</span><strong>${escape(builder.ratedName || calculatedName(recipe))}</strong>
       <small>${grams(recipe.dose_g)} · ${grams(recipe.water_g)} · ${celsius(recipe.temperature_c)} · ${escape(num(recipe.ratio))}</small></div>
     <div class="feedback-modes" role="group" aria-label="${t('feedback_mode')}">
       <button type="button" class="button" data-feedback-mode="taste" aria-pressed="${taste}">${t('feedback_by_taste')}</button>
@@ -2244,34 +2322,15 @@ async function adjustCorrectionQuantity(spec) {
   $('builder-correction').querySelector(`[data-correction-adjust="${spec}"]`)?.focus({preventScroll: true});
 }
 
-// Saved recipes stay on this device; each entry is self-contained so it can move to a server later.
-function ownRecipes() {
-  try {
-    const stored = JSON.parse(localStorage.getItem(OWN_RECIPES_KEY) || '[]');
-    return Array.isArray(stored) ? stored.filter(entry => entry && typeof entry === 'object') : [];
-  } catch (error) { return []; }
-}
-function ownRecipeKey(recipe) {
-  return JSON.stringify([recipe.device_id, recipe.id, recipe.revision || 0, recipe.dose_g, recipe.water_g,
-    recipe.temperature_c, recipe.grind?.target_particle_microns, recipe.grind?.setting]);
-}
 function saveOwnRecipe() {
   const data = builder.correction;
   if (!data) return;
-  const recipe = data.recipe, key = ownRecipeKey(recipe);
-  const entry = {format: 'firstbrew.recipe', version: 1, key,
-    id: `own-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
-    saved_at: new Date().toISOString(), recipe, context_chips: builderContext(recipe),
+  const recipe = data.recipe;
+  const entry = newOwnEntry(recipe, {source: 'corrected', context_chips: builder.ratedChips || builderContext(recipe),
     feedback: data.feedback, diagnosis_code: data.diagnosis_code, measurement_kind: data.measurement_kind,
-    extraction_percent: data.extraction_percent};
-  try {
-    const entries = [entry, ...ownRecipes().filter(item => item.key !== key)].slice(0, MAX_OWN_RECIPES);
-    localStorage.setItem(OWN_RECIPES_KEY, JSON.stringify(entries));
-    builder.savedKey = key;
-    setStatus('builder-cta-status', t('builder_saved_status'));
-  } catch (error) {
-    setStatus('builder-cta-status', t('builder_save_error'), true);
-  }
+    extraction_percent: data.extraction_percent});
+  if (saveOwnEntry(entry)) setStatus('builder-cta-status', t('builder_saved_status'));
+  else setStatus('builder-cta-status', t('builder_save_error'), true);
   updateBuilderStep();
 }
 
@@ -2279,6 +2338,8 @@ function brewCorrectedRecipe() {
   const recipe = builder.correction?.recipe;
   if (!recipe) return;
   currentRecipe = recipe;
+  brewOrigin = 'construct';
+  brewName = null;
   if (brewMode === 'machine') leaveMachineMode();
   resetTimer();
   show('brew');
@@ -2318,6 +2379,7 @@ function wireFeedback() {
     if (control) { adjustCorrectionQuantity(control.dataset.correctionAdjust); return; }
     if (event.target.closest('#correction-machine')) {
       currentRecipe = builder.correction.recipe;
+      brewOrigin = 'construct';
       startMachineBrew();
     }
   });
@@ -2326,6 +2388,7 @@ function wireFeedback() {
 function wireBuilder() {
   $('open-builder').addEventListener('click', beginBuilder);
   $('builder-back').addEventListener('click', () => {
+    if (builder.step === 3 && builder.ratingOrigin === 'own') { back('own'); return; }
     if (builder.step > 0) {
       if (builder.step <= 2) captureBuilderDraft();
       clearTimeout(builder.correctionTimer);
@@ -2369,6 +2432,389 @@ function scheduleBuilderUpdate() {
   clearTimeout(builder.updateTimer);
   if (!builder.variants.length || !matchMedia('(min-width: 900px)').matches) return;
   builder.updateTimer = setTimeout(buildBuilderRecipes, 500);
+}
+
+// ---------------------------------------------------------------------------
+// My recipes: saved calculated recipes on this device, their list, reuse and sharing.
+// An entry is self-contained (the engine recipe plus how it came about), so the
+// same object can later move to an account on the server unchanged.
+// ---------------------------------------------------------------------------
+const OWN_RECIPES_KEY = 'firstbrew.myRecipes.v1';
+const MAX_OWN_RECIPES = 50;
+const SHARE_PREFIX = '#recipe=';
+const own = {entry: null, from: 'mine', confirmDelete: false, notice: ''};
+
+function validOwnEntry(entry) {
+  const recipe = entry?.recipe, finite = Number.isFinite;
+  return entry.format === 'firstbrew.recipe' && entry.version === 1 &&
+    typeof entry.id === 'string' && entry.id.length <= 64 && typeof entry.key === 'string' &&
+    typeof entry.saved_at === 'string' && !Number.isNaN(Date.parse(entry.saved_at)) &&
+    (entry.title == null || (typeof entry.title === 'string' && entry.title.length <= 80)) &&
+    (entry.context_chips == null || (Array.isArray(entry.context_chips) && entry.context_chips.every(chip => typeof chip === 'string'))) &&
+    recipe?.origin === 'calculated' && ['brighter', 'sweeter'].includes(recipe.id) &&
+    typeof recipe.device_id === 'string' && typeof recipe.ratio === 'string' &&
+    ['dose_g', 'water_g', 'temperature_c', 'duration_seconds'].every(key => finite(recipe[key])) &&
+    (recipe.revision == null || Number.isInteger(recipe.revision)) &&
+    finite(recipe.grind?.target_particle_microns) && Array.isArray(recipe.reasons) &&
+    Array.isArray(recipe.steps) && recipe.steps.length <= 12 && recipe.steps.every(step => step &&
+      ['start_seconds', 'stop_seconds', 'pour_g', 'total_water_g'].every(key => finite(step[key])));
+}
+function ownEntries() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(OWN_RECIPES_KEY) || '[]');
+    return Array.isArray(stored) ? stored.filter(entry => entry && typeof entry === 'object' && validOwnEntry(entry)) : [];
+  } catch (error) { return []; }
+}
+function writeOwnEntries(entries) {
+  try {
+    localStorage.setItem(OWN_RECIPES_KEY, JSON.stringify(entries.slice(0, MAX_OWN_RECIPES)));
+    return true;
+  } catch (error) { return false; }
+  finally { renderMineEntry(); }
+}
+function ownRecipeKey(recipe) {
+  return JSON.stringify([recipe.device_id, recipe.id, recipe.revision || 0, recipe.dose_g, recipe.water_g,
+    recipe.temperature_c, recipe.grind?.target_particle_microns, recipe.grind?.setting]);
+}
+function newOwnEntry(recipe, details = {}) {
+  return {format: 'firstbrew.recipe', version: 1, key: ownRecipeKey(recipe),
+    id: `own-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    saved_at: new Date().toISOString(), source: 'built', title: null, context_chips: [],
+    brew_count: 0, last_brewed_at: null, ...details, recipe};
+}
+// Saving the same recipe twice keeps one entry, the newest on top.
+function saveOwnEntry(entry) {
+  return writeOwnEntries([entry, ...ownEntries().filter(item => item.key !== entry.key)]);
+}
+function updateOwnEntry(id, changes) {
+  const entries = ownEntries();
+  const index = entries.findIndex(entry => entry.id === id);
+  if (index < 0) return null;
+  entries[index] = {...entries[index], ...changes};
+  return writeOwnEntries(entries) ? entries[index] : null;
+}
+function ownSaved(entry) {
+  return Boolean(entry) && ownEntries().some(item => item.id === entry.id);
+}
+function ownName(entry) {
+  return entry.title || calculatedName(entry.recipe);
+}
+function ownSource(entry) {
+  const source = entry.source || (entry.feedback ? 'corrected' : 'built');
+  if (source === 'corrected') return t(entry.measurement_kind === 'measured' ? 'correction_by_meter' : 'correction_by_taste');
+  return t(source === 'shared' ? 'own_source_shared' : 'own_source_built');
+}
+function ownDate(value) {
+  return new Intl.DateTimeFormat(LANG, {day: 'numeric', month: 'short'}).format(new Date(value));
+}
+function ownFeedback(entry) {
+  const names = STRINGS[LANG].taste_names;
+  const tastes = (entry.feedback?.descriptors || []).filter(id => Object.hasOwn(names, id)).map(id => names[id].toLowerCase());
+  if (tastes.length) return t('own_feedback_taste', tastes.join(', '));
+  return Number.isFinite(entry.extraction_percent) ? t('own_feedback_meter', num(entry.extraction_percent.toFixed(1))) : '';
+}
+
+function renderMineEntry() {
+  const count = ownEntries().length;
+  $('open-mine').hidden = !count;
+  $('open-mine').textContent = t('mine_open', count);
+}
+
+function renderMine() {
+  const entries = ownEntries();
+  const list = $('mine-list');
+  list.replaceChildren();
+  entries.forEach(entry => {
+    const recipe = entry.recipe;
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'coffee own-card';
+    button.setAttribute('role', 'listitem');
+    button.dataset.own = entry.id;
+    const chips = (entry.context_chips || []).slice(0, 3).join(' · ');
+    button.innerHTML = `<span class="coffee-copy"><strong>${escape(ownName(entry))}</strong>
+      <small>${grams(recipe.dose_g)} · ${grams(recipe.water_g)} · ${escape(num(recipe.ratio))} · ${celsius(recipe.temperature_c)}</small>
+      ${chips ? `<small>${escape(chips)}</small>` : ''}
+      <small>${escape(ownSource(entry))} · ${escape(ownDate(entry.saved_at))}</small></span><span class="arrow" aria-hidden="true">→</span>`;
+    list.append(button);
+  });
+  list.hidden = !entries.length;
+  $('mine-empty').hidden = entries.length > 0;
+  setStatus('mine-status', own.notice);
+  own.notice = '';
+}
+
+function openOwn(entry, from = 'mine') {
+  own.entry = entry;
+  own.from = from;
+  own.confirmDelete = false;
+  renderOwn();
+  show('own');
+}
+
+function renderOwn() {
+  const entry = own.entry;
+  if (!entry) return;
+  const recipe = entry.recipe, saved = ownSaved(entry);
+  const chips = (entry.context_chips || []).map(chip => `<span class="builder-chip">${escape(chip)}</span>`).join('');
+  const meta = [ownSource(entry), saved ? t('own_saved_on', ownDate(entry.saved_at)) : '',
+    entry.brew_count ? t('own_brewed', entry.brew_count) : ''].filter(Boolean).join(' · ');
+  const feedback = ownFeedback(entry);
+  $('own-body').innerHTML = `<div class="builder-recipe own-recipe">
+    <p class="builder-origin">${t('builder_calculated')}</p>
+    <h1 class="title" id="own-title" tabindex="-1">${escape(ownName(entry))}</h1>
+    <p class="subtitle">${escape(meta)}</p>
+    ${chips ? `<div class="builder-context">${chips}</div>` : ''}
+    ${saved ? '' : `<p class="note">${t('own_unsaved')}</p>`}
+    ${feedback ? `<p class="note">${escape(feedback)}</p>` : ''}
+    ${saved ? builderField('own-name', t('own_name'), builderInput('own-name', 'text', entry.title || '',
+      `maxlength="80" autocomplete="off" placeholder="${escape(calculatedName(recipe))}"`), 'own_name_help') : ''}
+    <p class="note builder-caution">${t('builder_approximate')}</p>
+    ${calculatedTiles(recipe, null)}
+    <h2 class="section">${t('builder_process')}</h2>
+    ${calculatedSteps(recipe)}
+    ${calculatedReasons(recipe)}
+    ${recipe.machine_compatible ? `<button type="button" class="button builder-machine" id="own-machine"${machineConnected() ? '' : ' hidden'}>${t('builder_machine')}</button>` : ''}
+    <h2 class="section">${t('own_share_title')}</h2>
+    <div class="own-share">
+      ${typeof navigator.share === 'function' ? `<button type="button" class="button" id="own-share">${t('own_share')}</button>` : ''}
+      <button type="button" class="button" id="own-copy-text">${t('own_copy_text')}</button>
+      <button type="button" class="button" id="own-copy-link">${t('own_copy_link')}</button>
+    </div>
+    <details class="own-text" id="own-text-box"><summary>${t('own_show_text')}</summary>
+      <textarea id="own-text" readonly rows="12" aria-label="${t('own_text_label')}">${escape(ownText(entry))}</textarea></details>
+    ${saved ? `<div class="own-delete">
+      <button type="button" class="button danger" id="own-delete"${own.confirmDelete ? ' hidden' : ''}>${t('own_delete')}</button>
+      <div class="own-delete-confirm" id="own-delete-confirm" role="group" aria-labelledby="own-delete-question"${own.confirmDelete ? '' : ' hidden'}>
+        <p id="own-delete-question">${escape(t('own_delete_question', ownName(entry)))}</p>
+        <div class="edit-actions"><button type="button" class="button danger" id="own-delete-yes">${t('own_delete_confirm')}</button>
+        <button type="button" class="button" id="own-delete-no">${t('cancel')}</button></div>
+      </div></div>` : ''}
+  </div>`;
+  $('own-primary').textContent = t(saved ? 'builder_brew' : 'own_save');
+  $('own-secondary').textContent = t(saved ? 'builder_rate' : 'builder_brew');
+}
+
+// Plain text for messengers and notes: the numbers, the steps and the honest origin.
+function ownText(entry, link = '') {
+  const recipe = entry.recipe;
+  const grind = recipe.grind.setting == null ? t('builder_grind_unmapped')
+    : `${recipe.grind.setting} · ${LANG === 'ru' ? recipe.grind.scale_label : recipe.grind.scale_label_en}`;
+  const steps = recipe.steps.map(step => {
+    const action = LANG === 'ru' ? step.instruction : STRINGS.en.builder_actions[step.instruction] || step.instruction;
+    return `${clock(step.start_seconds)} · ${grams(step.total_water_g)} · ${action}`;
+  });
+  const head = [ownName(entry), t('own_text_origin'), (entry.context_chips || []).join(' · '),
+    `${t('coffee')} ${grams(recipe.dose_g)} · ${t('water')} ${grams(recipe.water_g)} · ${num(recipe.ratio)} · ${celsius(recipe.temperature_c)}`,
+    `${t('grind')}: ${grind} (${t('own_text_target', recipe.grind.target_particle_microns)})`,
+    `${t('builder_total_time')}: ${clock(recipe.duration_seconds)}`].filter(Boolean);
+  const tail = [t('builder_approximate'), link ? t('own_text_link', link) : ''].filter(Boolean);
+  return [...head, '', ...(steps.length ? steps : [t('builder_automatic')]), '', ...tail].join('\n');
+}
+
+// Share links carry the recipe in the URL fragment, which never reaches the server;
+// explanations are left out to keep the link short. The server re-checks on import.
+function base64url(bytes) {
+  let binary = '';
+  bytes.forEach(byte => { binary += String.fromCharCode(byte); });
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+function fromBase64url(text) {
+  return Uint8Array.from(atob(text.replace(/-/g, '+').replace(/_/g, '/')), char => char.charCodeAt(0));
+}
+async function streamBytes(bytes, Stream, limit = 60000) {
+  const reader = new Blob([bytes]).stream().pipeThrough(new Stream('deflate-raw')).getReader();
+  const chunks = [];
+  let size = 0;
+  for (;;) {
+    const {done, value} = await reader.read();
+    if (done) break;
+    size += value.length;
+    if (size > limit) { reader.cancel(); throw new Error(t('own_link_broken')); }
+    chunks.push(value);
+  }
+  const result = new Uint8Array(size);
+  chunks.reduce((offset, chunk) => { result.set(chunk, offset); return offset + chunk.length; }, 0);
+  return result;
+}
+async function ownLink(entry) {
+  const {reasons, assumptions, context_chips: _chips, name, summary, ...recipe} = entry.recipe;
+  const payload = {v: 1, t: entry.title || undefined,
+    c: entry.context_chips?.length ? entry.context_chips : undefined, r: {...recipe, reasons: []}};
+  let bytes = new TextEncoder().encode(JSON.stringify(payload)), mark = 'j';
+  if (typeof CompressionStream === 'function') {
+    try { bytes = await streamBytes(bytes, CompressionStream); mark = 'z'; } catch (error) { /* plain link */ }
+  }
+  return `${location.origin}${location.pathname}${SHARE_PREFIX}${mark}${base64url(bytes)}`;
+}
+async function readShareLink(data) {
+  if (data.length > 16000 || !/^[jz][A-Za-z0-9_-]+$/.test(data)) throw new Error(t('own_link_broken'));
+  let bytes, payload;
+  try { bytes = fromBase64url(data.slice(1)); } catch (error) { throw new Error(t('own_link_broken')); }
+  if (data[0] === 'z') {
+    if (typeof DecompressionStream !== 'function') throw new Error(t('own_link_unsupported'));
+    try { bytes = await streamBytes(bytes, DecompressionStream); } catch (error) { throw new Error(t('own_link_broken')); }
+  }
+  try { payload = JSON.parse(new TextDecoder().decode(bytes)); } catch (error) { throw new Error(t('own_link_broken')); }
+  if (payload?.v !== 1 || !payload.r || typeof payload.r !== 'object') throw new Error(t('own_link_broken'));
+  let reply;
+  try { reply = await post('/api/recipes/import', JSON.stringify({recipe: payload.r}), 'application/json'); }
+  catch (error) { throw new Error(t('own_link_broken')); }
+  const title = typeof payload.t === 'string' ? payload.t.trim().slice(0, 80) || null : null;
+  const chips = Array.isArray(payload.c) ? payload.c.filter(chip => typeof chip === 'string').map(chip => chip.slice(0, 60)).slice(0, 8) : [];
+  return newOwnEntry(reply.recipe, {source: 'shared', title, context_chips: chips});
+}
+async function openShareLink(data) {
+  setStatus('status', t('own_link_loading'));
+  try {
+    const entry = await readShareLink(data);
+    setStatus('status', '');
+    openOwn(entry, 'link');
+  } catch (error) {
+    setStatus('status', '');
+    own.notice = error.message;
+    show('mine');
+    setStatus('mine-status', error.message, true);
+  }
+}
+
+async function copyText(text) {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch (error) {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.className = 'visually-hidden';
+    document.body.append(area);
+    area.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch (failure) { copied = false; }
+    area.remove();
+    return copied;
+  }
+}
+async function shareOwn(kind) {
+  const entry = own.entry;
+  const link = await ownLink(entry);
+  if (kind === 'share') {
+    try { await navigator.share({title: ownName(entry), text: ownText(entry), url: link}); }
+    catch (error) { if (error.name !== 'AbortError') setStatus('own-status', t('own_copy_failed'), true); }
+    return;
+  }
+  const text = kind === 'link' ? link : ownText(entry, link);
+  if (await copyText(text)) setStatus('own-status', t(kind === 'link' ? 'own_copied_link' : 'own_copied_text'));
+  else {
+    $('own-text').value = text;
+    $('own-text-box').open = true;
+    $('own-text').select();
+    setStatus('own-status', t('own_copy_failed'), true);
+  }
+}
+
+function brewOwn() {
+  const entry = own.entry;
+  if (!entry) return;
+  if (ownSaved(entry)) own.entry = updateOwnEntry(entry.id, {brew_count: (entry.brew_count || 0) + 1,
+    last_brewed_at: new Date().toISOString()}) || entry;
+  currentRecipe = own.entry.recipe;
+  brewOrigin = 'own';
+  brewName = own.entry.title;
+  if (brewMode === 'machine') leaveMachineMode();
+  resetTimer();
+  show('brew');
+}
+
+async function ensureBuilderOptions() {
+  if (builder.options) return true;
+  try {
+    builder.options = await api('/api/catalog/options');
+    renderBuilderFields();
+    renderBuilderResult();
+    return true;
+  } catch (error) { return false; }
+}
+
+async function rateOwnRecipe(recipe, chips, name = null) {
+  if (!await ensureBuilderOptions()) {
+    setStatus(currentScreen() === 'own' ? 'own-status' : 'status', t('builder_error'), true);
+    return false;
+  }
+  openBuilderRating(recipe, {fresh: true, origin: 'own', chips, name});
+  return true;
+}
+
+function deleteOwn() {
+  const entry = own.entry;
+  if (!entry) return;
+  writeOwnEntries(ownEntries().filter(item => item.id !== entry.id));
+  own.entry = null;
+  own.notice = t('mine_deleted');
+  if (own.from === 'mine') back('mine');
+  else { history.replaceState({screen: 'mine'}, '', '#mine'); show('mine', {push: false}); }
+}
+
+function wireOwn() {
+  $('open-mine').addEventListener('click', () => show('mine'));
+  $('mine-back').addEventListener('click', () => back('find'));
+  $('mine-builder').addEventListener('click', beginBuilder);
+  $('mine-list').addEventListener('click', event => {
+    const card = event.target.closest('[data-own]');
+    const entry = card && ownEntries().find(item => item.id === card.dataset.own);
+    if (entry) openOwn(entry);
+  });
+  $('own-back').addEventListener('click', () => back(own.from === 'mine' ? 'mine' : 'find'));
+  $('own-primary').addEventListener('click', () => {
+    const entry = own.entry;
+    if (!entry || ownSaved(entry)) { brewOwn(); return; }
+    if (saveOwnEntry(entry)) { renderOwn(); setStatus('own-status', t('builder_saved_status')); }
+    else setStatus('own-status', t('builder_save_error'), true);
+  });
+  $('own-secondary').addEventListener('click', async () => {
+    const entry = own.entry;
+    if (!entry) return;
+    if (!ownSaved(entry)) { brewOwn(); return; }
+    if (await rateOwnRecipe(entry.recipe, entry.context_chips, entry.title)) show('construct');
+  });
+  $('own-body').addEventListener('click', event => {
+    const id = event.target.closest('button')?.id;
+    if (id === 'own-share') shareOwn('share');
+    else if (id === 'own-copy-text') shareOwn('text');
+    else if (id === 'own-copy-link') shareOwn('link');
+    else if (id === 'own-machine') {
+      brewOrigin = 'own';
+      currentRecipe = own.entry.recipe;
+      startMachineBrew();
+    } else if (id === 'own-delete' || id === 'own-delete-no') {
+      own.confirmDelete = id === 'own-delete';
+      $('own-delete').hidden = own.confirmDelete;
+      $('own-delete-confirm').hidden = !own.confirmDelete;
+      $(own.confirmDelete ? 'own-delete-no' : 'own-delete').focus({preventScroll: true});
+    } else if (id === 'own-delete-yes') deleteOwn();
+  });
+  $('own-body').addEventListener('change', event => {
+    if (event.target.id !== 'own-name' || !own.entry) return;
+    const title = event.target.value.trim().slice(0, 80) || null;
+    const updated = updateOwnEntry(own.entry.id, {title});
+    if (!updated) { setStatus('own-status', t('builder_save_error'), true); return; }
+    own.entry = updated;
+    setText('own-title', ownName(updated));
+    $('own-text').value = ownText(updated);
+    setStatus('own-status', t('own_name_saved'));
+  });
+  // A link pasted into a tab that already runs the app changes only the fragment.
+  window.addEventListener('hashchange', () => {
+    if (!location.hash.startsWith(SHARE_PREFIX)) return;
+    const data = location.hash.slice(SHARE_PREFIX.length);
+    history.replaceState(history.state, '', location.pathname + location.search);
+    openShareLink(data);
+  });
+  window.addEventListener('storage', event => {
+    if (event.key !== OWN_RECIPES_KEY) return;
+    renderMineEntry();
+    if (currentScreen() === 'mine') renderMine();
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -2444,7 +2890,7 @@ function renderCalculatedTimer(seconds, duration) {
   $('brew-clock').classList.toggle('builder-clock', !ready);
   if (ready) {
     setText('brew-ready-origin', t('builder_calculated'));
-    setText('brew-ready-name', calculatedName(recipe));
+    setText('brew-ready-name', brewName || calculatedName(recipe));
     setText('brew-ready-summary', t(`builder_summary_${recipe.id}`));
     const grindScale = LANG === 'ru' ? recipe.grind?.scale_label : recipe.grind?.scale_label_en;
     $('brew-ready-grid').innerHTML = [
@@ -2668,8 +3114,10 @@ async function startMachineBrew() {
     renderMachine();
   } catch (error) {
     brewMode = 'local';
-    if (currentRecipe?.origin === 'calculated') builderStatus(error.message || t('builder_machine_error'), true);
-    else setStatus('cta-status', error.message || t('builder_machine_error'), true);
+    const message = error.message || t('builder_machine_error');
+    if (brewOrigin === 'own') setStatus('own-status', message, true);
+    else if (currentRecipe?.origin === 'calculated') builderStatus(message, true);
+    else setStatus('cta-status', message, true);
   } finally {
     $('machine-start').disabled = false;
     updateCtaBar();
@@ -2783,7 +3231,7 @@ function machineToggle() {
   if (status === 'READY') machineCommand('start');
   else if (status === 'BREWING') machineCommand('pause');
   else if (status === 'PAUSED') machineCommand('resume');
-  else if (status === 'ERROR' || status === 'STOPPED') { back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'); startMachineBrew(); }
+  else if (status === 'ERROR' || status === 'STOPPED') { back(brewOrigin); startMachineBrew(); }
   else if (status === 'OFFLINE') { refreshMachine(); }
 }
 
@@ -2871,6 +3319,15 @@ function localize() {
   $('survey-text').textContent = t('survey_text');
   $('survey-link').textContent = `${t('survey_button')} ↗`;
   $('open-builder').textContent = t('builder_open');
+  renderMineEntry();
+  $('mine-back').textContent = t('back');
+  $('mine-title').textContent = t('mine_title');
+  $('mine-intro').textContent = t('mine_intro');
+  $('mine-empty-text').textContent = t('mine_empty');
+  $('mine-builder').textContent = t('builder_open');
+  $('own-back').textContent = t('back');
+  if (currentScreen() === 'mine') renderMine();
+  if (currentScreen() === 'own') renderOwn();
   $('builder-back').textContent = t('back');
   $('builder-close').setAttribute('aria-label', t('builder_close'));
   $('builder-close').title = t('builder_close');
@@ -2924,6 +3381,8 @@ function localize() {
 function init() {
   loadPrefs();
   localize();
+  // A shared recipe arrives in the URL fragment; read it before the address is cleaned up.
+  const shared = location.hash.startsWith(SHARE_PREFIX) ? location.hash.slice(SHARE_PREFIX.length) : null;
   history.replaceState({screen: 'find'}, '', location.pathname + location.search);
   document.body.dataset.screen = 'find';
 
@@ -2972,12 +3431,13 @@ function init() {
   $('recipe-back').addEventListener('click', () => back('find'));
   $('brew-start').addEventListener('click', () => {
     if (!currentRecipe?.duration_seconds) return;
+    brewOrigin = 'recipe';
     if (brewMode === 'machine') leaveMachineMode();
     show('brew');
     if (!running && elapsed === 0) { saveRecent(); toggleTimer(); }
   });
-  $('machine-start').addEventListener('click', startMachineBrew);
-  $('brew-back').addEventListener('click', () => back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'));
+  $('machine-start').addEventListener('click', () => { brewOrigin = 'recipe'; startMachineBrew(); });
+  $('brew-back').addEventListener('click', () => back(brewOrigin));
   $('brew-toggle').addEventListener('click', () => brewMode === 'machine' ? machineToggle() : toggleTimer());
   $('brew-prev-step').addEventListener('click', () => jumpCalculatedStep(-1));
   $('brew-next-step').addEventListener('click', () => jumpCalculatedStep(1));
@@ -2986,17 +3446,23 @@ function init() {
     resetTimer();
     $('brew-toggle').focus({preventScroll: true});
   });
-  $('brew-rate').addEventListener('click', () => {
+  $('brew-rate').addEventListener('click', async () => {
     const recipe = currentRecipe;
     if (brewMode === 'machine') leaveMachineMode();
     resetTimer();
-    openBuilderRating(recipe, {fresh: true});
-    back('construct');
+    if (brewOrigin === 'construct') {
+      openBuilderRating(recipe, {fresh: true, chips: builder.ratedChips});
+      back('construct');
+    } else if (await rateOwnRecipe(recipe, own.entry?.context_chips, own.entry?.title)) {
+      // The timer entry becomes the rating, so "back" leads to the saved recipe.
+      history.replaceState({screen: 'construct'}, '', '#construct');
+      show('construct', {push: false});
+    }
   });
   $('brew-again').addEventListener('click', () => {
-    if (brewMode === 'machine') { back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'); startMachineBrew(); return; }
+    if (brewMode === 'machine') { back(brewOrigin); startMachineBrew(); return; }
     resetTimer();
-    back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe');
+    back(brewOrigin);
   });
   $('brew-new').addEventListener('click', () => {
     if (brewMode === 'machine') { machineRequest('abort').catch(() => {}); leaveMachineMode(); }
@@ -3014,6 +3480,8 @@ function init() {
   $('brew-sound').addEventListener('click', () => { prefs.sound = !prefs.sound; savePrefs(); setToggle('brew-sound', 'sound'); if (prefs.sound) primeAudio(); });
 
   wireRecognition();
+  wireOwn();
+  if (shared) openShareLink(shared);
   refreshMachine();
   setStatus('status', t('status_checking'));
   modelOptionsReady = api('/api/model').then(data => {

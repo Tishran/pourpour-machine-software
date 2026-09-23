@@ -12,7 +12,7 @@ from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel, RECOMMENDATION_POLICY, COUNTRIES, PROCESSING, VARIETIES
 from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
 from brew_catalog import load_catalog, unique_object
-from brewing_engine import (BrewingInputError, adjust, build, rescale, taste_options,
+from brewing_engine import (BrewingInputError, adjust, build, rescale, restore_recipe, taste_options,
                             validate_calculated_recipe)
 
 ROOT = Path(__file__).parent / 'static'
@@ -109,8 +109,8 @@ class Handler(BaseHTTPRequestHandler):
         try:
             if url.path.startswith('/api/machine/'):
                 return self.machine_post(url.path.removeprefix('/api/machine/'))
-            if url.path not in ('/api/label', '/api/scan', '/api/recommend',
-                                '/api/recipes/build', '/api/recipes/adjust', '/api/recipes/rescale'):
+            if url.path not in ('/api/label', '/api/scan', '/api/recommend', '/api/recipes/build',
+                                '/api/recipes/adjust', '/api/recipes/rescale', '/api/recipes/import'):
                 return self.send_json(404, {'error': 'Page not found.'})
             if not self.same_origin():
                 return self.send_json(403, {'error': 'The request must come from this application.'})
@@ -145,7 +145,7 @@ class Handler(BaseHTTPRequestHandler):
                                             'candidates': recommendation['candidates'],
                                             'message': recommendation['message'], 'recommendation': recommendation})
             try:
-                if url.path in ('/api/recipes/build', '/api/recipes/adjust', '/api/recipes/rescale'):
+                if url.path.startswith('/api/recipes/'):
                     body = json.loads(payload, object_pairs_hook=unique_object,
                                       parse_constant=reject_nonfinite_json)
                 else:
@@ -165,6 +165,10 @@ class Handler(BaseHTTPRequestHandler):
                     raise BrewingInputError('Expected recipe, dose_g and water_g fields.')
                 validate_calculated_recipe(body['recipe'])
                 return self.send_json(200, {'recipe': rescale(body['recipe'], body['dose_g'], body['water_g'])})
+            if url.path == '/api/recipes/import':
+                if not isinstance(body, dict) or set(body) != {'recipe'}:
+                    raise BrewingInputError('Expected an object with a recipe field.')
+                return self.send_json(200, {'recipe': restore_recipe(body['recipe'])})
             if not isinstance(body, dict) or not isinstance(body.get('text'), str):
                 raise ValueError('Label text is required.')
             selected = body.get('selected_coffee_id')

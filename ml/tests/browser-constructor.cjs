@@ -20,6 +20,138 @@ const smallText = (page, selector) => page.evaluate(selector => [...document.que
   .filter(el => el.offsetParent !== null && parseFloat(getComputedStyle(el).fontSize) < 14)
   .map(el => el.textContent.trim().slice(0, 30)), selector);
 
+// Phase 7: saved recipes on the device, reuse, text and link export, deletion and import.
+async function checkOwnRecipes(browser) {
+  const context = await browser.newContext({viewport: {width: 375, height: 812}});
+  await context.grantPermissions(['clipboard-read', 'clipboard-write'], {origin: new URL(baseURL).origin});
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const clipboard = () => page.evaluate(() => navigator.clipboard.readText());
+  const saved = () => page.evaluate(() => JSON.parse(localStorage.getItem('firstbrew.myRecipes.v1') || '[]'));
+  await page.goto(baseURL);
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  assert.equal(await page.locator('#open-mine').isVisible(), false, 'no entry point without saved recipes');
+  // Save a starting recipe and a corrected one.
+  await page.locator('#open-builder').click();
+  await page.waitForSelector('#cb-country');
+  await page.locator('#cb-country').fill('Эфиопия');
+  await page.locator('#cb-processing').selectOption('washed');
+  await page.locator('#builder-next').click();
+  await page.locator('#cb-grinder').fill('Comandante C40 (стандартная ось)');
+  await page.locator('#builder-next').click();
+  await page.waitForSelector('#builder-result .builder-recipe');
+  await page.locator('#builder-favorite').click();
+  assert.equal(await page.locator('#builder-favorite').getAttribute('aria-pressed'), 'true');
+  assert.match(await page.locator('#builder-favorite').textContent(), /Убрать из моих рецептов/);
+  await page.locator('#builder-secondary').click();
+  await page.locator('[name="taste"][value="sour"]').check();
+  await page.locator('#builder-next').click();
+  await page.waitForFunction(() => document.getElementById('screen-construct').dataset.step === '4');
+  await page.locator('#builder-secondary').click();
+  assert.equal((await saved()).length, 2);
+  assert.deepEqual((await saved()).map(entry => entry.source), ['corrected', 'built']);
+  assert.deepEqual((await saved())[0].context_chips.slice(0, 3), ['Эфиопия', 'Мытая', 'Hario V60']);
+  await page.locator('#builder-close').click();
+  // The list.
+  assert.match(await page.locator('#open-mine').textContent(), /Мои рецепты · 2/);
+  await page.locator('#open-mine').click();
+  assert.equal(await page.locator('body').getAttribute('data-screen'), 'mine');
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'mine-title');
+  assert.equal(await page.locator('.own-card').count(), 2);
+  assert.match(await page.locator('.own-card').first().textContent(), /правка 1[\s\S]*Правка по вкусу/);
+  assert.match(await page.locator('.own-card').nth(1).textContent(), /Стартовый вариант/);
+  assert.ok(await noHorizontalScroll(page));
+  await screenshot(page, 'mine-list-mobile.png');
+  // One recipe: rename, export as text and link.
+  await page.locator('.own-card').first().click();
+  assert.equal(await page.locator('body').getAttribute('data-screen'), 'own');
+  assert.match(await page.locator('.own-recipe .note').first().textContent(), /Исправлен по вкусу: кисло/);
+  await page.locator('#own-name').fill('Утренний V60');
+  await page.locator('#own-name').press('Tab');
+  assert.equal(await page.locator('#own-title').textContent(), 'Утренний V60');
+  assert.equal((await saved())[0].title, 'Утренний V60');
+  assert.equal(await page.locator('#builder-correction [data-adjust], #own-body [data-adjust]').count(), 0, 'saved tiles are read-only');
+  await page.locator('#own-copy-text').click();
+  await page.locator('#own-status', {hasText: 'Текст скопирован'}).waitFor();
+  const text = await clipboard();
+  assert.match(text, /^Утренний V60\n/);
+  assert.match(text, /не рецепт обжарщика/);
+  assert.match(text, /0:00 · \d+\s+г · Смачиваем весь кофе/);
+  assert.match(text, /Открыть в First Brew: http/);
+  await page.locator('#own-copy-link').click();
+  await page.locator('#own-status', {hasText: 'Ссылка скопирована'}).waitFor();
+  const link = await clipboard();
+  assert.ok(link.startsWith(`${new URL(baseURL).origin}/#recipe=`), link.slice(0, 60));
+  assert.ok(link.length < 2500, `the link fits a message (${link.length} characters)`);
+  assert.ok(await noHorizontalScroll(page));
+  assert.deepEqual(await smallTargets(page), []);
+  assert.deepEqual(await smallText(page, '#own-body .note, #own-body .subtitle, .own-card small'), []);
+  await screenshot(page, 'own-recipe-mobile.png');
+  // Brew again, rate it, come back to the saved recipe.
+  await page.locator('#own-primary').click();
+  assert.equal(await page.locator('#brew-ready-name').textContent(), 'Утренний V60');
+  assert.equal((await saved())[0].brew_count, 1);
+  await page.locator('#brew-toggle').click();
+  await page.evaluate(() => window.firstBrew.seek(100000));
+  await page.locator('#brew-rate').click();
+  await page.waitForFunction(() => document.body.dataset.screen === 'construct');
+  assert.match(await page.locator('.feedback-rated strong').textContent(), /Утренний V60/);
+  await page.locator('#builder-back').click();
+  await page.waitForFunction(() => document.body.dataset.screen === 'own');
+  await page.locator('#own-secondary').click();
+  await page.waitForFunction(() => document.getElementById('screen-construct').dataset.step === '3');
+  await page.goBack();
+  await page.waitForFunction(() => document.body.dataset.screen === 'own');
+  // Delete with a confirmation step.
+  await page.locator('#own-delete').click();
+  assert.equal(await page.locator('#own-delete-confirm').isVisible(), true);
+  assert.equal(await page.evaluate(() => document.activeElement.id), 'own-delete-no');
+  await page.locator('#own-delete-no').click();
+  assert.equal(await page.locator('#own-delete-confirm').isVisible(), false);
+  assert.equal((await saved()).length, 2);
+  await page.locator('#own-delete').click();
+  await page.locator('#own-delete-yes').click();
+  await page.waitForFunction(() => document.body.dataset.screen === 'mine');
+  assert.match(await page.locator('#mine-status').textContent(), /Рецепт удалён/);
+  assert.equal(await page.locator('.own-card').count(), 1);
+  // Open the shared link as a new visitor would, then save it.
+  const visitor = await context.newPage();
+  visitor.on('pageerror', error => errors.push(error.message));
+  await visitor.goto(link);
+  await visitor.waitForFunction(() => document.body.dataset.screen === 'own');
+  assert.equal(await visitor.evaluate(() => location.hash), '#own', 'the recipe leaves the address bar');
+  assert.equal(await visitor.locator('#own-title').textContent(), 'Утренний V60');
+  assert.match(await visitor.locator('#own-body').textContent(), /Получено по ссылке[\s\S]*пока не сохранён/);
+  assert.match(await visitor.locator('.builder-reasons').textContent(), /объяснения исходных поправок не передаются/);
+  assert.match(await visitor.locator('#own-primary').textContent(), /Сохранить себе/);
+  assert.equal(await visitor.locator('#own-delete').count(), 0);
+  await screenshot(visitor, 'own-shared-mobile.png');
+  await visitor.locator('#own-primary').click();
+  assert.match(await visitor.locator('#own-status').textContent(), /сохранён/);
+  assert.match(await visitor.locator('#own-primary').textContent(), /^Заварить$/);
+  const afterImport = await visitor.evaluate(() => JSON.parse(localStorage.getItem('firstbrew.myRecipes.v1')));
+  assert.equal(afterImport.length, 2);
+  assert.equal(afterImport[0].source, 'shared');
+  // A link pasted into the running app, and a damaged one.
+  await visitor.evaluate(target => { location.hash = new URL(target).hash; }, link);
+  await visitor.waitForFunction(() => document.body.dataset.screen === 'own' && location.hash === '#own');
+  await visitor.goto(`${baseURL}/#recipe=zAAAA`);
+  await visitor.waitForFunction(() => document.body.dataset.screen === 'mine');
+  assert.match(await visitor.locator('#mine-status').textContent(), /повреждена/);
+  await visitor.goto(`${baseURL}/#recipe=j${Buffer.from('{"v":1,"r":{"origin":"calculated"}}').toString('base64url')}`);
+  await visitor.waitForFunction(() => document.body.dataset.screen === 'mine');
+  assert.match(await visitor.locator('#mine-status').textContent(), /повреждена/);
+  // Desktop keeps the recipe in one readable column.
+  await visitor.setViewportSize({width: 1100, height: 820});
+  await visitor.locator('.own-card').first().click();
+  assert.ok(await noHorizontalScroll(visitor));
+  assert.ok((await visitor.locator('#screen-own').boundingBox()).width <= 720);
+  assert.deepEqual(errors, []);
+  await context.close();
+}
+
 async function checkFeedback(browser) {
   const context = await browser.newContext({viewport: {width: 375, height: 812}});
   const page = await context.newPage();
@@ -332,7 +464,8 @@ async function run() {
     assert.ok(sentRecipe.steps.every(step => step.kind === 'pour'));
     assert.equal(await machinePage.locator('#brew-ready').isVisible(), false);
     await checkFeedback(browser);
-    console.log('PASS constructor: recipe timer, wait/steep/automatic, taste and refractometer corrections, navigation, 375×812 and desktop.');
+    await checkOwnRecipes(browser);
+    console.log('PASS constructor: recipe timer, wait/steep/automatic, taste and refractometer corrections, my recipes and share links, navigation, 375×812 and desktop.');
   } finally {
     await browser.close();
   }

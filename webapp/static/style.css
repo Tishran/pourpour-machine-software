@@ -54,6 +54,8 @@ button:disabled { cursor: default; opacity: .5; }
 body[data-screen="find"] #screen-find,
 body[data-screen="recipe"] #screen-recipe,
 body[data-screen="construct"] #screen-construct,
+body[data-screen="mine"] #screen-mine,
+body[data-screen="own"] #screen-own,
 body[data-screen="brew"] #screen-brew { display: flex; flex-direction: column; }
 
 .bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 56px; margin-bottom: 8px; }
@@ -473,3 +475,30 @@ select { font: inherit; color: var(--ink); background: var(--card); min-height: 
 .chart-legend .legend-cup { width: 12px; border-radius: 50%; background: var(--orange); }
 .legend-estimate { border-radius: 6px; background: var(--orange); opacity: .5; }
 .extraction-chart figcaption p { margin: 0; font-size: .875rem; color: var(--muted); }
+
+/* My recipes: the home entry, the list and one saved or shared recipe. */
+.mine-entry { width: 100%; margin: -8px 0 16px; }
+.screen-mine .results { margin-top: 8px; }
+.own-card small { font-size: .85rem; }
+.own-card small + small { margin-top: 2px; }
+.mine-empty .builder-entry { margin-top: 4px; }
+.own-body { flex: 1; min-width: 0; padding-bottom: 16px; }
+.own-body .builder-field { margin-top: 4px; }
+.own-share { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.own-share .button { min-width: 0; }
+#own-share { grid-column: 1 / -1; }
+.own-text { margin: 12px 0 0; }
+.own-text summary { display: flex; align-items: center; min-height: 48px; cursor: pointer; font-weight: 600; }
+.own-text textarea {
+  display: block; width: 100%; min-height: 220px; padding: 10px 12px; resize: vertical;
+  border: 1.5px solid var(--line); border-radius: 12px; background: var(--card); color: var(--ink);
+  font: .9rem/1.45 ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.own-delete { margin: 28px 0 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+.own-delete-confirm p { margin: 0 0 4px; font-weight: 600; }
+.own-delete-confirm .edit-actions { margin-top: 10px; }
+.button.danger { border-color: var(--orange); color: var(--accent-ink); background: var(--card); }
+.own-delete > .button.danger { width: 100%; }
+@media (min-width: 900px) {
+  #screen-mine, #screen-own { grid-column: 1 / -1; width: 100%; max-width: 720px; margin: 0 auto; }
+}

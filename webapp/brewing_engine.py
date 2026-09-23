@@ -205,6 +205,18 @@ def _settings(grinder, reference):
             'reference_ek43_dial': reference}
 
 
+# Every step text the engine writes; a shared recipe may carry only these pairs.
+_STEP_TEXTS = {
+    'bloom': ('Смачиваем весь кофе', 'Даём газу выйти перед основными вливаниями.'),
+    'gentle': ('Вливаем тонкой струёй ближе к центру', 'Мягкая струя снижает турбулентность.'),
+    'even': ('Вливаем плавно по кругу', 'Равномерно поддерживаем уровень воды над слоем.'),
+    'fill': ('Заливаем весь кофе', 'Весь кофе настаивается одновременно.'),
+    'steep': ('Настаиваем', 'Контакт воды с кофе раскрывает вкус.'),
+    'press': ('Отжимаем', 'Завершаем контакт воды с кофе.'),
+    'drain': ('Открываем слив', 'Завершаем контакт воды с кофе.'),
+}
+
+
 def _pour_steps(water, dose, pours, duration, bloom_multiplier, bloom_wait, gentle):
     timing = COEFFICIENTS['pour']
     bloom = min(water - pours + 1, max(1, round(dose * bloom_multiplier)))
@@ -219,11 +231,7 @@ def _pour_steps(water, dose, pours, duration, bloom_multiplier, bloom_wait, gent
         stop = min(start + max(timing['minimum_seconds'], round(amount / timing['rate_g_s'])),
                    starts[i + 1] if i + 1 < pours else duration)
         cumulative += amount
-        action = ('Смачиваем весь кофе' if i == 0 else
-                  'Вливаем тонкой струёй ближе к центру' if gentle else 'Вливаем плавно по кругу')
-        why = ('Даём газу выйти перед основными вливаниями.' if i == 0 else
-               'Мягкая струя снижает турбулентность.' if gentle else
-               'Равномерно поддерживаем уровень воды над слоем.')
+        action, why = _STEP_TEXTS['bloom' if i == 0 else 'gentle' if gentle else 'even']
         steps.append({'kind': 'pour', 'start_seconds': start, 'stop_seconds': stop,
                       'pour_g': amount, 'water_g': amount, 'total_water_g': cumulative,
                       'pour_rate_g_s': round(amount / (stop - start), 2),
@@ -235,17 +243,14 @@ def _immersion_steps(water, duration, device_id):
     timing = COEFFICIENTS['immersion_timing']
     fill_stop = min(timing['fill_max_seconds'], duration // 5)
     drain_kind = 'press' if device_id in ('french_press', 'aeropress') else 'drain'
+    texts = {kind: dict(zip(('instruction', 'why'), _STEP_TEXTS[kind])) for kind in ('fill', 'steep', drain_kind)}
     return [
         {'kind': 'fill', 'start_seconds': 0, 'stop_seconds': fill_stop,
-         'water_g': water, 'pour_g': water, 'total_water_g': water,
-         'instruction': 'Заливаем весь кофе', 'why': 'Весь кофе настаивается одновременно.'},
+         'water_g': water, 'pour_g': water, 'total_water_g': water, **texts['fill']},
         {'kind': 'steep', 'start_seconds': fill_stop, 'stop_seconds': duration - timing['drain_seconds'],
-         'water_g': 0, 'pour_g': 0, 'total_water_g': water,
-         'instruction': 'Настаиваем', 'why': 'Контакт воды с кофе раскрывает вкус.'},
+         'water_g': 0, 'pour_g': 0, 'total_water_g': water, **texts['steep']},
         {'kind': drain_kind, 'start_seconds': duration - timing['drain_seconds'], 'stop_seconds': duration,
-         'water_g': 0, 'pour_g': 0, 'total_water_g': water,
-         'instruction': 'Отжимаем' if drain_kind == 'press' else 'Открываем слив',
-         'why': 'Завершаем контакт воды с кофе.'},
+         'water_g': 0, 'pour_g': 0, 'total_water_g': water, **texts[drain_kind]},
     ]
 
 
@@ -877,3 +882,60 @@ def adjust(recipe, feedback):
             'tds_percent': cup['tds'], 'strength': cup['strength'],
             'measurement_kind': 'measured' if cup['kind'] == 'measured' else 'taste_only',
             'chart': extraction_chart(recipe, cup)}
+
+
+_VARIANT_TEXTS = {'brighter': ('Ярче', 'Выше прозрачность и кислотность.'),
+                  'sweeter': ('Слаще', 'Плотнее тело и длиннее контакт.')}
+
+
+def _machine_compatible(recipe):
+    return (recipe['method'] == 'percolation' and recipe['water_g'] <= COEFFICIENTS['machine_water_max_g'] and
+            recipe['duration_seconds'] <= 600 and recipe['temperature_c'] <= 99)
+
+
+def restore_recipe(recipe):
+    """Rebuild a shared or stored calculated recipe from its checked fields only.
+
+    Unknown fields are dropped, the grinder setting is recomputed from the
+    table and step texts must be the engine's own. Explanations do not travel
+    with a link, so the restored recipe says so instead of inventing them.
+    """
+    dose, water, temperature, particle, reference, grinder = validate_calculated_recipe(recipe)
+    known_texts = set(_STEP_TEXTS.values())
+    steps = []
+    for step in recipe['steps']:
+        if (step.get('instruction'), step.get('why')) not in known_texts:
+            raise BrewingInputError('recipe.steps: unknown step text')
+        clean = {key: step[key] for key in ('kind', 'start_seconds', 'stop_seconds', 'pour_g',
+                                              'water_g', 'total_water_g', 'instruction', 'why')}
+        if clean['kind'] == 'pour':
+            clean['pour_rate_g_s'] = round(clean['pour_g'] / (clean['stop_seconds'] - clean['start_seconds']), 2)
+        steps.append(clean)
+    grind = _settings(grinder, reference)
+    grind.update({'target_particle_microns': particle, 'microns': particle})
+    edited = recipe.get('edited', False)
+    if not isinstance(edited, bool):
+        raise BrewingInputError('recipe.edited: expected true or false')
+    name, summary = _VARIANT_TEXTS[recipe['id']]
+    result = {
+        'schema_version': 1, 'catalog_schema_version': 1, 'origin': 'calculated',
+        'engine_version': recipe['engine_version'], 'id': recipe['id'], 'name': name, 'summary': summary,
+        'device_id': recipe['device_id'], 'grinder_id': grinder['id'] if grinder else None,
+        'method': recipe['method'], 'dose_g': dose, 'coffee_g': dose, 'water_g': water,
+        'ratio': recipe['ratio'], 'temperature_c': temperature, 'grind': grind,
+        'grind_setting': grind['setting'], 'total_seconds': recipe['duration_seconds'],
+        'duration_seconds': recipe['duration_seconds'], 'steps': steps,
+        'context_chips': [], 'assumptions': ['Рецепт расчётный, не рецепт обжарщика.',
+                                             'Помол — стартовый ориентир; подстройте по вкусу и сливу.'],
+        'reasons': [_reason('recipe', 'restored',
+                            'Рецепт получен по ссылке: объяснения исходных поправок не передаются.',
+                            'Recipe opened from a link: the original explanations are not included.')],
+    }
+    result['machine_compatible'] = _machine_compatible(result)
+    if recipe['method'] == 'automatic_drip':
+        result['automatic_mode'] = 'standard'
+    if recipe.get('revision'):
+        result['revision'] = recipe['revision']
+    if edited:
+        result['edited'] = True
+    return result

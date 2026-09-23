@@ -65,6 +65,10 @@ class StaticFileTests(unittest.TestCase):
         for element in ('builder-feedback', 'builder-correction', 'builder-secondary',
                         'builder-cta-status', 'builder-close', 'brew-rate'):
             self.assertIn(f'id="{element}"', html)
+        # My recipes: the home entry, the list and one saved or shared recipe.
+        for element in ('open-mine', 'screen-mine', 'mine-list', 'screen-own', 'own-body',
+                        'own-primary', 'own-secondary', 'own-status'):
+            self.assertIn(f'id="{element}"', html)
         self.assertIn('id="recents"', html)
         self.assertNotIn('id="recents-hint"', html)
         self.assertIn('id="scan-preview"', html)
