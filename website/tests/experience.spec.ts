@@ -8,13 +8,13 @@ const useEnglish = (page: Page) =>
 
 test("Russian is the default and the language switch persists", async ({
   page,
-}) => {
+}, testInfo) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "ru");
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Вкусный кофе — без лишних движений.",
+      name: "Хороший кофе дома. Легко и доступно.",
     }),
   ).toBeVisible();
   await expect(page.getByRole("button", { name: "RU" })).toHaveAttribute(
@@ -26,8 +26,19 @@ test("Russian is the default and the language switch persists", async ({
     "href",
     "https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb",
   );
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("new-hero-ru-mobile.png") });
   await page.getByRole("button", { name: "EN" }).click();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.getByRole("heading", { level: 1, name: "Great coffee at home. Easy and affordable." })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await page.screenshot({ path: testInfo.outputPath("new-hero-en-mobile.png") });
+  await page.evaluate(() => document.getElementById("launch")!.scrollIntoView({ behavior: "instant" }));
+  await expect(page.locator("#launch h2")).toContainText("Great coffee at home.");
+  await expect(page.locator("#launch h2")).toContainText("Easy and affordable.");
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   await page.reload();
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
 });

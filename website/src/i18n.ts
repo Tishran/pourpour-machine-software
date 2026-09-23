@@ -4,7 +4,7 @@ export const LANGUAGE_KEY = "firstbrew.landing.language";
 
 export const TEXT = {
   ru: {
-    metaTitle: "First Brew — вкусный кофе без лишних движений",
+    metaTitle: "First Brew — хороший кофе дома, легко и доступно",
     metaDescription:
       "First Brew — автоматическая кофеварка для воронки. Изучите устройство и получите скидку 15% на предзаказ.",
     language: "Язык сайта",
@@ -23,8 +23,8 @@ export const TEXT = {
       launch: "Ваше утро",
     },
     heroEyebrow: "АВТОМАТИЧЕСКАЯ ВОРОНКА",
-    heroTitle: "Вкусный кофе —",
-    heroEmphasis: "без лишних движений.",
+    heroTitle: "Хороший кофе дома.",
+    heroEmphasis: "Легко и доступно.",
     heroBody:
       "Для каждой новой пачки — подходящий рецепт и автоматический пролив.",
     scrollExplore: "ЛИСТАЙТЕ, ЧТОБЫ УЗНАТЬ БОЛЬШЕ",
@@ -62,8 +62,8 @@ export const TEXT = {
     purposeBody:
       "First Brew автоматически управляет температурой, потоком воды, временем, паузами и траекторией пролива.",
     launchEyebrow: "04 / МЕСТО ДЛЯ НОВОГО РИТУАЛА",
-    launchTitle: "Вкусный кофе —",
-    launchEmphasis: "каждое утро.",
+    launchTitle: "Хороший кофе дома.",
+    launchEmphasis: "Легко и доступно.",
     finalInvite: "Пусть First Brew появится на вашей кухне.",
     prototypeNow: "Сейчас мы собираем первый рабочий прототип.",
     notify: "УЗНАТЬ О ЗАПУСКЕ",
@@ -133,7 +133,7 @@ export const TEXT = {
     },
   },
   en: {
-    metaTitle: "First Brew — We finally bring you tasty coffee",
+    metaTitle: "First Brew — Great coffee at home, made easy and affordable",
     metaDescription:
       "First Brew. Explore an automatic pour-over brewer in development and get 15% off your pre-order.",
     language: "Site language",
@@ -152,8 +152,8 @@ export const TEXT = {
       launch: "Your morning",
     },
     heroEyebrow: "AUTOMATIC POUR-OVER",
-    heroTitle: "We finally bring you",
-    heroEmphasis: "tasty coffee",
+    heroTitle: "Great coffee at home.",
+    heroEmphasis: "Easy and affordable.",
     heroBody:
       "Brew every new bag with a recipe matched to that coffee — without manually controlling the pour.",
     scrollExplore: "SCROLL TO EXPLORE",
@@ -191,8 +191,8 @@ export const TEXT = {
     purposeBody:
       "First Brew handles the temperature, water flow, timing, pulses, pauses, and pouring pattern automatically.",
     launchEyebrow: "04 / ROOM FOR A NEW RITUAL",
-    launchTitle: "We finally bring you",
-    launchEmphasis: "tasty coffee",
+    launchTitle: "Great coffee at home.",
+    launchEmphasis: "Easy and affordable.",
     finalInvite: "Bring First Brew to your kitchen.",
     prototypeNow: "We’re building the first working prototype now.",
     notify: "GET NOTIFIED AT LAUNCH",
