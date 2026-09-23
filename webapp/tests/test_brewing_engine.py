@@ -129,6 +129,12 @@ class BuildTests(unittest.TestCase):
         self.assertIn('центру', deep['steps'][1]['instruction'])
         self.assertNotIn('центру', shallow['steps'][1]['instruction'])
 
+    def test_custom_filter_fit_changes_starting_grind(self):
+        common = {'device_id': 'custom_dripper', 'device_name': 'My cone',
+                  'bed_height_mm_at_15g': 20, 'material': 'plastic'}
+        self.assertGreater(brighter(**common, filter_fit='tight')['grind']['microns'],
+                           brighter(**common, filter_fit='loose')['grind']['microns'])
+
     def test_immersion_has_fill_steep_press(self):
         recipe = brighter(device_id='french_press')
         self.assertEqual([s['kind'] for s in recipe['steps']], ['fill', 'steep', 'press'])

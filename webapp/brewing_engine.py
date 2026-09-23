@@ -53,6 +53,11 @@ COEFFICIENTS = {
     'flat': {'particle_microns': 40, 'reference_dial': 0.5, 'pours': 1},
     'high_mass': {'temperature_c': 1},
     'dense_filter': {'particle_microns': 40, 'reference_dial': 0.5},
+    'custom_filter_fit': {
+        'tight': {'particle_microns': 30, 'reference_dial': 0.5},
+        'good': {},
+        'loose': {'particle_microns': -20, 'reference_dial': -0.5},
+    },
     'low_tds': {'particle_microns': -20, 'reference_dial': -0.5},
     'high_tds': {'particle_microns': 20, 'reference_dial': 0.5},
     'deep_bed_mm': 30,
@@ -312,6 +317,11 @@ def build(params):
     if device['method'] == 'percolation' and device['geometry'] == 'flat':
         apply('flat_bed', COEFFICIENTS['flat'], 'Поправка на плоское дно и иной слив.',
               'Adjustment for a flat bed and its flow.')
+    if device['id'] == 'custom_dripper':
+        apply(f'custom_filter_fit_{params["filter_fit"]}',
+              COEFFICIENTS['custom_filter_fit'][params['filter_fit']],
+              'Поправка на посадку фильтра — стартовая гипотеза о сопротивлении слива.',
+              'Filter-fit adjustment is a starting hypothesis about flow resistance.')
     if material and material['id'] in ('glass', 'metal'):
         apply('material_heat', COEFFICIENTS['high_mass'],
               'Стекло или металл могут забирать тепло; прогрейте воронку.',
@@ -526,7 +536,8 @@ def _feedback_signal(feedback, recipe):
     return 'hold', extraction
 
 
-def _check_adjustable_recipe(recipe):
+def validate_calculated_recipe(recipe):
+    """Reject malformed calculated recipes before accepting client-side edits."""
     if (not isinstance(recipe, dict) or recipe.get('origin') != 'calculated' or
             recipe.get('schema_version') != 1 or recipe.get('catalog_schema_version') != 1 or
             recipe.get('engine_version') != COEFFICIENTS['version'] or
@@ -605,7 +616,7 @@ def adjust(recipe, feedback):
     This phase-3 rule set does not estimate TDS/extraction from taste and never
     changes concentration before the user has reported sweetness.
     """
-    dose, water, temperature, particle, reference, grinder = _check_adjustable_recipe(recipe)
+    dose, water, temperature, particle, reference, grinder = validate_calculated_recipe(recipe)
     signal, extraction = _feedback_signal(feedback, recipe)
     corrected = deepcopy(recipe)
     changes = []

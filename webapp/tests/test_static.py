@@ -55,6 +55,9 @@ class StaticFileTests(unittest.TestCase):
         self.assertIn('accept="image/*" capture="environment"', html)
         for screen in ('screen-find', 'screen-recipe', 'screen-brew'):
             self.assertIn(f'id="{screen}"', html)
+        self.assertIn('id="screen-construct"', html)
+        self.assertIn('id="open-builder"', html)
+        self.assertIn('id="builder-language"', html)
         self.assertIn('id="recents"', html)
         self.assertNotIn('id="recents-hint"', html)
         self.assertIn('id="scan-preview"', html)

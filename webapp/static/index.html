@@ -59,11 +59,49 @@
         </div>
       </form>
       <p class="status" id="catalog-status" role="status" aria-live="polite"></p>
+      <button class="button builder-entry" id="open-builder" type="button"></button>
       <section class="recents" id="recents" aria-labelledby="recents-title" hidden>
         <h2 class="section" id="recents-title"></h2>
         <div class="results" id="recent-list" role="list"></div>
       </section>
       <div class="results" id="results" role="list" hidden></div>
+    </section>
+
+    <section class="screen screen-builder" id="screen-construct" aria-labelledby="builder-title">
+      <header class="bar">
+        <button class="back" id="builder-back" type="button"></button>
+        <label class="language-switch">
+          <span class="visually-hidden" id="builder-language-label"></span>
+          <select id="builder-language" aria-labelledby="builder-language-label">
+            <option value="ru">RU</option>
+            <option value="en">EN</option>
+          </select>
+        </label>
+      </header>
+      <div class="builder-progress" aria-live="polite">
+        <p id="builder-progress-text"></p>
+        <div class="builder-progress-track" aria-hidden="true"><i id="builder-progress-fill"></i></div>
+      </div>
+      <div class="builder-layout">
+        <div class="builder-form-pane">
+          <div class="builder-heading">
+            <h1 class="title" id="builder-title" tabindex="-1"></h1>
+            <button class="button" type="button" id="builder-mode"></button>
+          </div>
+          <p class="subtitle" id="builder-intro"></p>
+          <p class="status" id="builder-status" role="status" aria-live="polite"></p>
+          <form id="builder-form" novalidate>
+            <div id="builder-fields"></div>
+            <button class="button builder-rebuild" id="builder-rebuild" type="button" hidden></button>
+          </form>
+        </div>
+        <div class="builder-result-pane" id="builder-result-pane" hidden>
+          <div id="builder-result"></div>
+        </div>
+      </div>
+      <div class="cta-bar builder-cta" id="builder-cta">
+        <button type="button" class="button primary big" id="builder-next"></button>
+      </div>
     </section>
 
     <section class="screen" id="screen-confirm" aria-labelledby="confirm-title">

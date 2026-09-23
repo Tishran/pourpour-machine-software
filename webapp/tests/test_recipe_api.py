@@ -67,6 +67,23 @@ class RecipeAPITests(unittest.TestCase):
         self.assertAlmostEqual(body['extraction_percent'], 18.2)
         self.assertEqual(body['measurement_kind'], 'measured')
 
+    def test_rescale_keeps_pours_consistent(self):
+        recipe = build({})[0]
+        status, body = request('POST', '/api/recipes/rescale',
+                               {'recipe': recipe, 'dose_g': 20, 'water_g': None})
+        self.assertEqual(status, 200)
+        changed = body['recipe']
+        self.assertEqual(changed['dose_g'], 20)
+        self.assertEqual(changed['steps'][-1]['total_water_g'], changed['water_g'])
+
+    def test_rescale_rejects_tampered_recipe(self):
+        recipe = build({})[0]
+        recipe['steps'][0]['total_water_g'] = 999
+        status, body = request('POST', '/api/recipes/rescale',
+                               {'recipe': recipe, 'dose_g': 20, 'water_g': None})
+        self.assertEqual(status, 400)
+        self.assertTrue(body['error'])
+
     def test_bad_build_payload_is_400(self):
         for payload in ({}, {'params': []}, {'params': {'country': '??'}},
                         {'params': {'dose_g': 'fifteen'}}, {'params': {}, 'debug': True}):

@@ -30,6 +30,120 @@ const STRINGS = {
     survey_title: '15% off your pre-order',
     survey_text: 'Take a short survey about how you brew coffee and get a 15% discount on your PourPour pre-order.',
     survey_button: 'Take the survey',
+    builder_open: 'Build a recipe for my coffee',
+    builder_title: 'Build a starting recipe',
+    builder_intro: 'Your coffee and equipment shape a practical first brew. Tune it by taste afterward.',
+    builder_mode_basic: 'Basic mode',
+    builder_mode_pro: 'Pro mode',
+    builder_step: (n) => `Step ${n} of 5`,
+    builder_step_coffee: 'Coffee details',
+    builder_step_tools: 'Your equipment',
+    builder_step_recipe: 'Starting recipes',
+    builder_next: 'Next: equipment',
+    builder_build: 'Build recipes',
+    builder_rebuild: 'Update recipes',
+    builder_loading: 'Building your recipes…',
+    builder_options_loading: 'Loading options…',
+    builder_error: 'Could not build a recipe. Check the fields and try again.',
+    builder_unknown: 'Not specified',
+    builder_country: 'Country of origin',
+    builder_processing: 'Processing',
+    builder_roast_age: 'Roast age',
+    builder_roast_date: 'Roast date',
+    builder_roast: 'Roast level',
+    builder_light: 'Light',
+    builder_medium: 'Medium',
+    builder_dark: 'Dark',
+    builder_region: 'Region',
+    builder_variety: 'Variety',
+    builder_q_grade: 'Q grade',
+    builder_water_ph: 'Water pH',
+    builder_water_tds: 'Water TDS (ppm)',
+    builder_age_fresh: 'Up to 2 weeks',
+    builder_age_2w: 'More than 2 weeks',
+    builder_age_1m: 'More than 1 month',
+    builder_age_2m: 'More than 2 months',
+    builder_age_4m: 'More than 4 months',
+    builder_age_6m: 'More than 6 months',
+    builder_age_date: 'Choose a date',
+    builder_device: 'Brewer',
+    builder_grinder: 'Grinder',
+    builder_material: 'Brewer material',
+    builder_filter: 'Filter',
+    builder_dose: 'Coffee dose (g)',
+    builder_water_amount: 'Water (g)',
+    builder_custom_name: 'Your brewer name',
+    builder_bed_height: 'Bed height at 15 g (mm)',
+    builder_filter_fit: 'Filter fit',
+    builder_fit_tight: 'Tight',
+    builder_fit_good: 'Good',
+    builder_fit_loose: 'Loose',
+    builder_group_cone: 'Conical drippers',
+    builder_group_flat: 'Flat-bottom drippers',
+    builder_group_immersion: 'Immersion and hybrid',
+    builder_group_machine: 'Automatic drip',
+    builder_group_custom: 'My dripper',
+    builder_help: (field) => `Why ${field} matters`,
+    builder_help_country: 'Origin gives context, but does not silently change numeric parameters.',
+    builder_help_processing: 'Processing changes the first grind and pour suggestion. It is a starting hypothesis.',
+    builder_help_roast_age: 'Fresh coffee may release more gas; the bloom can be longer.',
+    builder_help_roast_date: 'The date makes roast age explicit. Your coffee bag is the source.',
+    builder_help_roast: 'Darker roasts usually start cooler and coarser than lighter roasts.',
+    builder_help_device: 'The brewer determines whether the recipe uses pours, steeping or an automatic program.',
+    builder_help_grinder: 'A setting is only shown when the comparison table covers that exact model.',
+    builder_help_material: 'Glass and metal may absorb more heat; preheat the brewer.',
+    builder_help_filter: 'A dense filter may slow the flow, so the first grind suggestion changes.',
+    builder_help_dose: 'Dose and water set the starting brew ratio.',
+    builder_help_water_amount: 'Water is the amount poured in, not the beverage yield.',
+    builder_help_bed_height: 'A tall bed calls for a gentler pour near the center.',
+    builder_help_filter_fit: 'How the paper sits affects flow; custom brewers need this input.',
+    builder_help_water_tds: 'TDS alone is not water hardness; any adjustment based on it is especially uncertain.',
+    builder_help_water_ph: 'pH is kept as context until a calibrated rule is available.',
+    builder_help_context: 'Useful background, not a proven numerical adjustment.',
+    builder_pick_option: 'Choose an option from the list, or leave this field empty.',
+    builder_required_custom: 'Enter the name, bed height, filter fit and material for your dripper.',
+    builder_calculated: 'Calculated from parameters · not a roaster recipe',
+    builder_approximate: 'All settings are starting points. Adjust them by taste and drawdown.',
+    builder_grind_nominal: 'Nominal particle target, not a measured particle size',
+    builder_grind_unmapped: 'No reliable setting for this grinder; dial in by taste.',
+    builder_variant_position: (i, n) => `${i} / ${n}`,
+    builder_variant_brighter: 'Brighter',
+    builder_variant_sweeter: 'Sweeter',
+    builder_summary_brighter: 'More clarity and acidity.',
+    builder_summary_sweeter: 'More body and longer contact.',
+    builder_prev_variant: 'Previous recipe',
+    builder_next_variant: 'Next recipe',
+    builder_more_context: (n) => `+${n} more`,
+    builder_increase: 'Increase',
+    builder_decrease: 'Decrease',
+    builder_process: 'Brew process',
+    builder_start_col: 'Start',
+    builder_scale_col: 'On scale',
+    builder_action_col: 'Action and reason',
+    builder_automatic: 'Set the brewer to its standard mode. There are no manual pours.',
+    builder_reasons: 'Why these values?',
+    builder_favorite: 'Add to favorites',
+    builder_unfavorite: 'Remove from favorites',
+    builder_brew: 'Brew this recipe',
+    builder_timer_later: 'A timer for this brewing method arrives in the next phase.',
+    builder_no_recipe: 'Complete the coffee and equipment steps to see recipes.',
+    builder_actions: {
+      'Смачиваем весь кофе': 'Wet all the coffee',
+      'Вливаем тонкой струёй ближе к центру': 'Pour gently near the center',
+      'Вливаем плавно по кругу': 'Pour evenly in circles',
+      'Заливаем весь кофе': 'Add all the water',
+      'Настаиваем': 'Steep',
+      'Отжимаем': 'Press',
+      'Открываем слив': 'Open the drain',
+    },
+    builder_whys: {
+      'Даём газу выйти перед основными вливаниями.': 'Let gas escape before the main pours.',
+      'Мягкая струя снижает турбулентность.': 'A gentle stream reduces turbulence.',
+      'Равномерно поддерживаем уровень воды над слоем.': 'Keep water level even above the bed.',
+      'Весь кофе настаивается одновременно.': 'All the coffee steeps at the same time.',
+      'Контакт воды с кофе раскрывает вкус.': 'Contact with water extracts flavor.',
+      'Завершаем контакт воды с кофе.': 'End contact between coffee and water.',
+    },
     reading_slow: 'Reading the label… Taking longer than usual.',
     cancel: 'Cancel',
     photo_cancelled: 'Recognition cancelled. Your photo is still here.',
@@ -211,6 +325,105 @@ const STRINGS = {
     survey_title: 'Скидка 15% на предзаказ',
     survey_text: 'Пройдите короткий опрос о том, как вы завариваете кофе, и получите скидку 15% на предзаказ PourPour.',
     survey_button: 'Пройти опрос',
+    builder_open: 'Собрать рецепт для своего кофе',
+    builder_title: 'Собрать стартовый рецепт',
+    builder_intro: 'Кофе и оборудование задают отправную точку. После заваривания подстроите её по вкусу.',
+    builder_mode_basic: 'Обычный режим',
+    builder_mode_pro: 'Pro-режим',
+    builder_step: (n) => `Шаг ${n} из 5`,
+    builder_step_coffee: 'О кофе',
+    builder_step_tools: 'Оборудование',
+    builder_step_recipe: 'Стартовые рецепты',
+    builder_next: 'Далее: оборудование',
+    builder_build: 'Собрать рецепты',
+    builder_rebuild: 'Обновить рецепты',
+    builder_loading: 'Собираем рецепты…',
+    builder_options_loading: 'Загружаем варианты…',
+    builder_error: 'Не удалось собрать рецепт. Проверьте поля и попробуйте ещё раз.',
+    builder_unknown: 'Не указано',
+    builder_country: 'Страна происхождения',
+    builder_processing: 'Обработка',
+    builder_roast_age: 'Возраст обжарки',
+    builder_roast_date: 'Дата обжарки',
+    builder_roast: 'Степень обжарки',
+    builder_light: 'Светлая',
+    builder_medium: 'Средняя',
+    builder_dark: 'Тёмная',
+    builder_region: 'Регион',
+    builder_variety: 'Сорт',
+    builder_q_grade: 'Q grade',
+    builder_water_ph: 'pH воды',
+    builder_water_tds: 'TDS воды (ppm)',
+    builder_age_fresh: 'До 2 недель',
+    builder_age_2w: 'Больше 2 недель',
+    builder_age_1m: 'Больше месяца',
+    builder_age_2m: 'Больше 2 месяцев',
+    builder_age_4m: 'Больше 4 месяцев',
+    builder_age_6m: 'Больше полугода',
+    builder_age_date: 'Выбрать дату',
+    builder_device: 'Устройство',
+    builder_grinder: 'Кофемолка',
+    builder_material: 'Материал воронки',
+    builder_filter: 'Фильтр',
+    builder_dose: 'Кофе (г)',
+    builder_water_amount: 'Вода (г)',
+    builder_custom_name: 'Название своей воронки',
+    builder_bed_height: 'Высота слоя на 15 г (мм)',
+    builder_filter_fit: 'Прилегание фильтра',
+    builder_fit_tight: 'Плотное',
+    builder_fit_good: 'Хорошее',
+    builder_fit_loose: 'Слабое',
+    builder_group_cone: 'Конические воронки',
+    builder_group_flat: 'Плоскодонные воронки',
+    builder_group_immersion: 'Иммерсия и гибриды',
+    builder_group_machine: 'Капельные кофеварки',
+    builder_group_custom: 'Своя воронка',
+    builder_help: (field) => `Зачем нужно поле «${field}»`,
+    builder_help_country: 'Страна даёт контекст, но сама по себе не меняет числа в рецепте.',
+    builder_help_processing: 'Обработка влияет на стартовый помол и схему вливания. Это лишь гипотеза.',
+    builder_help_roast_age: 'Свежий кофе может сильнее выделять газ; предсмачивание будет дольше.',
+    builder_help_roast_date: 'Дата позволяет явно посчитать возраст кофе. Смотрите её на пачке.',
+    builder_help_roast: 'Для тёмной обжарки обычно начинаем с меньшей температуры и более грубого помола.',
+    builder_help_device: 'Устройство определяет, нужны ли вливания, настаивание или автоматический режим.',
+    builder_help_grinder: 'Настройку показываем только для точной модели из таблицы соответствий.',
+    builder_help_material: 'Стекло и металл могут забирать тепло; прогрейте воронку.',
+    builder_help_filter: 'Плотная бумага может замедлить слив, поэтому стартовый помол меняется.',
+    builder_help_dose: 'Доза и вода задают начальное соотношение.',
+    builder_help_water_amount: 'Это влитая вода, а не вес готового напитка.',
+    builder_help_bed_height: 'Высокий слой требует мягкого вливания ближе к центру.',
+    builder_help_filter_fit: 'Посадка бумаги влияет на слив; для своей воронки этот параметр обязателен.',
+    builder_help_water_tds: 'TDS не равен жёсткости воды; поправка по нему особенно неточна.',
+    builder_help_water_ph: 'pH пока сохраняется как контекст, без численной поправки.',
+    builder_help_context: 'Полезный контекст, но не доказанная численная поправка.',
+    builder_pick_option: 'Выберите вариант из списка или оставьте поле пустым.',
+    builder_required_custom: 'Для своей воронки укажите название, высоту слоя, посадку фильтра и материал.',
+    builder_calculated: 'Собрано по параметрам · не рецепт обжарщика',
+    builder_approximate: 'Все настройки стартовые. Подстройте по вкусу и времени слива.',
+    builder_grind_nominal: 'Условная цель, а не измеренный размер частиц',
+    builder_grind_unmapped: 'Для этой кофемолки нет проверенной настройки; подбирайте по вкусу.',
+    builder_variant_position: (i, n) => `${i} / ${n}`,
+    builder_variant_brighter: 'Ярче',
+    builder_variant_sweeter: 'Слаще',
+    builder_summary_brighter: 'Выше прозрачность и кислотность.',
+    builder_summary_sweeter: 'Плотнее тело и длиннее контакт.',
+    builder_prev_variant: 'Предыдущий рецепт',
+    builder_next_variant: 'Следующий рецепт',
+    builder_more_context: (n) => `Ещё ${n}`,
+    builder_increase: 'Увеличить',
+    builder_decrease: 'Уменьшить',
+    builder_process: 'Процесс заваривания',
+    builder_start_col: 'Старт',
+    builder_scale_col: 'На весах',
+    builder_action_col: 'Действие и причина',
+    builder_automatic: 'Включите стандартный режим кофеварки. Ручных вливаний нет.',
+    builder_reasons: 'Почему именно так?',
+    builder_favorite: 'В избранное',
+    builder_unfavorite: 'Убрать из избранного',
+    builder_brew: 'Заварить',
+    builder_timer_later: 'Таймер для этого метода появится в следующей фазе.',
+    builder_no_recipe: 'Заполните шаги о кофе и оборудовании, чтобы получить рецепт.',
+    builder_actions: {},
+    builder_whys: {},
     reading_slow: 'Фото распознаётся… Это дольше обычного.',
     cancel: 'Отмена',
     photo_cancelled: 'Распознавание отменено. Фото осталось на экране.',
@@ -392,7 +605,7 @@ const countdown = (seconds) => seconds >= 60 ? clock(Math.max(0, seconds)) : sec
 // Source instructions arrive in Russian; translate the known brewing words, keep the rest as-is.
 const stepName = (instruction) => {
   const text = String(instruction ?? '').trim();
-  const known = STRINGS[LANG].instructions[text.toLowerCase()];
+  const known = STRINGS[LANG].instructions[text.toLowerCase()] || STRINGS[LANG].builder_actions[text];
   return known || text || t('pour_default');
 };
 // Known API warnings may be localized; unrecognized source text stays intact.
@@ -409,6 +622,8 @@ let wakeLock = null, audio = null;
 // Machine mode: the brew screen mirrors telemetry from the machine instead of the local timer.
 let brewMode = 'local', machineInfo = null, machineState = null, machineOnline = false, machineEvents = null;
 let machineHeatStart = null, machineLastStep = -1, machineStopped = false;
+const builder = {options: null, step: 0, mode: 'basic', draft: {}, variants: [], selected: 0,
+  request: null, busy: false, updateTimer: null};
 const MACHINE_ACTIVE = ['PREHEAT', 'READY', 'BREWING', 'PAUSED'];
 const prefs = {vibrate: true, sound: true};
 
@@ -471,6 +686,7 @@ function renderRecents() {
   $('recents').hidden = !entries.length || !!$('query').value.trim();
 }
 function saveRecent() {
+  if (currentRecipe?.origin === 'calculated') return;
   const product = {id: currentProduct?.id || null,
     name: currentData.confirmed_label && currentData.recommendation_kind !== 'catalog_match'
       ? currentData.reference_name : currentData.product.name, url: currentData.product.url};
@@ -508,13 +724,13 @@ function selectRecent(entry) {
 // ---------------------------------------------------------------------------
 // Screens and browser history
 // ---------------------------------------------------------------------------
-const SCREENS = ['find', 'confirm', 'recipe', 'brew'];
+const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
   if (!SCREENS.includes(screen)) screen = 'find';
   if (screen === 'confirm' && !recognition) screen = 'find';
-  if (['recipe', 'brew'].includes(screen) && !currentData && !recipeLoading) screen = 'find';
+  if (screen === 'recipe' && !currentData && !recipeLoading) screen = 'find';
   if (screen === 'brew' && !currentRecipe) screen = currentData ? 'recipe' : 'find';
   if (currentScreen() === 'confirm' && screen !== 'confirm') cancelConfirmation();
   document.body.dataset.screen = screen;
@@ -525,7 +741,8 @@ function show(screen, {push = true} = {}) {
     history.pushState({screen}, '', screen === 'find' ? location.pathname : `#${screen}`);
   }
   window.scrollTo(0, 0);
-  const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title') : screen === 'confirm' ? $('confirm-title') : $('brew-toggle');
+  const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title')
+    : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? $('builder-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -1149,6 +1366,333 @@ async function handlePhoto(file) {
 }
 
 // ---------------------------------------------------------------------------
+// Parameter builder: coffee → equipment → calculated starting recipes.
+// The roaster/catalog flow above stays separate and unchanged.
+// ---------------------------------------------------------------------------
+const BUILDER_FAVORITES_KEY = 'firstbrew.favorites.v1';
+const builderOptionName = item => item?.[LANG === 'ru' ? 'name_ru' : 'name_en'] || '';
+const builderOption = (item, selected) => `<option value="${escape(item.id)}"${item.id === selected ? ' selected' : ''}>${escape(builderOptionName(item))}</option>`;
+const builderHelp = (label, key) => `<details class="builder-help"><summary aria-label="${escape(t('builder_help', label))}">?</summary><p>${escape(t(key))}</p></details>`;
+const builderField = (id, label, control, help) => `<div class="builder-field"><div class="builder-field-head"><label for="${id}">${escape(label)}</label>${builderHelp(label, help)}</div>${control}</div>`;
+const builderSelect = (id, options, selected = '') => `<select id="${id}">${options}</select>`;
+const builderInput = (id, type, value = '', extra = '') => `<input id="${id}" type="${type}" value="${escape(value)}" ${extra}>`;
+const builderUnknownOption = () => `<option value="">${escape(t('builder_unknown'))}</option>`;
+
+function builderResolve(kind, text) {
+  const value = String(text || '').trim().toLowerCase();
+  if (!value) return null;
+  return builder.options[kind].find(item => [item.id, item.name_ru, item.name_en]
+    .some(name => name.toLowerCase() === value))?.id || null;
+}
+
+function captureBuilderDraft() {
+  if (!$('cb-country')) return;
+  const d = builder.draft;
+  for (const key of ['country', 'processing', 'age', 'date', 'region', 'variety', 'q_grade',
+    'water_ph', 'water_tds', 'device', 'grinder', 'material', 'filter', 'dose', 'water',
+    'custom_name', 'bed_height', 'filter_fit', 'roast_pro']) {
+    const node = $(`cb-${key.replaceAll('_', '-')}`);
+    if (node) d[key] = node.value;
+  }
+  d.roast = document.querySelector('[name="cb-roast"]:checked')?.value || d.roast || 'light';
+}
+
+function renderBuilderFields() {
+  if (!builder.options) return;
+  const d = builder.draft;
+  const items = builder.options;
+  const countryValues = items.countries.map(item => `<option value="${escape(builderOptionName(item))}"></option>`).join('');
+  const grinderValues = items.grinders.map(item => `<option value="${escape(builderOptionName(item))}"></option>`).join('');
+  const processingOptions = builderUnknownOption() + items.processing.map(item => builderOption(item, d.processing)).join('');
+  const materialOptions = builderUnknownOption() + items.materials.map(item => builderOption(item, d.material)).join('');
+  const filterOptions = builderUnknownOption() + items.filters.map(item => builderOption(item, d.filter)).join('');
+  const ageOptions = [
+    ['', 'builder_unknown'], ['fresh', 'builder_age_fresh'], ['over_2_weeks', 'builder_age_2w'],
+    ['over_1_month', 'builder_age_1m'], ['over_2_months', 'builder_age_2m'],
+    ['over_4_months', 'builder_age_4m'], ['over_6_months', 'builder_age_6m'], ['date', 'builder_age_date'],
+  ].map(([value, key]) => `<option value="${value}"${d.age === value ? ' selected' : ''}>${escape(t(key))}</option>`).join('');
+  const deviceGroups = [
+    ['builder_group_cone', item => item.method === 'percolation' && item.geometry === 'cone'],
+    ['builder_group_flat', item => item.method === 'percolation' && item.geometry === 'flat'],
+    ['builder_group_immersion', item => ['immersion', 'hybrid'].includes(item.method)],
+    ['builder_group_machine', item => item.method === 'automatic_drip'],
+    ['builder_group_custom', item => item.id === 'custom_dripper'],
+  ].map(([label, predicate]) => `<optgroup label="${escape(t(label))}">${items.devices.filter(predicate)
+    .map(item => builderOption(item, d.device || 'v60')).join('')}</optgroup>`).join('');
+  const roastOptions = ['light', 'medium', 'dark'].map(value => `<label class="builder-roast-choice"><input type="radio" name="cb-roast" value="${value}"${(d.roast || 'light') === value ? ' checked' : ''}><span>${escape(t(`builder_${value}`))}</span></label>`).join('');
+  const pro = builder.mode === 'pro';
+  $('builder-fields').innerHTML = `<div class="builder-field-group" id="builder-coffee-fields">
+    ${builderField('cb-country', t('builder_country'), `${builderInput('cb-country', 'search', d.country || '', 'list="builder-countries" autocomplete="off"')}<datalist id="builder-countries">${countryValues}</datalist>`, 'builder_help_country')}
+    ${builderField('cb-processing', t('builder_processing'), builderSelect('cb-processing', processingOptions), 'builder_help_processing')}
+    ${builderField('cb-age', t('builder_roast_age'), builderSelect('cb-age', ageOptions), 'builder_help_roast_age')}
+    <div id="builder-date-field"${d.age === 'date' ? '' : ' hidden'}>${builderField('cb-date', t('builder_roast_date'), builderInput('cb-date', 'date', d.date || ''), 'builder_help_roast_date')}</div>
+    ${builderField(pro ? 'cb-roast-pro' : 'cb-roast', t('builder_roast'), pro
+      ? builderSelect('cb-roast-pro', [1, 2, 3, 4, 5, 6, 7].map(n => `<option value="${n}"${String(d.roast_pro || 2) === String(n) ? ' selected' : ''}>${n}</option>`).join(''))
+      : `<div class="builder-roast-options" role="radiogroup" aria-label="${escape(t('builder_roast'))}">${roastOptions}</div>`, 'builder_help_roast')}
+    ${pro ? `<div class="builder-pro-grid">
+      ${builderField('cb-region', t('builder_region'), builderInput('cb-region', 'text', d.region || '', 'maxlength="120"'), 'builder_help_context')}
+      ${builderField('cb-variety', t('builder_variety'), builderInput('cb-variety', 'text', d.variety || '', 'maxlength="120"'), 'builder_help_context')}
+      ${builderField('cb-q-grade', t('builder_q_grade'), builderInput('cb-q-grade', 'number', d.q_grade || '', 'min="0" max="100" step="0.1" inputmode="decimal"'), 'builder_help_context')}
+      ${builderField('cb-water-ph', t('builder_water_ph'), builderInput('cb-water-ph', 'number', d.water_ph || '', 'min="0" max="14" step="0.1" inputmode="decimal"'), 'builder_help_water_ph')}
+      ${builderField('cb-water-tds', t('builder_water_tds'), builderInput('cb-water-tds', 'number', d.water_tds || '', 'min="0" max="1000" step="1" inputmode="numeric"'), 'builder_help_water_tds')}
+    </div>` : ''}
+  </div><div class="builder-field-group" id="builder-tool-fields">
+    ${builderField('cb-device', t('builder_device'), builderSelect('cb-device', deviceGroups, d.device || 'v60'), 'builder_help_device')}
+    ${builderField('cb-grinder', t('builder_grinder'), `${builderInput('cb-grinder', 'search', d.grinder || '', 'list="builder-grinders" autocomplete="off"')}<datalist id="builder-grinders">${grinderValues}</datalist>`, 'builder_help_grinder')}
+    ${builderField('cb-material', t('builder_material'), builderSelect('cb-material', materialOptions), 'builder_help_material')}
+    ${pro ? builderField('cb-filter', t('builder_filter'), builderSelect('cb-filter', filterOptions), 'builder_help_filter') : ''}
+    <div id="builder-custom-fields"${(d.device || 'v60') === 'custom_dripper' ? '' : ' hidden'}>
+      ${builderField('cb-custom-name', t('builder_custom_name'), builderInput('cb-custom-name', 'text', d.custom_name || '', 'maxlength="120"'), 'builder_help_context')}
+      ${builderField('cb-bed-height', t('builder_bed_height'), builderInput('cb-bed-height', 'number', d.bed_height || '', 'min="1" max="100" step="1" inputmode="numeric"'), 'builder_help_bed_height')}
+      ${builderField('cb-filter-fit', t('builder_filter_fit'), builderSelect('cb-filter-fit', builderUnknownOption() +
+        ['tight', 'good', 'loose'].map(value => `<option value="${value}"${d.filter_fit === value ? ' selected' : ''}>${escape(t(`builder_fit_${value}`))}</option>`).join('')), 'builder_help_filter_fit')}
+    </div>
+    <div class="builder-pro-grid">
+      ${builderField('cb-dose', t('builder_dose'), builderInput('cb-dose', 'number', d.dose || '15', 'min="5" max="40" step="1" inputmode="numeric"'), 'builder_help_dose')}
+      ${builderField('cb-water', t('builder_water_amount'), builderInput('cb-water', 'number', d.water || '250', 'min="80" max="600" step="1" inputmode="numeric"'), 'builder_help_water_amount')}
+    </div>
+  </div>`;
+  $('cb-age').addEventListener('change', () => { $('builder-date-field').hidden = $('cb-age').value !== 'date'; });
+  $('cb-device').addEventListener('change', () => { $('builder-custom-fields').hidden = $('cb-device').value !== 'custom_dripper'; });
+  updateBuilderStep();
+}
+
+function updateBuilderStep() {
+  const titles = ['builder_step_coffee', 'builder_step_tools', 'builder_step_recipe'];
+  $('builder-title').textContent = t(titles[builder.step]);
+  $('builder-intro').textContent = t('builder_intro');
+  $('builder-mode').textContent = t(builder.mode === 'basic' ? 'builder_mode_pro' : 'builder_mode_basic');
+  $('builder-progress-text').textContent = `${t('builder_step', builder.step + 1)} · ${t(titles[builder.step])}`;
+  $('builder-progress-fill').style.width = `${(builder.step + 1) * 20}%`;
+  $('screen-construct').dataset.step = String(builder.step);
+  $('builder-coffee-fields')?.classList.toggle('active', builder.step === 0);
+  $('builder-tool-fields')?.classList.toggle('active', builder.step === 1);
+  $('builder-result-pane').hidden = builder.step < 2 && !matchMedia('(min-width: 900px)').matches;
+  $('builder-next').textContent = t(builder.step === 0 ? 'builder_next' : builder.step === 1 ? 'builder_build' : 'builder_brew');
+  $('builder-next').disabled = builder.busy || !builder.options || (builder.step === 2 && builder.variants[builder.selected]?.method !== 'percolation');
+  $('builder-rebuild').textContent = t('builder_rebuild');
+  $('builder-rebuild').hidden = !builder.variants.length;
+  $('builder-cta').dataset.step = String(builder.step);
+}
+
+function localToday() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+}
+
+function builderParams() {
+  captureBuilderDraft();
+  const d = builder.draft;
+  const params = {device_id: d.device || 'v60', roast_level: builder.mode === 'pro' ? Number(d.roast_pro || 2) : d.roast || 'light',
+    dose_g: Number(d.dose || 15), water_g: Number(d.water || 250)};
+  for (const [kind, input, key] of [['countries', d.country, 'country'], ['grinders', d.grinder, 'grinder_id']]) {
+    if (String(input || '').trim()) {
+      const id = builderResolve(kind, input);
+      if (!id) throw new Error(t('builder_pick_option'));
+      params[key] = id;
+    }
+  }
+  if (d.processing) params.processing = d.processing;
+  if (d.age === 'date') {
+    if (!d.date) throw new Error(t('builder_roast_date'));
+    params.roast_date = d.date;
+    params.as_of_date = localToday();
+  } else if (d.age) params.roast_age_band = d.age;
+  if (d.material) params.material = d.material;
+  if (builder.mode === 'pro') {
+    if (d.filter) params.filter_id = d.filter;
+    for (const [input, output] of [['region', 'region'], ['variety', 'variety']]) {
+      if (String(d[input] || '').trim()) params[output] = d[input].trim();
+    }
+    for (const [input, output] of [['q_grade', 'q_grade'], ['water_ph', 'water_ph'], ['water_tds', 'water_tds_ppm']]) {
+      if (String(d[input] || '').trim()) params[output] = Number(d[input]);
+    }
+  }
+  if (params.device_id === 'custom_dripper') {
+    if (!d.custom_name?.trim() || !d.bed_height || !d.filter_fit || !d.material) throw new Error(t('builder_required_custom'));
+    params.device_name = d.custom_name.trim();
+    params.bed_height_mm_at_15g = Number(d.bed_height);
+    params.filter_fit = d.filter_fit;
+  }
+  return params;
+}
+
+async function beginBuilder() {
+  builder.step = 0;
+  show('construct');
+  setStatus('builder-status', builder.options ? '' : t('builder_options_loading'));
+  if (!builder.options) {
+    try {
+      builder.options = await api('/api/catalog/options');
+      renderBuilderFields();
+      if (!builder.variants.length) renderBuilderResult();
+      setStatus('builder-status', '');
+    } catch (error) { setStatus('builder-status', error.message || t('builder_error'), true); }
+  } else updateBuilderStep();
+}
+
+async function buildBuilderRecipes() {
+  let params;
+  try { params = builderParams(); }
+  catch (error) { setStatus('builder-status', error.message, true); return; }
+  builder.request?.abort();
+  const request = builder.request = new AbortController();
+  builder.busy = true;
+  updateBuilderStep();
+  setStatus('builder-status', t('builder_loading'));
+  try {
+    const data = await post('/api/recipes/build', JSON.stringify({params}), 'application/json', request.signal);
+    if (builder.request !== request) return;
+    builder.variants = data.variants;
+    builder.selected = Math.min(builder.selected, builder.variants.length - 1);
+    builder.step = 2;
+    setStatus('builder-status', '');
+    renderBuilderResult();
+    updateBuilderStep();
+    $('builder-title').focus({preventScroll: true});
+  } catch (error) { if (error.name !== 'AbortError') setStatus('builder-status', error.message || t('builder_error'), true); }
+  finally { if (builder.request === request) { builder.busy = false; updateBuilderStep(); } }
+}
+
+function builderContext(recipe) {
+  const d = builder.draft;
+  const chips = [];
+  const country = builder.options.countries.find(item => item.id === builderResolve('countries', d.country));
+  const processing = builder.options.processing.find(item => item.id === d.processing);
+  const device = builder.options.devices.find(item => item.id === recipe.device_id);
+  if (country) chips.push(builderOptionName(country));
+  if (processing) chips.push(builderOptionName(processing));
+  chips.push(recipe.device_id === 'custom_dripper' ? d.custom_name : builderOptionName(device));
+  chips.push(t(`builder_${builder.mode === 'pro' ? Number(d.roast_pro || 2) <= 2 ? 'light' : Number(d.roast_pro) <= 5 ? 'medium' : 'dark' : d.roast || 'light'}`));
+  return chips.filter(Boolean);
+}
+
+function builderFavoriteKey(recipe) {
+  return JSON.stringify([recipe.device_id, recipe.id, recipe.dose_g, recipe.water_g,
+    recipe.temperature_c, recipe.grind?.target_particle_microns]);
+}
+function builderFavorites() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(BUILDER_FAVORITES_KEY) || '[]');
+    return Array.isArray(stored) ? stored.filter(value => typeof value === 'string').slice(0, 100) : [];
+  } catch (error) { return []; }
+}
+function toggleBuilderFavorite() {
+  const key = builderFavoriteKey(builder.variants[builder.selected]);
+  const saved = builderFavorites();
+  const next = saved.includes(key) ? saved.filter(value => value !== key) : [key, ...saved].slice(0, 100);
+  try { localStorage.setItem(BUILDER_FAVORITES_KEY, JSON.stringify(next)); } catch (error) { /* storage unavailable */ }
+  renderBuilderResult();
+}
+
+function renderBuilderResult() {
+  const recipe = builder.variants[builder.selected];
+  if (!recipe) { $('builder-result').innerHTML = `<p class="note">${t('builder_no_recipe')}</p>`; return; }
+  const chips = builderContext(recipe);
+  const shown = chips.slice(0, 2).map(value => `<span class="builder-chip">${escape(value)}</span>`).join('');
+  const rest = chips.length > 2 ? `<details class="builder-more"><summary>${t('builder_more_context', chips.length - 2)}</summary>${chips.slice(2).map(value => `<span class="builder-chip">${escape(value)}</span>`).join('')}</details>` : '';
+  const grind = recipe.grind.setting == null ? t('builder_grind_unmapped')
+    : `${escape(recipe.grind.setting)} · ${escape(LANG === 'ru' ? recipe.grind.scale_label : recipe.grind.scale_label_en)}`;
+  const rows = recipe.steps.map(step => {
+    const action = LANG === 'ru' ? step.instruction : STRINGS.en.builder_actions[step.instruction] || step.instruction;
+    const why = LANG === 'ru' ? step.why : STRINGS.en.builder_whys[step.why] || step.why;
+    return `<tr><td>${clock(step.start_seconds)}</td><td>${step.total_water_g == null ? '—' : grams(step.total_water_g)}</td><td><strong>${escape(action)}</strong><small>${escape(why)}</small></td></tr>`;
+  }).join('');
+  const reasons = recipe.reasons.map(reason => `<li>${escape(LANG === 'ru' ? reason.text_ru : reason.text_en)}</li>`).join('');
+  const favored = builderFavorites().includes(builderFavoriteKey(recipe));
+  $('builder-result').innerHTML = `<div class="builder-recipe">
+    <p class="builder-origin">${t('builder_calculated')}</p>
+    <div class="builder-variant-bar" role="group" aria-label="${t('variant')}">
+      <button class="button" type="button" id="builder-prev-variant" aria-label="${t('builder_prev_variant')}"${builder.selected === 0 ? ' disabled' : ''}>←</button>
+      <span>${t('builder_variant_position', builder.selected + 1, builder.variants.length)}</span>
+      <button class="button" type="button" id="builder-next-variant" aria-label="${t('builder_next_variant')}"${builder.selected === builder.variants.length - 1 ? ' disabled' : ''}>→</button>
+    </div>
+    <h2 class="title" id="builder-recipe-title">${t(`builder_variant_${recipe.id}`)}</h2>
+    <p class="subtitle">${t(`builder_summary_${recipe.id}`)}</p>
+    <div class="builder-context">${shown}${rest}</div>
+    <p class="note builder-caution">${t('builder_approximate')}</p>
+    <div class="builder-tiles">
+      <div class="builder-tile"><span>${t('coffee')}</span><strong>${grams(recipe.dose_g)}</strong><div class="builder-quantity"><button type="button" data-adjust="dose_g:-1" aria-label="${t('builder_decrease')} ${t('coffee')}"${recipe.dose_g <= 5 ? ' disabled' : ''}>−</button><button type="button" data-adjust="dose_g:1" aria-label="${t('builder_increase')} ${t('coffee')}"${recipe.dose_g >= 40 ? ' disabled' : ''}>+</button></div></div>
+      <div class="builder-tile"><span>${t('water')}</span><strong>${grams(recipe.water_g)}</strong><div class="builder-quantity"><button type="button" data-adjust="water_g:-10" aria-label="${t('builder_decrease')} ${t('water')}"${recipe.water_g <= 80 ? ' disabled' : ''}>−</button><button type="button" data-adjust="water_g:10" aria-label="${t('builder_increase')} ${t('water')}"${recipe.water_g >= 600 ? ' disabled' : ''}>+</button></div></div>
+      <div class="builder-tile"><span>${t('temperature')}</span><strong>${celsius(recipe.temperature_c)}</strong></div>
+      <div class="builder-tile"><span>${t('ratio')}</span><strong>${escape(num(recipe.ratio))}</strong></div>
+      <div class="builder-tile builder-tile-wide"><span>${t('grind')}</span><strong>${grind}</strong><small>${t('builder_grind_nominal')}: ${num(recipe.grind.target_particle_microns)} µm</small></div>
+    </div>
+    <h3 class="section">${t('builder_process')}</h3>
+    ${rows ? `<div class="builder-table-wrap"><table class="builder-table"><thead><tr><th>${t('builder_start_col')}</th><th>${t('builder_scale_col')}</th><th>${t('builder_action_col')}</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="note">${t('builder_automatic')}</p>`}
+    <details class="builder-reasons"><summary>${t('builder_reasons')}</summary><ul>${reasons}</ul></details>
+    <button type="button" class="button builder-favorite" id="builder-favorite" aria-pressed="${favored}">${t(favored ? 'builder_unfavorite' : 'builder_favorite')}</button>
+    ${recipe.method === 'percolation' ? '' : `<p class="note">${t('builder_timer_later')}</p>`}
+  </div>`;
+  $('builder-prev-variant').addEventListener('click', () => { builder.selected--; renderBuilderResult(); });
+  $('builder-next-variant').addEventListener('click', () => { builder.selected++; renderBuilderResult(); });
+  $('builder-favorite').addEventListener('click', toggleBuilderFavorite);
+  updateBuilderStep();
+  document.querySelectorAll('[data-adjust]').forEach(button => button.addEventListener('click', () => adjustBuilderQuantity(button.dataset.adjust)));
+}
+
+function brewBuilderRecipe() {
+  const recipe = builder.variants[builder.selected];
+  if (!recipe || recipe.method !== 'percolation') return;
+  currentRecipe = recipe;
+  if (brewMode === 'machine') leaveMachineMode();
+  resetTimer();
+  show('brew');
+  toggleTimer();
+}
+
+async function adjustBuilderQuantity(spec) {
+  if (builder.busy) return;
+  const [field, deltaText] = spec.split(':');
+  const delta = Number(deltaText);
+  const selected = builder.variants[builder.selected];
+  const target = selected[field] + delta;
+  builder.busy = true;
+  document.querySelectorAll('[data-adjust]').forEach(button => { button.disabled = true; });
+  try {
+    const replies = await Promise.all(builder.variants.map(recipe => {
+      const dose_g = field === 'dose_g' ? target : null;
+      const water_g = field === 'water_g' ? Math.round(recipe.water_g * target / selected.water_g) : null;
+      return post('/api/recipes/rescale', JSON.stringify({recipe, dose_g, water_g}), 'application/json');
+    }));
+    builder.variants = replies.map(reply => reply.recipe);
+    setStatus('builder-status', '');
+    renderBuilderResult();
+  } catch (error) {
+    setStatus('builder-status', error.message || t('builder_error'), true);
+    renderBuilderResult();
+  } finally { builder.busy = false; }
+}
+
+function wireBuilder() {
+  $('open-builder').addEventListener('click', beginBuilder);
+  $('builder-back').addEventListener('click', () => {
+    if (builder.step > 0) { captureBuilderDraft(); builder.step--; updateBuilderStep(); $('builder-title').focus({preventScroll: true}); }
+    else back('find');
+  });
+  $('builder-mode').addEventListener('click', () => {
+    captureBuilderDraft();
+    builder.mode = builder.mode === 'basic' ? 'pro' : 'basic';
+    if (builder.step === 2 && !matchMedia('(min-width: 900px)').matches) builder.step = 0;
+    renderBuilderFields();
+    scheduleBuilderUpdate();
+  });
+  $('builder-form').addEventListener('change', scheduleBuilderUpdate);
+  $('builder-next').addEventListener('click', () => {
+    if (builder.step === 0) { captureBuilderDraft(); builder.step = 1; updateBuilderStep(); $('builder-title').focus({preventScroll: true}); }
+    else if (builder.step === 1) buildBuilderRecipes();
+    else brewBuilderRecipe();
+  });
+  $('builder-rebuild').addEventListener('click', buildBuilderRecipes);
+}
+
+function scheduleBuilderUpdate() {
+  clearTimeout(builder.updateTimer);
+  if (!builder.variants.length || !matchMedia('(min-width: 900px)').matches) return;
+  builder.updateTimer = setTimeout(buildBuilderRecipes, 500);
+}
+
+// ---------------------------------------------------------------------------
 // Screen 3: brew timer
 // ---------------------------------------------------------------------------
 function resetTimer() {
@@ -1530,6 +2074,14 @@ function localize() {
   $('survey-title').textContent = t('survey_title');
   $('survey-text').textContent = t('survey_text');
   $('survey-link').textContent = `${t('survey_button')} ↗`;
+  $('open-builder').textContent = t('builder_open');
+  $('builder-back').textContent = t('back');
+  $('builder-language-label').textContent = t('language');
+  $('builder-language').value = LANG;
+  if (builder.options) {
+    renderBuilderFields();
+    if (builder.variants.length) renderBuilderResult();
+  } else updateBuilderStep();
   $('confirm-photo').alt = t('photo_alt');
   $('scan-image').alt = t('photo_alt');
   $('recipe-photo-image').alt = t('photo_alt');
@@ -1565,12 +2117,15 @@ function init() {
   history.replaceState({screen: 'find'}, '', location.pathname + location.search);
   document.body.dataset.screen = 'find';
 
-  $('language').addEventListener('change', () => {
-    LANG = $('language').value;
+  const changeLanguage = event => {
+    captureBuilderDraft();
+    LANG = event.target.value;
     savePrefs(); localize();
     if (!photoRequest) setStatus('status', t('status_ready', modelOptions?.coffees || 0));
-    if (currentData && !running && brewMode === 'local') renderRecipe(0, currentRecipe);
-  });
+    if (currentData && currentRecipe?.origin !== 'calculated' && !running && brewMode === 'local') renderRecipe(0, currentRecipe);
+  };
+  $('language').addEventListener('change', changeLanguage);
+  $('builder-language').addEventListener('change', changeLanguage);
   const wide = matchMedia('(min-width: 900px)');
   wide.addEventListener('change', photoButtonLabel);
   $('photo-button').addEventListener('click', () => $(wide.matches ? 'gallery-input' : 'photo-input').click());
@@ -1602,6 +2157,7 @@ function init() {
     searchTimer = setTimeout(() => search(query), 300);
   });
   $('show-all').addEventListener('click', () => { $('query').value = ''; renderRecents(); search(''); });
+  wireBuilder();
 
   $('recipe-back').addEventListener('click', () => back('find'));
   $('brew-start').addEventListener('click', () => {
@@ -1611,7 +2167,7 @@ function init() {
     if (!running && elapsed === 0) { saveRecent(); toggleTimer(); }
   });
   $('machine-start').addEventListener('click', startMachineBrew);
-  $('brew-back').addEventListener('click', () => back('recipe'));
+  $('brew-back').addEventListener('click', () => back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'));
   $('brew-toggle').addEventListener('click', () => brewMode === 'machine' ? machineToggle() : toggleTimer());
   $('brew-reset').addEventListener('click', () => {
     if (brewMode === 'machine') { machineStop(); return; }
@@ -1621,7 +2177,7 @@ function init() {
   $('brew-again').addEventListener('click', () => {
     if (brewMode === 'machine') { back('recipe'); startMachineBrew(); return; }
     resetTimer();
-    back('recipe');
+    back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe');
   });
   $('brew-new').addEventListener('click', () => {
     if (brewMode === 'machine') { machineRequest('abort').catch(() => {}); leaveMachineMode(); }
