@@ -150,13 +150,30 @@
           <button type="button" class="toggle" id="brew-sound" aria-pressed="true"></button>
         </div>
       </header>
+      <div class="brew-ready" id="brew-ready" hidden>
+        <p class="builder-origin" id="brew-ready-origin"></p>
+        <h2 class="title" id="brew-ready-name"></h2>
+        <p class="subtitle" id="brew-ready-summary"></p>
+        <div class="brew-ready-grid" id="brew-ready-grid"></div>
+        <p class="note" id="brew-ready-duration"></p>
+      </div>
       <div class="brew-face" id="brew-face">
         <p class="brew-phase" id="brew-phase"></p>
         <p class="brew-clock" id="brew-clock" role="timer">0:00</p>
         <p class="brew-action" id="brew-action" role="status" aria-live="polite"></p>
         <p class="brew-countdown" id="brew-countdown"></p>
+        <p class="brew-step-count" id="brew-step-count" hidden></p>
+        <div class="brew-step-tiles" id="brew-step-tiles" hidden>
+          <div><span id="brew-pour-label"></span><strong id="brew-pour-value"></strong></div>
+          <div><span id="brew-scale-label"></span><strong id="brew-scale-value"></strong></div>
+          <div><span id="brew-rate-label"></span><strong id="brew-rate-value"></strong></div>
+        </div>
         <div class="brew-progress" aria-hidden="true"><i id="brew-progress"></i></div>
         <p class="brew-next" id="brew-next"></p>
+        <div class="brew-step-nav" id="brew-step-nav" hidden>
+          <button type="button" class="button" id="brew-prev-step"></button>
+          <button type="button" class="button" id="brew-next-step"></button>
+        </div>
       </div>
       <div class="brew-done" id="brew-done" hidden>
         <p class="brew-done-title" id="brew-done-title"></p>

@@ -215,12 +215,26 @@ body[data-screen="brew"] #screen-brew { display: flex; flex-direction: column; }
 
 /* Screen 3: brew (full-screen timer) */
 .screen-brew { padding-bottom: calc(16px + var(--safe-bottom)); }
+.brew-ready { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 12px; }
+.brew-ready .title, .brew-ready .subtitle { margin: 0; }
+.brew-ready-grid, .brew-step-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.brew-ready-grid > div, .brew-step-tiles > div { min-width: 0; padding: 14px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); text-align: left; }
+.brew-ready-grid span, .brew-step-tiles span { display: block; color: var(--muted); font-size: .9rem; }
+.brew-ready-grid strong, .brew-step-tiles strong { display: block; margin-top: 5px; font-size: 1.2rem; line-height: 1.25; overflow-wrap: anywhere; }
+.brew-ready-grid small { display: block; margin-top: 3px; color: var(--muted); font-size: .875rem; line-height: 1.25; }
+.brew-step-tiles { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 14px 0; }
+.brew-step-tiles > div { padding: 10px; }
+.brew-step-tiles strong { font-size: 1.1rem; }
+.brew-step-count { margin: 4px 0 0; font-size: 1rem; font-weight: 700; }
+.brew-step-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 14px; }
+.brew-step-nav .button { min-height: 48px; }
 .toggles { display: flex; gap: 8px; }
 .toggle { min-height: 48px; min-width: 48px; padding: 0 12px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--card); font-size: .85rem; color: var(--muted); }
 .toggle[aria-pressed="true"] { color: var(--ink); border-color: var(--ink); }
 .brew-face { flex: 1; display: flex; flex-direction: column; justify-content: center; text-align: center; padding: 8px 0; }
 .brew-phase { font-size: .95rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin: 0 0 4px; min-height: 1.4em; }
 .brew-clock { font-size: 5.2rem; line-height: 1; font-weight: 700; letter-spacing: -.04em; font-variant-numeric: tabular-nums; margin: 0; }
+.brew-clock.builder-clock { font-size: clamp(2.3rem, 10vw, 3.8rem); }
 .brew-action { font-size: 1.6rem; line-height: 1.2; font-weight: 600; margin: 20px 0 6px; min-height: 1.2em; }
 .brew-countdown { font-size: 1.1rem; color: var(--muted); font-variant-numeric: tabular-nums; margin: 0 0 20px; min-height: 1.4em; }
 .brew-progress { height: 8px; border-radius: 4px; background: var(--line); overflow: hidden; }

@@ -1,4 +1,4 @@
-// Phase-4 smoke check: parameter wizard and calculated recipe at 375×812.
+// Phase-5 smoke check: parameter wizard, calculated timer and machine handoff at 375×812.
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -42,7 +42,7 @@ async function run() {
     await page.locator('#cb-device').selectOption('v60');
     await page.locator('#builder-next').click();
     await page.waitForSelector('.builder-recipe');
-    assert.match(await page.locator('.builder-origin').textContent(), /not a roaster recipe/);
+    assert.match(await page.locator('#builder-result .builder-origin').textContent(), /not a roaster recipe/);
     assert.match(await page.locator('#builder-recipe-title').textContent(), /Brighter/);
     assert.ok(await noHorizontalScroll(page));
     assert.ok(await page.locator('#builder-next').isVisible());
@@ -66,19 +66,53 @@ async function run() {
     assert.equal(await page.locator('#builder-favorite').getAttribute('aria-pressed'), 'true');
     await page.locator('#builder-next').click();
     assert.equal(await page.locator('body').getAttribute('data-screen'), 'brew');
+    assert.equal(await page.locator('#brew-ready').isVisible(), true);
+    assert.match(await page.locator('#brew-toggle').textContent(), /Start timer/);
+    assert.equal(await page.locator('#brew-ready-grid > div').count(), 4);
+    assert.ok(await noHorizontalScroll(page));
+    if (process.env.POURPOUR_SCREEN_DIR) {
+      await page.screenshot({path: path.join(process.env.POURPOUR_SCREEN_DIR, 'timer-ready-mobile.png'), fullPage: true});
+    }
+    await page.locator('#brew-toggle').click();
+    assert.equal(await page.locator('#brew-ready').isVisible(), false);
+    assert.match(await page.locator('#brew-clock').textContent(), /\//);
+    assert.match(await page.locator('#brew-step-count').textContent(), /Step 1 \/ /);
+    assert.match(await page.locator('#brew-pour-value').textContent(), /g/);
+    if (process.env.POURPOUR_SCREEN_DIR) {
+      await page.screenshot({path: path.join(process.env.POURPOUR_SCREEN_DIR, 'timer-pour-mobile.png'), fullPage: true});
+    }
+    await page.evaluate(() => { startedAt = Date.now() - 5000; updateTimer(); });
+    assert.match(await page.locator('#brew-clock').textContent(), /^0:05 \/ /);
+    await page.locator('#brew-next-step').click();
+    assert.match(await page.locator('#brew-step-count').textContent(), /Step 2 \/ /);
+    assert.match(await page.locator('#brew-phase').textContent(), /Waiting/);
+    await page.locator('#brew-toggle').click();
+    assert.match(await page.locator('#brew-toggle').textContent(), /Resume/);
+    await page.locator('#brew-prev-step').click();
+    assert.match(await page.locator('#brew-step-count').textContent(), /Step 1 \/ /);
     await page.goBack();
     await page.waitForFunction(() => document.body.dataset.screen === 'construct');
     await page.locator('#builder-back').click();
     await page.locator('#cb-device').selectOption('french_press');
     await page.locator('#builder-next').click();
     await page.waitForFunction(() => document.querySelector('#builder-result')?.textContent?.includes('Steep'));
-    assert.equal(await page.locator('#builder-next').isDisabled(), true);
-    assert.match(await page.locator('#builder-result').textContent(), /no manual pours|next phase/i);
+    assert.equal(await page.locator('#builder-next').isDisabled(), false);
+    await page.locator('#builder-next').click();
+    await page.locator('#brew-toggle').click();
+    await page.locator('#brew-next-step').click();
+    assert.match(await page.locator('#brew-action').textContent(), /Steep/);
+    assert.equal(await page.locator('#brew-pour-value').textContent(), '—');
+    await page.goBack();
     await page.locator('#builder-back').click();
     await page.locator('#cb-device').selectOption('moccamaster');
     await page.locator('#builder-next').click();
     await page.waitForFunction(() => document.querySelector('#builder-result')?.textContent?.includes('standard mode'));
     assert.equal(await page.locator('.builder-table').count(), 0);
+    assert.equal(await page.locator('#builder-next').isDisabled(), false);
+    await page.locator('#builder-next').click();
+    await page.locator('#brew-toggle').click();
+    assert.match(await page.locator('#brew-action').textContent(), /Brewer running/);
+    await page.goBack();
     assert.ok(await noHorizontalScroll(page));
     await page.locator('#builder-back').click();
     await page.locator('#builder-mode').click();
@@ -105,7 +139,37 @@ async function run() {
       await page.screenshot({path: path.join(process.env.POURPOUR_SCREEN_DIR, 'constructor-desktop.png'), fullPage: true});
     }
     assert.deepEqual(errors, []);
-    console.log('PASS constructor: basic/Pro, calculated variants, rescale, favorites, immersion and automatic, 375×812 and desktop.');
+    const machinePage = await context.newPage();
+    let sentRecipe = null;
+    await machinePage.addInitScript(() => { window.EventSource = class { addEventListener() {} }; });
+    await machinePage.route('**/api/machine', route => route.fulfill({status: 200, contentType: 'application/json',
+      body: JSON.stringify({enabled: true, connected: true, telemetry: {state: 'IDLE', temp_c: 24}})}));
+    await machinePage.route('**/api/machine/recipe', route => {
+      sentRecipe = route.request().postDataJSON().recipe;
+      route.fulfill({status: 200, contentType: 'application/json',
+        body: JSON.stringify({telemetry: {state: 'PREHEAT', temp_c: 24, target_temp_c: sentRecipe.temperature_c}})});
+    });
+    await machinePage.goto(baseURL);
+    await machinePage.locator('#open-builder').click();
+    await machinePage.waitForSelector('#cb-country');
+    await machinePage.locator('#builder-language').selectOption('ru');
+    await machinePage.locator('#builder-next').click();
+    await machinePage.locator('#cb-device').selectOption('v60');
+    await machinePage.locator('#builder-next').click();
+    await machinePage.waitForSelector('#builder-machine:visible');
+    await machinePage.locator('#builder-next').click();
+    assert.match(await machinePage.locator('#brew-toggle').textContent(), /Запустить таймер/);
+    assert.ok(await noHorizontalScroll(machinePage));
+    if (process.env.POURPOUR_SCREEN_DIR) {
+      await machinePage.screenshot({path: path.join(process.env.POURPOUR_SCREEN_DIR, 'timer-ready-ru-mobile.png'), fullPage: true});
+    }
+    await machinePage.goBack();
+    await machinePage.locator('#builder-machine').click();
+    await machinePage.waitForFunction(() => document.body.dataset.screen === 'brew');
+    assert.equal(sentRecipe.origin, 'calculated');
+    assert.ok(sentRecipe.steps.every(step => step.kind === 'pour'));
+    assert.equal(await machinePage.locator('#brew-ready').isVisible(), false);
+    console.log('PASS constructor: recipe timer, wait/steep/automatic, navigation, 375×812 and desktop.');
   } finally {
     await browser.close();
   }

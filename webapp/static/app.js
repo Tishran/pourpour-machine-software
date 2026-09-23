@@ -125,7 +125,24 @@ const STRINGS = {
     builder_favorite: 'Add to favorites',
     builder_unfavorite: 'Remove from favorites',
     builder_brew: 'Brew this recipe',
-    builder_timer_later: 'A timer for this brewing method arrives in the next phase.',
+    builder_machine: 'Send to First Brew machine',
+    builder_machine_error: 'Could not send the recipe to the machine.',
+    builder_total_time: 'Total time',
+    builder_start_timer: 'Start timer',
+    builder_step_count: (n, total) => `Step ${n} / ${total}`,
+    builder_pour_now: 'Pour now',
+    builder_on_scale: 'On scale',
+    builder_pour_rate: 'Pour rate',
+    builder_rate_value: (value) => `${value} g/s`,
+    builder_not_applicable: '—',
+    builder_wait: 'Wait',
+    builder_pour_phase: 'Pouring',
+    builder_wait_phase: 'Waiting',
+    builder_drawdown: 'Let the coffee drain',
+    builder_automatic_wait: 'Brewer running',
+    builder_next_action: (action) => `Next: ${action}`,
+    builder_prev_step: 'Previous step',
+    builder_next_step: 'Next step',
     builder_no_recipe: 'Complete the coffee and equipment steps to see recipes.',
     builder_actions: {
       'Смачиваем весь кофе': 'Wet all the coffee',
@@ -420,7 +437,24 @@ const STRINGS = {
     builder_favorite: 'В избранное',
     builder_unfavorite: 'Убрать из избранного',
     builder_brew: 'Заварить',
-    builder_timer_later: 'Таймер для этого метода появится в следующей фазе.',
+    builder_machine: 'Отправить на машину First Brew',
+    builder_machine_error: 'Не удалось передать рецепт на машину.',
+    builder_total_time: 'Общее время',
+    builder_start_timer: 'Запустить таймер',
+    builder_step_count: (n, total) => `Шаг ${n} / ${total}`,
+    builder_pour_now: 'Влить сейчас',
+    builder_on_scale: 'На весах',
+    builder_pour_rate: 'Скорость струи',
+    builder_rate_value: (value) => `${value} г/с`,
+    builder_not_applicable: '—',
+    builder_wait: 'Ждём',
+    builder_pour_phase: 'Вливание',
+    builder_wait_phase: 'Ожидание',
+    builder_drawdown: 'Дождитесь слива',
+    builder_automatic_wait: 'Кофеварка работает',
+    builder_next_action: (action) => `Далее: ${action}`,
+    builder_prev_step: 'Предыдущий шаг',
+    builder_next_step: 'Следующий шаг',
     builder_no_recipe: 'Заполните шаги о кофе и оборудовании, чтобы получить рецепт.',
     builder_actions: {},
     builder_whys: {},
@@ -618,6 +652,7 @@ const sourceNote = value => STRINGS[LANG].source_notes[value] || value;
 let searchRequest, recipeRequest, photoRequest, photoGeneration = 0;
 let currentProduct = null, currentData = null, currentRecipe = null, recipeLoading = false;
 let timerInterval, running = false, elapsed = 0, startedAt = 0, lastActiveStep = -1, finished = false;
+let timerStarted = false;
 let wakeLock = null, audio = null;
 // Machine mode: the brew screen mirrors telemetry from the machine instead of the local timer.
 let brewMode = 'local', machineInfo = null, machineState = null, machineOnline = false, machineEvents = null;
@@ -1023,6 +1058,7 @@ function updateCtaBar() {
   $('machine-start').hidden = !available;
   $('machine-start').textContent = t('machine_button');
   $('recipe-cta').dataset.machine = String(available);
+  if ($('builder-machine')) $('builder-machine').hidden = !machineConnected();
 }
 
 // ---------------------------------------------------------------------------
@@ -1469,7 +1505,7 @@ function updateBuilderStep() {
   $('builder-tool-fields')?.classList.toggle('active', builder.step === 1);
   $('builder-result-pane').hidden = builder.step < 2 && !matchMedia('(min-width: 900px)').matches;
   $('builder-next').textContent = t(builder.step === 0 ? 'builder_next' : builder.step === 1 ? 'builder_build' : 'builder_brew');
-  $('builder-next').disabled = builder.busy || !builder.options || (builder.step === 2 && builder.variants[builder.selected]?.method !== 'percolation');
+  $('builder-next').disabled = builder.busy || !builder.options || (builder.step === 2 && !builder.variants[builder.selected]);
   $('builder-rebuild').textContent = t('builder_rebuild');
   $('builder-rebuild').hidden = !builder.variants.length;
   $('builder-cta').dataset.step = String(builder.step);
@@ -1622,23 +1658,26 @@ function renderBuilderResult() {
     ${rows ? `<div class="builder-table-wrap"><table class="builder-table"><thead><tr><th>${t('builder_start_col')}</th><th>${t('builder_scale_col')}</th><th>${t('builder_action_col')}</th></tr></thead><tbody>${rows}</tbody></table></div>` : `<p class="note">${t('builder_automatic')}</p>`}
     <details class="builder-reasons"><summary>${t('builder_reasons')}</summary><ul>${reasons}</ul></details>
     <button type="button" class="button builder-favorite" id="builder-favorite" aria-pressed="${favored}">${t(favored ? 'builder_unfavorite' : 'builder_favorite')}</button>
-    ${recipe.method === 'percolation' ? '' : `<p class="note">${t('builder_timer_later')}</p>`}
+    ${recipe.machine_compatible ? `<button type="button" class="button builder-machine" id="builder-machine"${machineConnected() ? '' : ' hidden'}>${t('builder_machine')}</button>` : ''}
   </div>`;
   $('builder-prev-variant').addEventListener('click', () => { builder.selected--; renderBuilderResult(); });
   $('builder-next-variant').addEventListener('click', () => { builder.selected++; renderBuilderResult(); });
   $('builder-favorite').addEventListener('click', toggleBuilderFavorite);
+  $('builder-machine')?.addEventListener('click', () => {
+    currentRecipe = recipe;
+    startMachineBrew();
+  });
   updateBuilderStep();
   document.querySelectorAll('[data-adjust]').forEach(button => button.addEventListener('click', () => adjustBuilderQuantity(button.dataset.adjust)));
 }
 
 function brewBuilderRecipe() {
   const recipe = builder.variants[builder.selected];
-  if (!recipe || recipe.method !== 'percolation') return;
+  if (!recipe) return;
   currentRecipe = recipe;
   if (brewMode === 'machine') leaveMachineMode();
   resetTimer();
   show('brew');
-  toggleTimer();
 }
 
 async function adjustBuilderQuantity(spec) {
@@ -1700,6 +1739,7 @@ function resetTimer() {
   running = false;
   elapsed = 0;
   finished = false;
+  timerStarted = false;
   lastActiveStep = -1;
   keepAwake(false);
   updateTimer();
@@ -1709,15 +1749,16 @@ function resetTimer() {
 function toggleTimer() {
   if (!currentRecipe?.duration_seconds) return;
   if (running) {
-    elapsed += (performance.now() - startedAt) / 1000;
+    elapsed += (Date.now() - startedAt) / 1000;
     running = false;
     clearInterval(timerInterval);
     keepAwake(false);
   } else {
     if (finished || elapsed >= currentRecipe.duration_seconds) { elapsed = 0; finished = false; }
     running = true;
+    timerStarted = true;
     lastActiveStep = -1;
-    startedAt = performance.now();
+    startedAt = Date.now();
     timerInterval = setInterval(updateTimer, 200);
     primeAudio();
     keepAwake(true);
@@ -1731,10 +1772,101 @@ function setText(id, value) {
   if (node && node.textContent !== value) node.textContent = value;
 }
 
+function calculatedTimeline(recipe) {
+  const segments = [];
+  const steps = [...(recipe.steps || [])].sort((a, b) => a.start_seconds - b.start_seconds);
+  let cursor = 0;
+  let onScale = 0;
+  for (const step of steps) {
+    if (step.start_seconds > cursor) segments.push({kind: 'wait', start: cursor, stop: step.start_seconds, next: step, total_water_g: onScale});
+    segments.push({kind: step.kind, start: step.start_seconds, stop: step.stop_seconds, step});
+    cursor = Math.max(cursor, step.stop_seconds);
+    onScale = step.total_water_g ?? onScale;
+  }
+  if (cursor < recipe.duration_seconds) segments.push({kind: steps.length ? 'drawdown' : 'automatic',
+    start: cursor, stop: recipe.duration_seconds, total_water_g: onScale});
+  return segments;
+}
+
+function calculatedSegmentIndex(segments, seconds) {
+  return Math.max(0, segments.findIndex(segment => seconds >= segment.start && seconds < segment.stop));
+}
+
+function renderCalculatedTimer(seconds, duration) {
+  const recipe = currentRecipe;
+  const ready = !timerStarted && !finished;
+  const segments = calculatedTimeline(recipe);
+  $('brew-ready').hidden = !ready;
+  $('brew-face').hidden = ready || finished;
+  $('brew-done').hidden = !finished;
+  $('brew-controls').hidden = finished;
+  $('brew-done-controls').hidden = !finished;
+  $('brew-clock').classList.toggle('builder-clock', !ready);
+  if (ready) {
+    setText('brew-ready-origin', t('builder_calculated'));
+    setText('brew-ready-name', t(`builder_variant_${recipe.id}`));
+    setText('brew-ready-summary', t(`builder_summary_${recipe.id}`));
+    const grindScale = LANG === 'ru' ? recipe.grind?.scale_label : recipe.grind?.scale_label_en;
+    $('brew-ready-grid').innerHTML = [
+      [t('coffee'), grams(recipe.dose_g)], [t('water'), grams(recipe.water_g)],
+      [t('temperature'), celsius(recipe.temperature_c)],
+      [t('grind'), recipe.grind?.setting == null ? t('builder_not_applicable') : escape(recipe.grind.setting)],
+    ].map(([label, value], index) => `<div><span>${label}</span><strong>${value}</strong>${index === 3 ? `<small>${escape(recipe.grind?.setting == null ? t('builder_grind_unmapped') : grindScale)}</small>` : ''}</div>`).join('');
+    setText('brew-ready-duration', `${t('builder_total_time')}: ${clock(duration)}`);
+    setText('brew-toggle', t('builder_start_timer'));
+    return;
+  }
+  if (finished) return;
+  const index = calculatedSegmentIndex(segments, seconds);
+  const segment = segments[index];
+  if (!segment) return;
+  if (running && index !== lastActiveStep) {
+    lastActiveStep = index;
+    notify(1);
+  }
+  const pouring = segment.kind === 'pour' || segment.kind === 'fill';
+  const action = segment.step ? stepName(segment.step.instruction)
+    : segment.kind === 'wait' ? t('builder_wait')
+    : t(segment.kind === 'automatic' ? 'builder_automatic_wait' : 'builder_drawdown');
+  setText('brew-phase', pouring ? t('builder_pour_phase') : t('builder_wait_phase'));
+  setText('brew-clock', `${clock(seconds)} / ${clock(duration)}`);
+  setText('brew-action', action);
+  setText('brew-countdown', t('remaining', countdown(segment.stop - seconds)));
+  setText('brew-step-count', t('builder_step_count', index + 1, segments.length));
+  $('brew-step-count').hidden = false;
+  $('brew-step-tiles').hidden = false;
+  $('brew-step-nav').hidden = false;
+  setText('brew-pour-value', pouring ? grams(segment.step.pour_g) : t('builder_not_applicable'));
+  const onScale = segment.step?.total_water_g ?? segment.total_water_g;
+  setText('brew-scale-value', onScale ? grams(onScale) : t('builder_not_applicable'));
+  const rate = pouring ? (segment.step.pour_rate_g_s || segment.step.pour_g / (segment.stop - segment.start)) : null;
+  setText('brew-rate-value', rate ? t('builder_rate_value', num(Math.round(rate * 10) / 10)) : t('builder_not_applicable'));
+  $('brew-progress').style.width = `${Math.min(100, Math.max(0, (seconds - segment.start) / (segment.stop - segment.start) * 100)).toFixed(1)}%`;
+  const next = segments[index + 1];
+  setText('brew-next', next ? t('builder_next_action', next.step ? stepName(next.step.instruction) :
+    t(next.kind === 'automatic' ? 'builder_automatic_wait' : next.kind === 'drawdown' ? 'builder_drawdown' : 'builder_wait')) : '');
+  $('brew-prev-step').disabled = index === 0;
+  $('brew-next-step').disabled = index === segments.length - 1;
+  setText('brew-toggle', running ? t('pause') : t('resume'));
+}
+
+function jumpCalculatedStep(delta) {
+  if (currentRecipe?.origin !== 'calculated' || brewMode !== 'local') return;
+  const segments = calculatedTimeline(currentRecipe);
+  const seconds = elapsed + (running ? (Date.now() - startedAt) / 1000 : 0);
+  const index = calculatedSegmentIndex(segments, seconds);
+  const target = segments[index + delta];
+  if (!target) return;
+  elapsed = target.start;
+  startedAt = Date.now();
+  lastActiveStep = -1;
+  updateTimer();
+}
+
 function updateTimer() {
   if (!currentRecipe || brewMode === 'machine') return;
   const steps = currentRecipe.steps, duration = currentRecipe.duration_seconds;
-  let seconds = elapsed + (running ? (performance.now() - startedAt) / 1000 : 0);
+  let seconds = elapsed + (running ? (Date.now() - startedAt) / 1000 : 0);
   if (duration && seconds >= duration) {
     seconds = elapsed = duration;
     if (!finished) {
@@ -1746,6 +1878,15 @@ function updateTimer() {
       updateBrewStartLabel();
     }
   }
+  if (currentRecipe.origin === 'calculated') {
+    renderCalculatedTimer(seconds, duration);
+    return;
+  }
+  $('brew-ready').hidden = true;
+  $('brew-step-count').hidden = true;
+  $('brew-step-tiles').hidden = true;
+  $('brew-step-nav').hidden = true;
+  $('brew-clock').classList.remove('builder-clock');
   const started = running || seconds > 0;
   let activeIndex = -1, nextIndex = -1;
   for (let i = 0; i < steps.length; i++) {
@@ -1878,7 +2019,8 @@ async function startMachineBrew() {
     renderMachine();
   } catch (error) {
     brewMode = 'local';
-    setStatus('cta-status', error.message, true);
+    setStatus(currentRecipe?.origin === 'calculated' ? 'builder-status' : 'cta-status',
+      error.message || t('builder_machine_error'), true);
   } finally {
     $('machine-start').disabled = false;
     updateCtaBar();
@@ -1897,6 +2039,11 @@ async function machineCommand(action) {
 // What the brew screen shows in machine mode, from the latest telemetry.
 function renderMachine() {
   if (currentScreen() !== 'brew' && brewMode === 'machine' && !machineState) return;
+  $('brew-ready').hidden = true;
+  $('brew-step-count').hidden = true;
+  $('brew-step-tiles').hidden = true;
+  $('brew-step-nav').hidden = true;
+  $('brew-clock').classList.remove('builder-clock');
   const state = machineState || {};
   const status = machineStopped ? 'STOPPED' : !machineOnline ? 'OFFLINE' : (state.state || 'IDLE');
   const steps = currentRecipe?.steps || [];
@@ -1987,7 +2134,7 @@ function machineToggle() {
   if (status === 'READY') machineCommand('start');
   else if (status === 'BREWING') machineCommand('pause');
   else if (status === 'PAUSED') machineCommand('resume');
-  else if (status === 'ERROR' || status === 'STOPPED') { back('recipe'); startMachineBrew(); }
+  else if (status === 'ERROR' || status === 'STOPPED') { back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'); startMachineBrew(); }
   else if (status === 'OFFLINE') { refreshMachine(); }
 }
 
@@ -2048,7 +2195,7 @@ async function keepAwake(on) {
   } catch (error) { wakeLock = null; }
 }
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'visible' && running) keepAwake(true);
+  if (document.visibilityState === 'visible' && (running || (brewMode === 'machine' && MACHINE_ACTIVE.includes(machineState?.state)))) keepAwake(true);
 });
 
 function setToggle(id, key) {
@@ -2097,6 +2244,11 @@ function localize() {
     $('recipe-placeholder').classList.add('desktop-only');
   }
   $('brew-start').textContent = t('start_brew');
+  setText('brew-pour-label', t('builder_pour_now'));
+  setText('brew-scale-label', t('builder_on_scale'));
+  setText('brew-rate-label', t('builder_pour_rate'));
+  setText('brew-prev-step', t('builder_prev_step'));
+  setText('brew-next-step', t('builder_next_step'));
   $('brew-back').textContent = t('to_recipe');
   $('brew-title').textContent = t('brew_title');
   $('brew-reset').textContent = t('reset');
@@ -2108,6 +2260,10 @@ function localize() {
   setToggle('brew-vibrate', 'vibrate');
   setToggle('brew-sound', 'sound');
   if (!navigator.vibrate) $('brew-vibrate').hidden = true;
+  if (currentScreen() === 'brew') {
+    if (brewMode === 'machine') renderMachine();
+    else updateTimer();
+  }
 
 }
 
@@ -2169,13 +2325,15 @@ function init() {
   $('machine-start').addEventListener('click', startMachineBrew);
   $('brew-back').addEventListener('click', () => back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'));
   $('brew-toggle').addEventListener('click', () => brewMode === 'machine' ? machineToggle() : toggleTimer());
+  $('brew-prev-step').addEventListener('click', () => jumpCalculatedStep(-1));
+  $('brew-next-step').addEventListener('click', () => jumpCalculatedStep(1));
   $('brew-reset').addEventListener('click', () => {
     if (brewMode === 'machine') { machineStop(); return; }
     resetTimer();
     $('brew-toggle').focus({preventScroll: true});
   });
   $('brew-again').addEventListener('click', () => {
-    if (brewMode === 'machine') { back('recipe'); startMachineBrew(); return; }
+    if (brewMode === 'machine') { back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe'); startMachineBrew(); return; }
     resetTimer();
     back(currentRecipe?.origin === 'calculated' ? 'construct' : 'recipe');
   });

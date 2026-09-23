@@ -58,6 +58,9 @@ class StaticFileTests(unittest.TestCase):
         self.assertIn('id="screen-construct"', html)
         self.assertIn('id="open-builder"', html)
         self.assertIn('id="builder-language"', html)
+        for element in ('brew-ready', 'brew-step-count', 'brew-step-tiles',
+                        'brew-prev-step', 'brew-next-step'):
+            self.assertIn(f'id="{element}"', html)
         self.assertIn('id="recents"', html)
         self.assertNotIn('id="recents-hint"', html)
         self.assertIn('id="scan-preview"', html)
