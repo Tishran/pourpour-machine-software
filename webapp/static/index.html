@@ -57,6 +57,7 @@
       <p class="status" id="catalog-status" role="status" aria-live="polite"></p>
       <button class="button builder-entry" id="open-builder" type="button"></button>
       <button class="button mine-entry" id="open-mine" type="button" hidden></button>
+      <button class="button mine-entry" id="open-progress" type="button" hidden></button>
       <section class="recents" id="recents" aria-labelledby="recents-title" hidden>
         <h2 class="section" id="recents-title"></h2>
         <div class="results" id="recent-list" role="list"></div>
@@ -269,6 +270,13 @@
           <a class="button survey-button" id="survey-link" href="https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb" target="_blank" rel="noopener noreferrer"></a>
         </div>
       </aside>
+    </section>
+
+    <section class="screen screen-progress" id="screen-progress" aria-labelledby="progress-title">
+      <header class="bar"><button class="back" id="progress-back" type="button"></button></header>
+      <h1 class="title" id="progress-title" tabindex="-1"></h1>
+      <p class="status" id="progress-status" role="status" aria-live="polite"></p>
+      <div class="progress-body" id="progress-body"></div>
     </section>
 
     <section class="screen screen-school" id="screen-school" aria-labelledby="school-title">

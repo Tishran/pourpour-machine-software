@@ -690,3 +690,21 @@ body[data-screen="school"] #screen-school, body[data-screen="lesson"] #screen-le
 .experiment-summary .changed { padding: 1px 6px; border-radius: 6px; background: var(--orange); color: var(--on-orange); font-weight: 700; }
 .experiment-summary span { white-space: nowrap; }
 .experiment-cup .edit-actions { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 10px; }
+
+/* Progress and journal. */
+body[data-screen="progress"] #screen-progress { display: flex; flex-direction: column; }
+.progress-body { padding-bottom: 32px; }
+.progress-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 8px 0 12px; }
+.progress-grid .progress-card:first-child, .progress-grid .progress-card:nth-child(4) { grid-column: 1 / -1; }
+.progress-grid .progress-card:nth-child(4) .home-metric { font-size: 1.2rem; }
+.progress-card.locked { border-style: dashed; color: var(--muted); }
+.progress-card .home-metric { font-size: 1.6rem; overflow-wrap: anywhere; }
+.progress-unlock, .progress-more { width: 100%; margin: 4px 0 8px; border-color: var(--orange); color: var(--accent-ink); }
+.journal-entry { min-height: 56px; }
+.home-card #home-progress { margin-top: 10px; }
+@media (min-width: 900px) {
+  #screen-progress { grid-column: 1 / -1; width: 100%; max-width: 720px; margin: 0 auto; }
+  body[data-screen="progress"] #screen-find, body[data-screen="progress"] #screen-recipe { display: none; }
+  .progress-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .progress-grid .progress-card:first-child, .progress-grid .progress-card:nth-child(4) { grid-column: auto; }
+}

@@ -495,6 +495,24 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · included months until ${date}`,
     settings_owner: 'machine owner',
     settings_open_plans: 'Plans and membership',
+    progress_title: 'Progress and journal',
+    progress_open: (n) => `Journal and progress · ${n}`,
+    progress_empty: 'Brew and rate at least three cups — your progress appears here.',
+    progress_first_cup: 'Brew the first cup',
+    progress_journal: 'Journal',
+    progress_streak: 'Days in a row',
+    progress_days: (n) => String(n),
+    progress_school: 'Lessons · experiments',
+    progress_school_note: 'done in the School',
+    progress_taste: 'Your taste',
+    progress_taste_note: 'what you mark most often',
+    progress_taste_empty: 'Rate a few cups to see it.',
+    progress_more: (n) => `${n} more in the journal`,
+    progress_by_hand: 'by hand',
+    progress_by_machine: 'on the machine',
+    progress_unknown_coffee: 'Coffee',
+    diagnosis_names: {under: 'draw out more', over: 'extract more gently', weak_after_sweet: 'add body',
+      heavy_after_sweet: 'lighten the cup', on_target: 'on target', strength_needs_sweetness: 'sweetness first'},
     school_title: 'School',
     school_intro: 'Short lessons and taste experiments: brew the same coffee twice, change one thing, taste the difference.',
     school_draft: 'Draft: a barista is still reviewing these lessons.',
@@ -1031,6 +1049,24 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · включённые месяцы до ${date}`,
     settings_owner: 'владелец машины',
     settings_open_plans: 'Тарифы и подписка',
+    progress_title: 'Прогресс и дневник',
+    progress_open: (n) => `Дневник и прогресс · ${n}`,
+    progress_empty: 'Заварите и оцените хотя бы три чашки — здесь появится ваш прогресс.',
+    progress_first_cup: 'Заварить первую чашку',
+    progress_journal: 'Дневник',
+    progress_streak: 'Дней подряд',
+    progress_days: (n) => String(n),
+    progress_school: 'Уроки · эксперименты',
+    progress_school_note: 'пройдено в Школе',
+    progress_taste: 'Ваш вкус',
+    progress_taste_note: 'что вы отмечаете чаще всего',
+    progress_taste_empty: 'Оцените несколько чашек, чтобы увидеть.',
+    progress_more: (n) => `Ещё ${n} в дневнике`,
+    progress_by_hand: 'руками',
+    progress_by_machine: 'на машине',
+    progress_unknown_coffee: 'Кофе',
+    diagnosis_names: {under: 'нужно больше раскрытия', over: 'извлекать мягче', weak_after_sweet: 'добавить плотности',
+      heavy_after_sweet: 'сделать легче', on_target: 'в ориентире', strength_needs_sweetness: 'сначала сладость'},
     school_title: 'Школа',
     school_intro: 'Короткие уроки и вкусовые эксперименты: варите один кофе дважды, меняете одну вещь и пробуете разницу.',
     school_draft: 'Черновик: уроки ещё проверяет бариста.',
@@ -1251,6 +1287,8 @@ function entitlementChanged() {
   if (currentScreen() === 'settings') renderSettings();
   if (builder.options) { updateBuilderStep(); renderBuilderResult(); }
   if (currentScreen() === 'plans') renderPlans();
+  if (currentScreen() === 'progress') renderProgress();
+  if (currentScreen() === 'school') renderSchool();
 }
 
 // ---------------------------------------------------------------------------
@@ -1416,7 +1454,7 @@ function selectRecent(entry) {
 // Screens and browser history
 // ---------------------------------------------------------------------------
 const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own', 'plans', 'start', 'settings',
-  'school', 'lesson'];
+  'school', 'lesson', 'progress'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
@@ -1436,6 +1474,7 @@ function show(screen, {push = true} = {}) {
   if (screen === 'settings') renderSettings();
   if (screen === 'find') renderHome();
   if (screen === 'school') renderSchool();
+  if (screen === 'progress') renderProgress();
   if (screen === 'lesson') { renderLesson(); if (lesson.stage === 'practice') loadLessonRecipe(); }
   if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
   if (screen === 'brew' && brewMode === 'machine') renderMachine();
@@ -1448,7 +1487,7 @@ function show(screen, {push = true} = {}) {
     : screen === 'mine' ? $('mine-title') : screen === 'own' ? $('own-title')
     : screen === 'plans' ? $('plans-title') : screen === 'start' ? $('start-title')
     : screen === 'settings' ? $('settings-title') : screen === 'school' ? $('school-title')
-    : screen === 'lesson' ? $('lesson-title') : $('brew-toggle');
+    : screen === 'lesson' ? $('lesson-title') : screen === 'progress' ? $('progress-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -3628,6 +3667,76 @@ function greatCups(entries = journalEntries()) {
   return {great: rated.filter(entry => entry.diagnosis_code === 'on_target').length, total: rated.length};
 }
 
+// Days in a row with at least one brew, ending today or yesterday.
+function brewStreak(entries) {
+  const day = value => { const date = new Date(value); return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`; };
+  const days = new Set(entries.map(entry => day(entry.at)));
+  const cursor = new Date();
+  if (!days.has(day(cursor))) cursor.setDate(cursor.getDate() - 1);
+  let streak = 0;
+  while (days.has(day(cursor))) { streak++; cursor.setDate(cursor.getDate() - 1); }
+  return streak;
+}
+// "Your taste": the descriptors you mark most often.
+function tasteProfile(entries) {
+  const counts = new Map();
+  entries.forEach(entry => entry.tastes.forEach(taste => counts.set(taste, (counts.get(taste) || 0) + 1)));
+  return [...counts].sort((a, b) => b[1] - a[1]).slice(0, 3);
+}
+function renderProgressEntry() {
+  const count = journalEntries().length;
+  $('open-progress').hidden = !count;
+  $('open-progress').textContent = t('progress_open', count);
+}
+function journalLine(entry) {
+  const names = STRINGS[LANG].taste_names;
+  const tastes = entry.tastes.filter(id => Object.hasOwn(names, id)).map(id => names[id].toLowerCase()).join(', ');
+  const diagnosis = entry.diagnosis_code ? STRINGS[LANG].diagnosis_names[entry.diagnosis_code] || '' : '';
+  return `<div class="coffee journal-entry" role="listitem"><span class="coffee-copy"><strong>${escape(entry.coffee || t('progress_unknown_coffee'))}</strong>
+    <small>${escape(ownDate(entry.at))} · ${t(entry.method === 'machine' ? 'progress_by_machine' : 'progress_by_hand')}</small>
+    ${tastes || diagnosis ? `<small>${escape([tastes, diagnosis].filter(Boolean).join(' · '))}</small>` : ''}</span></div>`;
+}
+function renderProgress() {
+  setText('progress-title', t('progress_title'));
+  const entries = journalEntries();
+  if (entries.length < 3) {
+    $('progress-body').innerHTML = `<div class="mine-empty"><p class="note">${t('progress_empty')}</p>
+      <button type="button" class="button primary big" id="progress-first">${t('progress_first_cup')}</button></div>
+      ${entries.length ? `<h2 class="section">${t('progress_journal')}</h2><div class="results" role="list">${entries.map(journalLine).join('')}</div>` : ''}`;
+    return;
+  }
+  const full = can('journal_full');
+  const cups = greatCups(entries);
+  const school = COURSE ? schoolCounts() : {lessons: 0, experiments: 0};
+  const taste = tasteProfile(entries);
+  const names = STRINGS[LANG].taste_names;
+  const card = (title, value, meta, open = true) => `<div class="home-card progress-card${open ? '' : ' locked'}">
+    <p class="home-eyebrow">${open ? '' : `${LOCK} `}${title}</p>${open ? `<p class="home-metric">${value}</p>${meta ? `<p class="home-card-meta">${meta}</p>` : ''}` : ''}</div>`;
+  const recent = limit('journal_recent') || 3;
+  const shown = full ? entries : entries.slice(0, recent);
+  const hidden = entries.length - shown.length;
+  $('progress-body').innerHTML = `<div class="progress-grid">
+      ${card(t('great_cups_title'), cups.total ? t('great_cups_value', cups.great, cups.total) : '—', cups.total ? t('great_cups_note') : t('great_cups_empty'))}
+      ${card(t('progress_streak'), t('progress_days', brewStreak(entries)), '', full)}
+      ${card(t('progress_school'), `${school.lessons} · ${school.experiments}`, t('progress_school_note'), full)}
+      ${card(t('progress_taste'), taste.length ? taste.map(([id]) => escape(names[id] || id)).join(', ') : '—',
+        taste.length ? t('progress_taste_note') : t('progress_taste_empty'), full)}
+    </div>
+    ${full ? '' : `<button type="button" class="button progress-unlock" id="progress-unlock">${LOCK} ${escape(benefit('journal_full'))}</button>`}
+    <h2 class="section">${t('progress_journal')}</h2>
+    <div class="results" role="list">${shown.map(journalLine).join('')}</div>
+    ${hidden ? `<button type="button" class="button progress-more" id="progress-more">${LOCK} ${t('progress_more', hidden)}</button>` : ''}`;
+}
+function wireProgress() {
+  $('open-progress').addEventListener('click', () => show('progress'));
+  $('progress-back').addEventListener('click', () => back('find'));
+  $('progress-body').addEventListener('click', event => {
+    const id = event.target.closest('button')?.id;
+    if (id === 'progress-first') back('find');
+    else if (id === 'progress-more' || id === 'progress-unlock') requireFeature('journal_full', 'progress-status');
+  });
+}
+
 // ---------------------------------------------------------------------------
 // First run and home: learn, machine or just a recipe. Settings hold the same choice.
 // ---------------------------------------------------------------------------
@@ -3666,6 +3775,7 @@ function resolveRef(ref) {
 }
 function renderHome() {
   document.body.dataset.mode = prefs.mode || 'skip';
+  renderProgressEntry();
   renderHomeLearn();
   renderHomeMachine();
   renderUpgrade();
@@ -3690,10 +3800,12 @@ function renderHomeLearn() {
       <button type="button" class="button" id="home-repeat">${t('home_repeat')}</button></div>` : ''}
     <div class="home-card"><p class="home-eyebrow">${t('great_cups_title')}</p>
       ${cups.total ? `<p class="home-metric">${t('great_cups_value', cups.great, cups.total)}</p><p class="home-card-meta">${t('great_cups_note')}</p>`
-        : `<p class="home-card-meta">${t('great_cups_empty')}</p>`}</div>`;
+        : `<p class="home-card-meta">${t('great_cups_empty')}</p>`}
+      ${entries.length ? `<button type="button" class="button" id="home-progress">${t('progress_title')}</button>` : ''}</div>`;
   $('home-repeat')?.addEventListener('click', () => resolveRef(last.ref)?.());
   $('home-lesson')?.addEventListener('click', () => openLesson(next.lesson.id));
   $('home-school-all')?.addEventListener('click', openSchool);
+  $('home-progress')?.addEventListener('click', () => show('progress'));
 }
 function machineHomeStatus() {
   if (!machineInfo?.enabled) return t('machine_home_none');
@@ -4729,6 +4841,8 @@ function localize() {
   $('plans-back').textContent = t('back');
   $('settings-back').textContent = t('back');
   $('school-back').textContent = t('back');
+  $('progress-back').textContent = t('back');
+  if (currentScreen() === 'progress') renderProgress();
   $('lesson-back').textContent = t('school_title');
   setText('brew-lesson', t('lesson_back_to'));
   if (currentScreen() === 'school') renderSchool();
@@ -4926,6 +5040,7 @@ function init() {
   wirePlans();
   wireHome();
   wireSchool();
+  wireProgress();
   loadPlans();
   if (shared) openShareLink(shared);
   refreshMachine();
