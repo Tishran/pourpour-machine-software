@@ -9,14 +9,15 @@ so a lesson can never ask for parameters the engine refuses.
 from pathlib import Path
 
 from brew_catalog import DATA_DIR, fields, read_json, require
-from brewing_engine import DIAGNOSIS_CODES, BrewingInputError, build
+from brewing_engine import DIAGNOSIS_CODES, EXPERIMENT_PARAMETERS, BrewingInputError, build, experiment_pair
 
 COURSE_FILE = 'course.json'
 WHY_KEYS = ('dose', 'water', 'ratio', 'temperature', 'grind', 'grind_roaster', 'pours', 'time')
 TIMER_KEYS = ('bloom', 'pour', 'wait', 'drawdown', 'fill', 'steep', 'press', 'drain', 'automatic')
 SOURCES = ('docs/BREWING.md', 'brewing_engine', 'webapp/data/')
 CARD_LIMIT = 280
-EXPERIMENT_PARAMETERS = ('grind', 'temperature', 'ratio')
+# The conclusions of an experiment are written for its usual direction.
+EXPERIMENT_CHANGES = {'grind': 'finer', 'temperature': 'hotter', 'ratio': 'less_water'}
 
 
 def text_pair(value, where, limit=CARD_LIMIT, *, source=True):
@@ -65,6 +66,9 @@ def validate_lesson(lesson, where, seen):
         require(set(practice) == {'kind', 'params', 'vary'} and practice['vary'] in EXPERIMENT_PARAMETERS,
                 where, f'an experiment varies one of {", ".join(EXPERIMENT_PARAMETERS)}')
         require(variants[0]['method'] == 'percolation', where, 'experiments use a pour-over recipe')
+        change = experiment_pair(variants[0], practice['vary'])['change']
+        require(change == EXPERIMENT_CHANGES[practice['vary']], where,
+                f'the conclusions assume {EXPERIMENT_CHANGES[practice["vary"]]}, the recipe gives {change}')
         conclusions = lesson.get('conclusions')
         keyed_texts(conclusions, f'{where}.conclusions', ('a', 'b', 'same'))
     else:
@@ -82,7 +86,7 @@ def load_course(data_dir=DATA_DIR):
     keyed_texts(data['timer'], 'course.timer', TIMER_KEYS)
     keyed_texts(data['takeaways'], 'course.takeaways', DIAGNOSIS_CODES)
     modules = data['modules']
-    require(isinstance(modules, list), 'course.modules', 'expected a list')
+    require(isinstance(modules, list) and modules, 'course.modules', 'expected a list of modules')
     module_ids, lesson_ids = set(), set()
     for index, module in enumerate(modules):
         where = f'course.modules[{index}]'

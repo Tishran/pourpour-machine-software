@@ -495,6 +495,41 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · included months until ${date}`,
     settings_owner: 'machine owner',
     settings_open_plans: 'Plans and membership',
+    school_title: 'School',
+    school_intro: 'Short lessons and taste experiments: brew the same coffee twice, change one thing, taste the difference.',
+    school_draft: 'Draft: a barista is still reviewing these lessons.',
+    school_draft_short: 'Draft lesson',
+    school_progress: (n, total) => `Done: ${n} of ${total}`,
+    school_experiment: 'Experiment',
+    school_done: 'Done',
+    school_lesson_n: (n) => `lesson ${n}`,
+    home_continue_lesson: 'Continue the lesson',
+    home_start_lesson: 'Start the first lesson',
+    home_all_lessons: 'All lessons',
+    lesson_card_n: (n, total) => `${n} / ${total}`,
+    lesson_prev: 'Back',
+    lesson_next: 'Next',
+    lesson_to_practice: 'To practice',
+    lesson_practice: 'Practice',
+    lesson_practice_text: 'Brew this recipe with the timer or on the machine, then rate the cup: the correction is the review.',
+    lesson_loading: 'Preparing the recipe…',
+    lesson_brew: 'Brew with the timer',
+    lesson_finish: 'Finish without rating',
+    lesson_done_title: 'Lesson done',
+    lesson_next_lesson: 'Next lesson',
+    lesson_to_school: 'Back to the School',
+    lesson_back_to: 'Back to the lesson',
+    exp_cup_a: 'Cup A — as it is',
+    exp_cup_b: 'Cup B — one change',
+    exp_brewed: 'Brewed',
+    exp_compare: 'Compare the cups',
+    exp_brew_both: 'Brew both cups, then compare them.',
+    exp_which: 'Which cup did you like more?',
+    exp_a: 'Cup A',
+    exp_b: 'Cup B',
+    exp_same: 'No difference',
+    exp_how: 'What stood out? Up to two',
+    exp_done: 'Get the conclusion',
     why_button: 'Learn why',
     why_in_general: (text) => `In general: ${text}`,
     takeaway_eyebrow: 'Learn from every cup',
@@ -996,6 +1031,41 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · включённые месяцы до ${date}`,
     settings_owner: 'владелец машины',
     settings_open_plans: 'Тарифы и подписка',
+    school_title: 'Школа',
+    school_intro: 'Короткие уроки и вкусовые эксперименты: варите один кофе дважды, меняете одну вещь и пробуете разницу.',
+    school_draft: 'Черновик: уроки ещё проверяет бариста.',
+    school_draft_short: 'Черновик урока',
+    school_progress: (n, total) => `Пройдено: ${n} из ${total}`,
+    school_experiment: 'Эксперимент',
+    school_done: 'Пройден',
+    school_lesson_n: (n) => `урок ${n}`,
+    home_continue_lesson: 'Продолжить урок',
+    home_start_lesson: 'Начать первый урок',
+    home_all_lessons: 'Все уроки',
+    lesson_card_n: (n, total) => `${n} / ${total}`,
+    lesson_prev: 'Назад',
+    lesson_next: 'Дальше',
+    lesson_to_practice: 'К практике',
+    lesson_practice: 'Практика',
+    lesson_practice_text: 'Заварите этот рецепт по таймеру или на машине, потом оцените чашку: правка — это разбор.',
+    lesson_loading: 'Готовим рецепт…',
+    lesson_brew: 'Заварить по таймеру',
+    lesson_finish: 'Завершить без оценки',
+    lesson_done_title: 'Урок пройден',
+    lesson_next_lesson: 'Следующий урок',
+    lesson_to_school: 'К Школе',
+    lesson_back_to: 'Вернуться к уроку',
+    exp_cup_a: 'Чашка A — как есть',
+    exp_cup_b: 'Чашка B — одна перемена',
+    exp_brewed: 'Заварено',
+    exp_compare: 'Сравнить чашки',
+    exp_brew_both: 'Заварите обе чашки, потом сравните.',
+    exp_which: 'Какая чашка вкуснее?',
+    exp_a: 'Чашка A',
+    exp_b: 'Чашка B',
+    exp_same: 'Одинаково',
+    exp_how: 'Чем? До двух',
+    exp_done: 'Получить вывод',
     why_button: 'Почему?',
     why_in_general: (text) => `В целом: ${text}`,
     takeaway_eyebrow: 'Каждая чашка — урок',
@@ -1345,7 +1415,8 @@ function selectRecent(entry) {
 // ---------------------------------------------------------------------------
 // Screens and browser history
 // ---------------------------------------------------------------------------
-const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own', 'plans', 'start', 'settings'];
+const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own', 'plans', 'start', 'settings',
+  'school', 'lesson'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
@@ -1354,6 +1425,7 @@ function show(screen, {push = true} = {}) {
   if (screen === 'recipe' && !currentData && !recipeLoading) screen = 'find';
   if (screen === 'brew' && !currentRecipe) screen = currentData ? 'recipe' : 'find';
   if (screen === 'own' && !own.entry) screen = 'mine';
+  if (screen === 'lesson' && !lesson.current) screen = 'school';
   if (currentScreen() === 'confirm' && screen !== 'confirm') cancelConfirmation();
   document.body.dataset.screen = screen;
   if (screen === 'confirm') renderConfirmation();
@@ -1363,6 +1435,8 @@ function show(screen, {push = true} = {}) {
   if (screen === 'start') renderStart();
   if (screen === 'settings') renderSettings();
   if (screen === 'find') renderHome();
+  if (screen === 'school') renderSchool();
+  if (screen === 'lesson') { renderLesson(); if (lesson.stage === 'practice') loadLessonRecipe(); }
   if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
   if (screen === 'brew' && brewMode === 'machine') renderMachine();
   if (push && history.state?.screen !== screen) {
@@ -1373,7 +1447,8 @@ function show(screen, {push = true} = {}) {
     : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? builderFocusTarget()
     : screen === 'mine' ? $('mine-title') : screen === 'own' ? $('own-title')
     : screen === 'plans' ? $('plans-title') : screen === 'start' ? $('start-title')
-    : screen === 'settings' ? $('settings-title') : $('brew-toggle');
+    : screen === 'settings' ? $('settings-title') : screen === 'school' ? $('school-title')
+    : screen === 'lesson' ? $('lesson-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -2779,6 +2854,7 @@ async function requestCorrection({focus = false} = {}) {
     builder.adjustCounted = rated;
     builder.correction = {...data, feedback};
     journalRating(rated, feedback, data.diagnosis_code);
+    lessonRated();
     builder.step = 4;
     builderStatus('');
     renderBuilderCorrection();
@@ -2911,6 +2987,7 @@ function renderBuilderCorrection() {
     <h2 class="title" id="correction-title" tabindex="-1">${escape(ru ? data.diagnosis : data.diagnosis_en)}</h2>
     <p class="correction-explanation">${escape(ru ? data.explanation : data.explanation_en)}</p>
     ${takeawayCard(data.diagnosis_code)}
+    ${builder.ratingOrigin === 'lesson' && lesson.current ? `<button type="button" class="button builder-favorite" id="correction-lesson">${t('lesson_back_to')}</button>` : ''}
     ${extractionChart(data.chart)}
     <h3 class="section">${t('correction_changes')}</h3>
     ${changes ? `<ul class="correction-changes">${changes}</ul>` : `<p class="note">${t(data.at_limit ? 'correction_at_limit' : 'correction_no_changes')}</p>`}
@@ -3012,6 +3089,7 @@ function wireFeedback() {
   $('builder-correction').addEventListener('click', event => {
     const control = event.target.closest('[data-correction-adjust]');
     if (control) { adjustCorrectionQuantity(control.dataset.correctionAdjust); return; }
+    if (event.target.closest('#correction-lesson')) { show('lesson'); return; }
     if (event.target.closest('#correction-machine')) {
       currentRecipe = builder.correction.recipe;
       brewOrigin = 'construct';
@@ -3023,7 +3101,7 @@ function wireFeedback() {
 function wireBuilder() {
   $('open-builder').addEventListener('click', beginBuilder);
   $('builder-back').addEventListener('click', () => {
-    if (builder.step === 3 && ['own', 'recipe'].includes(builder.ratingOrigin)) { back(builder.ratingOrigin); return; }
+    if (builder.step === 3 && ['own', 'recipe', 'lesson'].includes(builder.ratingOrigin)) { back(builder.ratingOrigin); return; }
     if (builder.step > 0) {
       if (builder.step <= 2) captureBuilderDraft();
       clearTimeout(builder.correctionTimer);
@@ -3512,6 +3590,7 @@ function updateJournal(id, changes) {
 }
 // Where a recipe lives, for the journal: a link, never a copy.
 function recipeRef(recipe, origin) {
+  if (origin === 'lesson' && lesson.current) return {kind: 'lesson', lesson: lesson.current.id, cup: lesson.cup};
   if (origin === 'own' && own.entry && ownSaved(own.entry)) return {kind: 'own', id: own.entry.id};
   if (recipe?.origin === 'calculated') return {kind: 'calculated', key: ownRecipeKey(recipe)};
   if (currentData?.product?.url) return {kind: 'roaster', url: currentData.product.url,
@@ -3519,6 +3598,8 @@ function recipeRef(recipe, origin) {
   return null;
 }
 function recipeCoffee(recipe, origin) {
+  if (origin === 'lesson' && lesson.current) return `${t('school_title')}: ${lesson.current.title[LANG]}${
+    lesson.current.practice.kind === 'experiment' ? ` · ${cupName(lesson.cup)}` : ''}`;
   if (origin === 'own' && own.entry) return ownName(own.entry);
   if (recipe?.origin === 'calculated') {
     const chips = builder.ratedChips || (builder.options && recipe.basis !== 'roaster' ? builderContext(recipe) : []);
@@ -3530,12 +3611,13 @@ function logBrew(method) {
   if (!currentRecipe) return;
   const entry = addJournal({method, coffee: recipeCoffee(currentRecipe, brewOrigin), ref: recipeRef(currentRecipe, brewOrigin)});
   lastJournalId = entry?.id || null;
+  onLessonBrewed(entry);
 }
 // A rating belongs to the cup it came from; a cup rated without the timer gets its own entry.
 function journalRating(recipe, feedback, code) {
   const record = {tastes: [...(feedback.descriptors || [])], diagnosis_code: code || null};
   if (builder.journalId && updateJournal(builder.journalId, record)) return;
-  const origin = builder.ratingOrigin === 'own' ? 'own' : builder.ratingOrigin === 'recipe' ? 'recipe' : 'construct';
+  const origin = ['own', 'recipe', 'lesson'].includes(builder.ratingOrigin) ? builder.ratingOrigin : 'construct';
   const entry = addJournal({method: 'hand', coffee: builder.ratedName || recipeCoffee(recipe, origin),
     ref: recipeRef(recipe, origin), ...record});
   builder.journalId = entry?.id || null;
@@ -3579,6 +3661,7 @@ function resolveRef(ref) {
     const entry = ownEntries().find(item => item.id === ref.id);
     return entry ? () => openOwn(entry, 'home') : null;
   }
+  if (ref?.kind === 'lesson') return findLesson(ref.lesson) ? () => openLesson(ref.lesson) : null;
   return null;
 }
 function renderHome() {
@@ -3595,7 +3678,13 @@ function renderHomeLearn() {
   const entries = journalEntries();
   const last = entries.find(entry => resolveRef(entry.ref));
   const cups = greatCups(entries);
+  const next = COURSE ? nextLesson() : null;
+  const started = COURSE && schoolCounts().done > 0;
   box.innerHTML = `
+    ${next ? `<div class="home-card"><p class="home-eyebrow">${t('school_title')}</p>
+      <p class="home-card-title">${escape(next.lesson.title[LANG])}</p><p class="home-card-meta">${escape(next.module.title[LANG])}</p>
+      <button type="button" class="button primary" id="home-lesson">${can(lessonFeature(next.lesson)) ? '' : `${LOCK} `}${t(started ? 'home_continue_lesson' : 'home_start_lesson')}</button>
+      <button type="button" class="text-button" id="home-school-all">${t('home_all_lessons')}</button></div>` : ''}
     ${last ? `<div class="home-card"><p class="home-eyebrow">${t('home_last_brew')}</p>
       <p class="home-card-title">${escape(last.coffee)}</p><p class="home-card-meta">${escape(ownDate(last.at))}</p>
       <button type="button" class="button" id="home-repeat">${t('home_repeat')}</button></div>` : ''}
@@ -3603,6 +3692,8 @@ function renderHomeLearn() {
       ${cups.total ? `<p class="home-metric">${t('great_cups_value', cups.great, cups.total)}</p><p class="home-card-meta">${t('great_cups_note')}</p>`
         : `<p class="home-card-meta">${t('great_cups_empty')}</p>`}</div>`;
   $('home-repeat')?.addEventListener('click', () => resolveRef(last.ref)?.());
+  $('home-lesson')?.addEventListener('click', () => openLesson(next.lesson.id));
+  $('home-school-all')?.addEventListener('click', openSchool);
 }
 function machineHomeStatus() {
   if (!machineInfo?.enabled) return t('machine_home_none');
@@ -3673,6 +3764,7 @@ function wireHome() {
   $('open-settings').addEventListener('click', () => show('settings'));
   $('open-plans').addEventListener('click', openPlans);
   $('home-machine').addEventListener('click', event => {
+    if (event.target.closest('#home-school')) { openSchool(); return; }
     const item = event.target.closest('[data-machine-item]');
     if (item) brewHomeItem(Number(item.dataset.machineItem));
   });
@@ -3753,6 +3845,285 @@ function renderSettings() {
     ${bundle && state.plan === 'member' ? `<button type="button" class="button settings-wide" id="settings-demo-expire">${t('settings_demo_end_months')}</button>` : ''}
     <button type="button" class="button settings-wide" id="settings-demo-reset">${t('settings_demo_reset')}</button>
     <p class="status" id="settings-status" role="status" aria-live="polite"></p>`;
+}
+
+// ---------------------------------------------------------------------------
+// School: lessons from data/course.json. A lesson is 2–4 theory cards, then practice
+// with the existing timer (or the machine), then the existing rating and correction,
+// then what you learned. Experiments brew one recipe twice with one change.
+// ---------------------------------------------------------------------------
+const SCHOOL_KEY = 'firstbrew.school.v1';
+const COMPARE_TASTES = ['sweet', 'balanced', 'sour', 'bitter', 'watery', 'heavy'];
+const lesson = {current: null, module: null, stage: 'card', card: 0, recipe: null, pair: null,
+  cup: null, brewed: {}, journal: {}, choice: null, tastes: [], busy: false, rated: false};
+function schoolProgress() {
+  const state = {lessons: {}, experiments: {}};
+  try {
+    const saved = JSON.parse(localStorage.getItem(SCHOOL_KEY) || '{}');
+    for (const key of ['lessons', 'experiments']) {
+      if (saved[key] && typeof saved[key] === 'object') {
+        for (const [id, value] of Object.entries(saved[key])) {
+          if (value && typeof value.done_at === 'string') state[key][id] = value;
+        }
+      }
+    }
+  } catch (error) { /* in memory only */ }
+  return state;
+}
+let schoolMemory = null;  // when storage is blocked the progress lives for this visit
+function saveSchool(state) {
+  schoolMemory = state;
+  try { localStorage.setItem(SCHOOL_KEY, JSON.stringify(state)); } catch (error) { /* kept in memory */ }
+}
+function schoolState() {
+  return schoolMemory || schoolProgress();
+}
+function allLessons() {
+  return (COURSE?.modules || []).flatMap(module => module.lessons.map(item => ({lesson: item, module})));
+}
+function lessonFeature(item) {
+  const first = COURSE?.modules?.[0]?.lessons?.[0];
+  if (item === first) return 'school_intro';
+  return item.practice.kind === 'experiment' ? 'experiments' : 'school_full';
+}
+function lessonDone(id) {
+  const state = schoolState();
+  return Boolean(state.lessons[id] || state.experiments[id]);
+}
+function markLessonDone(item, choice = null) {
+  const state = schoolState();
+  const record = {done_at: new Date().toISOString()};
+  if (item.practice.kind === 'experiment') state.experiments[item.id] = {...record, choice};
+  else state.lessons[item.id] = record;
+  saveSchool(state);
+}
+// The next lesson to continue: the first one not done yet.
+function nextLesson() {
+  return allLessons().find(({lesson: item}) => !lessonDone(item.id)) || null;
+}
+function schoolCounts() {
+  const items = allLessons();
+  const state = schoolState();
+  return {done: items.filter(({lesson: item}) => lessonDone(item.id)).length, total: items.length,
+    lessons: Object.keys(state.lessons).length, experiments: Object.keys(state.experiments).length};
+}
+function openSchool() {
+  if (!COURSE) { loadCourse().then(() => show('school')); return; }
+  show('school');
+}
+function renderSchool() {
+  setText('school-title', t('school_title'));
+  setText('school-intro', t('school_intro'));
+  setText('school-draft', t('school_draft'));
+  if (!COURSE) { $('school-modules').innerHTML = `<p class="note">${t('err_generic')}</p>`; return; }
+  const counts = schoolCounts();
+  $('school-modules').innerHTML = `<p class="school-progress">${t('school_progress', counts.done, counts.total)}</p>` +
+    COURSE.modules.map((module, index) => `<section class="school-module" aria-labelledby="module-${escape(module.id)}">
+      <h2 class="section" id="module-${escape(module.id)}">${index + 1}. ${escape(module.title[LANG])}</h2>
+      <div class="results">${module.lessons.map(item => {
+        const open = can(lessonFeature(item)), done = lessonDone(item.id);
+        const badge = done ? `<span class="lesson-badge done">✓ ${t('school_done')}</span>`
+          : open ? '' : `<span class="lesson-badge">${LOCK}</span>`;
+        return `<button type="button" class="coffee lesson-item" data-lesson="${escape(item.id)}">
+          <span class="coffee-copy"><strong>${escape(item.title[LANG])}</strong>
+          ${item.practice.kind === 'experiment' ? `<small>${t('school_experiment')}</small>` : ''}</span>${badge}<span class="arrow" aria-hidden="true">→</span></button>`;
+      }).join('')}</div></section>`).join('');
+}
+function findLesson(id) {
+  return allLessons().find(({lesson: item}) => item.id === id) || null;
+}
+function openLesson(id) {
+  const found = findLesson(id);
+  if (!found) return;
+  if (!requireFeature(lessonFeature(found.lesson), currentScreen() === 'school' ? 'school-status' : 'status')) return;
+  Object.assign(lesson, {current: found.lesson, module: found.module, stage: lessonDone(id) ? 'done' : 'card', card: 0,
+    recipe: null, pair: null, cup: null, brewed: {}, journal: {}, choice: null, tastes: [], busy: false, rated: false});
+  show('lesson');
+}
+function lessonCardHtml(card) {
+  return `<div class="lesson-card"><p>${escape(card[LANG])}</p></div>`;
+}
+// One line per experiment cup; the parameter that differs stands out on cup B.
+function cupSummary(recipe, parameter, changed) {
+  const grind = grindInfo(recipe);
+  const parts = [[null, `${grams(recipe.dose_g)} / ${grams(recipe.water_g)} · ${escape(num(recipe.ratio))}`, 'ratio'],
+    [null, celsius(recipe.temperature_c), 'temperature'],
+    [t('grind'), grind.value == null ? escape(t('builder_not_applicable')) : escape(grind.value), 'grind']];
+  return `<p class="experiment-summary">${parts.map(([label, value, key]) =>
+    `<span${changed && key === parameter ? ' class="changed"' : ''}>${label ? `${label} ` : ''}${value}</span>`).join(' · ')}</p>`;
+}
+function cupName(cup) {
+  return t(cup === 'a' ? 'exp_cup_a' : 'exp_cup_b');
+}
+function renderLesson() {
+  const item = lesson.current;
+  if (!item) return;
+  const index = allLessons().findIndex(({lesson: other}) => other === item);
+  const head = `<p class="builder-origin">${escape(lesson.module.title[LANG])} · ${t('school_lesson_n', index + 1)}${item.practice.kind === 'experiment' ? ` · ${t('school_experiment')}` : ''}</p>
+    <h1 class="title" id="lesson-title" tabindex="-1">${escape(item.title[LANG])}</h1>
+    <p class="demo-note">${t('school_draft_short')}</p>`;
+  let body = '', actions = [];
+  const action = (id, label, primary = false, disabled = false) =>
+    `<button type="button" class="button big${primary ? ' primary' : ''}" data-lesson-action="${id}"${disabled ? ' disabled' : ''}>${escape(label)}</button>`;
+  const machine = recipe => machineConnected() && recipe?.machine_compatible;
+  if (lesson.stage === 'card') {
+    const last = lesson.card === item.cards.length - 1;
+    body = `<p class="lesson-count">${t('lesson_card_n', lesson.card + 1, item.cards.length)}</p>${lessonCardHtml(item.cards[lesson.card])}`;
+    if (lesson.card > 0) actions.push(action('prev', t('lesson_prev')));
+    actions.push(action('next', t(last ? 'lesson_to_practice' : 'lesson_next'), true));
+  } else if (lesson.stage === 'practice' && item.practice.kind === 'build') {
+    const recipe = lesson.recipe;
+    body = `<h2 class="section">${t('lesson_practice')}</h2><p>${t('lesson_practice_text')}</p>
+      ${recipe ? `<p class="builder-origin">${t('builder_calculated')}</p>${calculatedTiles(recipe, null)}
+        <h3 class="section">${t('builder_process')}</h3>${calculatedSteps(recipe)}` : `<p class="status">${t('lesson_loading')}</p>`}`;
+    if (recipe) {
+      if (machine(recipe)) actions.push(action('machine-a', t('machine_button')));
+      actions.push(action('brew-a', t('lesson_brew'), !lesson.brewed.a));
+      if (lesson.brewed.a) {
+        actions.push(action('rate', t('builder_rate'), true));
+        actions.push(action('finish', t('lesson_finish')));
+      }
+    }
+  } else if (lesson.stage === 'practice') {
+    const pair = lesson.pair;
+    body = `<h2 class="section">${t('lesson_practice')}</h2>
+      ${pair ? `<p class="note">${escape(LANG === 'ru' ? pair.explanation : pair.explanation_en)}</p>
+        ${['a', 'b'].map((cup, i) => {
+          const recipe = pair.recipes[i];
+          return `<div class="experiment-cup${lesson.brewed[cup] ? ' brewed' : ''}"><div class="experiment-cup-head"><strong>${cupName(cup)}</strong>
+            ${lesson.brewed[cup] ? `<span class="lesson-badge done">✓ ${t('exp_brewed')}</span>` : ''}</div>
+            ${cupSummary(recipe, pair.parameter, i === 1)}
+            <div class="edit-actions">${action(`brew-${cup}`, t('lesson_brew'), !lesson.brewed[cup])}
+            ${machine(recipe) ? action(`machine-${cup}`, t('machine_button')) : ''}</div></div>`;
+        }).join('')}` : `<p class="status">${t('lesson_loading')}</p>`}`;
+    const both = lesson.brewed.a && lesson.brewed.b;
+    actions.push(action('compare', t('exp_compare'), both, !both));
+    if (pair && !both) setStatus('lesson-status', t('exp_brew_both'));
+  } else if (lesson.stage === 'compare') {
+    const names = STRINGS[LANG].taste_names;
+    body = `<h2 class="section">${t('exp_which')}</h2>
+      <div class="feedback-modes experiment-choice" role="radiogroup" aria-label="${escape(t('exp_which'))}">${['a', 'b', 'same'].map(choice =>
+        `<button type="button" class="button" role="radio" data-exp-choice="${choice}" aria-checked="${lesson.choice === choice}">${t(`exp_${choice}`)}</button>`).join('')}</div>
+      <h2 class="section">${t('exp_how')}</h2>
+      <div class="taste-options">${COMPARE_TASTES.map(id => `<div class="taste-option${lesson.tastes.includes(id) ? ' selected' : ''}">
+        <label class="taste-choice"><input type="checkbox" data-exp-taste="${id}"${lesson.tastes.includes(id) ? ' checked' : ''}${!lesson.tastes.includes(id) && lesson.tastes.length >= 2 ? ' disabled' : ''}><span>${escape(names[id])}</span></label></div>`).join('')}</div>`;
+    actions.push(action('conclude', t('exp_done'), true, !lesson.choice));
+  } else {
+    const conclusion = item.practice.kind === 'experiment' && lesson.choice ? item.conclusions[lesson.choice][LANG] : '';
+    body = `<div class="takeaway"><p class="takeaway-eyebrow">${t('lesson_done_title')}</p>
+      <h2 class="takeaway-title">${t('takeaway_title')}</h2>
+      ${conclusion ? `<p>${escape(conclusion)}</p>` : ''}<p>${escape(item.takeaway[LANG])}</p></div>`;
+    const next = allLessons()[index + 1];
+    if (next) actions.push(action('next-lesson', `${can(lessonFeature(next.lesson)) ? '' : `${LOCK} `}${t('lesson_next_lesson')}`, true));
+    actions.push(action('school', t('lesson_to_school')));
+  }
+  $('lesson-body').innerHTML = head + body;
+  $('lesson-actions').innerHTML = actions.join('');
+  $('lesson-actions').classList.toggle('pair', actions.length === 2);
+}
+async function loadLessonRecipe() {
+  const item = lesson.current;
+  if (lesson.busy || (item.practice.kind === 'build' ? lesson.recipe : lesson.pair)) return;
+  lesson.busy = true;
+  try {
+    const built = (await post('/api/recipes/build', JSON.stringify({params: item.practice.params}), 'application/json')).variants[0];
+    if (item.practice.kind === 'build') lesson.recipe = built;
+    else lesson.pair = await post('/api/recipes/experiment', JSON.stringify({recipe: built, parameter: item.practice.vary}), 'application/json');
+    setStatus('lesson-status', '');
+  } catch (error) { setStatus('lesson-status', error.message || t('err_generic'), true); }
+  finally { lesson.busy = false; }
+  if (currentScreen() === 'lesson' && lesson.current === item) renderLesson();
+}
+function lessonRecipe(cup) {
+  return lesson.current.practice.kind === 'build' ? lesson.recipe : lesson.pair?.recipes[cup === 'a' ? 0 : 1];
+}
+function brewLesson(cup, onMachine) {
+  const recipe = lessonRecipe(cup);
+  if (!recipe) return;
+  lesson.cup = cup;
+  currentRecipe = recipe;
+  brewOrigin = 'lesson';
+  brewName = lesson.current.practice.kind === 'experiment' ? cupName(cup) : lesson.current.title[LANG];
+  if (onMachine) { startMachineBrew(); return; }
+  if (brewMode === 'machine') leaveMachineMode();
+  resetTimer();
+  show('brew');
+}
+// A lesson cup finished brewing: it is in the journal and counts for the practice.
+function onLessonBrewed(entry) {
+  if (brewOrigin !== 'lesson' || !lesson.current || !lesson.cup) return;
+  lesson.brewed[lesson.cup] = true;
+  if (entry) lesson.journal[lesson.cup] = entry.id;
+}
+function lessonAction(name) {
+  const item = lesson.current;
+  if (!item) return;
+  setStatus('lesson-status', '');
+  if (name === 'prev') lesson.card = Math.max(0, lesson.card - 1);
+  else if (name === 'next') {
+    if (lesson.card < item.cards.length - 1) lesson.card++;
+    else { lesson.stage = 'practice'; loadLessonRecipe(); }
+  } else if (name.startsWith('brew-') || name.startsWith('machine-')) {
+    brewLesson(name.slice(-1), name.startsWith('machine-'));
+    return;
+  } else if (name === 'rate') {
+    rateLessonRecipe(lesson.recipe, lesson.journal.a || null).then(ok => { if (ok) show('construct'); });
+    return;
+  } else if (name === 'finish') { markLessonDone(item); lesson.stage = 'done'; }
+  else if (name === 'compare') lesson.stage = 'compare';
+  else if (name === 'conclude' && lesson.choice) {
+    markLessonDone(item, lesson.choice);
+    const chosen = lesson.choice === 'same' ? null : lesson.journal[lesson.choice];
+    if (chosen && lesson.tastes.length) updateJournal(chosen, {tastes: [...lesson.tastes]});
+    lesson.stage = 'done';
+  } else if (name === 'next-lesson') {
+    const index = allLessons().findIndex(({lesson: other}) => other === item);
+    const next = allLessons()[index + 1];
+    if (next) { openLesson(next.lesson.id); return; }
+  } else if (name === 'school') { back('school'); return; }
+  renderLesson();
+  $('lesson-title')?.focus({preventScroll: true});
+}
+async function rateLessonRecipe(recipe, journal) {
+  if (!await ensureBuilderOptions()) { setStatus(currentScreen() === 'lesson' ? 'lesson-status' : 'status', t('builder_error'), true); return false; }
+  openBuilderRating(recipe, {fresh: true, origin: 'lesson', name: lesson.current.title[LANG], chips: [], journal});
+  return true;
+}
+// A correction from a lesson's rating completes that lesson.
+function lessonRated() {
+  if (builder.ratingOrigin !== 'lesson' || !lesson.current) return;
+  markLessonDone(lesson.current);
+  lesson.stage = 'done';
+}
+function renderCourseViews() {
+  if (currentScreen() === 'school') renderSchool();
+  if (currentScreen() === 'lesson') renderLesson();
+  if (currentScreen() === 'find') renderHome();
+}
+function wireSchool() {
+  $('school-back').addEventListener('click', () => back('find'));
+  $('school-modules').addEventListener('click', event => {
+    const item = event.target.closest('[data-lesson]');
+    if (item) openLesson(item.dataset.lesson);
+  });
+  $('lesson-back').addEventListener('click', () => back('school'));
+  $('lesson-actions').addEventListener('click', event => {
+    const button = event.target.closest('[data-lesson-action]');
+    if (button && !button.disabled) lessonAction(button.dataset.lessonAction);
+  });
+  $('lesson-body').addEventListener('click', event => {
+    const button = event.target.closest('[data-lesson-action]');
+    if (button && !button.disabled) { lessonAction(button.dataset.lessonAction); return; }
+    const choice = event.target.closest('[data-exp-choice]');
+    if (choice) { lesson.choice = choice.dataset.expChoice; renderLesson(); $(`lesson-body`).querySelector(`[data-exp-choice="${lesson.choice}"]`)?.focus(); }
+  });
+  $('lesson-body').addEventListener('change', event => {
+    const id = event.target.dataset.expTaste;
+    if (!id) return;
+    lesson.tastes = lesson.tastes.filter(value => value !== id);
+    if (event.target.checked) lesson.tastes.push(id);
+    renderLesson();
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -3968,8 +4339,14 @@ function jumpCalculatedStep(delta) {
 
 // Every finished brew, calculated or the roaster's, leads to the taste rating.
 function updateDoneActions() {
-  const rateable = currentRecipe?.origin === 'calculated' || (brewOrigin === 'recipe' && Boolean(currentData));
+  const inLesson = brewOrigin === 'lesson' && Boolean(lesson.current);
+  const experiment = inLesson && lesson.current.practice.kind === 'experiment';
+  const rateable = !experiment && (currentRecipe?.origin === 'calculated' || (brewOrigin === 'recipe' && Boolean(currentData)));
   $('brew-rate').hidden = !rateable;
+  $('brew-lesson').hidden = !inLesson;
+  $('brew-again').hidden = inLesson;
+  $('brew-new').hidden = inLesson;
+  $('brew-lesson').classList.toggle('primary', !rateable);
   $('brew-again').classList.toggle('primary', !rateable);
   const machine = brewMode === 'machine';
   setText('brew-done-text', t(rateable ? (machine ? 'builder_machine_done_text' : 'builder_done_text')
@@ -4139,6 +4516,7 @@ async function startMachineBrew() {
     brewMode = 'local';
     const message = error.message || t('builder_machine_error');
     if (brewOrigin === 'own') setStatus('own-status', message, true);
+    else if (brewOrigin === 'lesson') setStatus('lesson-status', message, true);
     else if (currentRecipe?.origin === 'calculated') builderStatus(message, true);
     else setStatus('cta-status', message, true);
   } finally {
@@ -4350,6 +4728,11 @@ function localize() {
   $('own-back').textContent = t('back');
   $('plans-back').textContent = t('back');
   $('settings-back').textContent = t('back');
+  $('school-back').textContent = t('back');
+  $('lesson-back').textContent = t('school_title');
+  setText('brew-lesson', t('lesson_back_to'));
+  if (currentScreen() === 'school') renderSchool();
+  if (currentScreen() === 'lesson') renderLesson();
   $('open-settings').setAttribute('aria-label', t('settings'));
   $('open-settings').title = t('settings');
   if (currentScreen() === 'start') renderStart();
@@ -4496,7 +4879,12 @@ function init() {
     if (brewOrigin === 'recipe') { rateRoasterRecipe(); return; }
     if (brewMode === 'machine') leaveMachineMode();
     resetTimer();
-    if (brewOrigin === 'construct') {
+    if (brewOrigin === 'lesson' && lesson.current) {
+      if (await rateLessonRecipe(recipe, lastJournalId)) {
+        history.replaceState({screen: 'construct'}, '', '#construct');
+        show('construct', {push: false});
+      }
+    } else if (brewOrigin === 'construct') {
       openBuilderRating(recipe, {fresh: true, chips: builder.ratedChips, journal: lastJournalId});
       back('construct');
     } else if (await rateOwnRecipe(recipe, own.entry?.context_chips, own.entry?.title, lastJournalId)) {
@@ -4504,6 +4892,11 @@ function init() {
       history.replaceState({screen: 'construct'}, '', '#construct');
       show('construct', {push: false});
     }
+  });
+  $('brew-lesson').addEventListener('click', () => {
+    if (brewMode === 'machine') leaveMachineMode();
+    resetTimer();
+    back('lesson');
   });
   $('brew-again').addEventListener('click', () => {
     if (brewMode === 'machine') { back(brewOrigin); startMachineBrew(); return; }
@@ -4532,6 +4925,7 @@ function init() {
   loadCourse();
   wirePlans();
   wireHome();
+  wireSchool();
   loadPlans();
   if (shared) openShareLink(shared);
   refreshMachine();

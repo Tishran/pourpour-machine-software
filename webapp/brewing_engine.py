@@ -1099,3 +1099,82 @@ def adopt_roaster_recipe(recipe, source):
     }
     result['machine_compatible'] = _machine_compatible(result)
     return result
+
+
+# Taste experiments: the same recipe twice, with exactly one parameter moved one step.
+EXPERIMENT_PARAMETERS = ('grind', 'temperature', 'ratio')
+_EXPERIMENT_TEXTS = {
+    'finer': ('Во второй чашке помол на шаг мельче, всё остальное то же. {why}',
+              'In the second cup the grind is one step finer; everything else is the same. {why}'),
+    'coarser': ('Во второй чашке помол на шаг грубее, всё остальное то же. {why}',
+                'In the second cup the grind is one step coarser; everything else is the same. {why}'),
+    'hotter': ('Во второй чашке вода на {step} °C горячее, всё остальное то же. {why}',
+               'In the second cup the water is {step} °C hotter; everything else is the same. {why}'),
+    'cooler': ('Во второй чашке вода на {step} °C прохладнее, всё остальное то же. {why}',
+               'In the second cup the water is {step} °C cooler; everything else is the same. {why}'),
+    'less_water': ('Во второй чашке меньше воды на ту же дозу ({ratio}), всё остальное то же. {why}',
+                   'In the second cup there is less water for the same dose ({ratio}); everything else is the same. {why}'),
+    'more_water': ('Во второй чашке больше воды на ту же дозу ({ratio}), всё остальное то же. {why}',
+                   'In the second cup there is more water for the same dose ({ratio}); everything else is the same. {why}'),
+}
+_EXPERIMENT_WHY = {'finer': ('grind', 1), 'coarser': ('grind', -1), 'hotter': ('temperature_c', 1),
+                   'cooler': ('temperature_c', -1), 'less_water': ('water_g', -1), 'more_water': ('water_g', 1)}
+
+
+def experiment_pair(recipe, parameter):
+    """Two cups of one recipe that differ in exactly one parameter by one step.
+
+    The first cup is the recipe as it is. The second moves the grind one step finer,
+    the water 2 °C hotter or the ratio 0.5 denser, or the other way when the first
+    direction is at its limit. Nothing else changes: dose, timing and step texts stay.
+    """
+    dose, water, temperature, particle, reference, grinder = validate_calculated_recipe(recipe)
+    if parameter not in EXPERIMENT_PARAMETERS:
+        raise BrewingInputError(f'parameter: expected one of {", ".join(EXPERIMENT_PARAMETERS)}')
+    if recipe['method'] != 'percolation':
+        raise BrewingInputError('recipe: experiments need a pour-over recipe')
+    rule = COEFFICIENTS['adjustment']
+    second = deepcopy(recipe)
+    second.pop('edited', None)
+    values = {}
+    if parameter == 'temperature':
+        low, high = COEFFICIENTS['bounds']['temperature_c']
+        step = rule['temperature_step_c']
+        change = 'hotter' if temperature + step <= high else 'cooler'
+        second['temperature_c'] = round(temperature + (step if change == 'hotter' else -step))
+        if not low <= second['temperature_c'] <= high:
+            raise BrewingInputError('recipe.temperature_c: no room for an experiment')
+        values['step'] = step
+    elif parameter == 'grind' and recipe['id'] == _ROASTER_ID:
+        label, source_setting, offset = _validate_roaster_grind(recipe)
+        limit = COEFFICIENTS['roaster']['grind_max_steps']
+        change = 'finer' if offset > -limit else 'coarser'
+        new_offset = offset - 1 if change == 'finer' else offset + 1
+        setting = _roaster_setting(source_setting, label, new_offset)
+        second['grind'].update(steps_from_source=new_offset, setting=setting)
+        second['grind_setting'] = setting
+    elif parameter == 'grind':
+        low, high = COEFFICIENTS['bounds']['particle_microns']
+        step = rule['particle_step_microns']
+        change = 'finer' if particle - step >= low else 'coarser'
+        direction = 1 if change == 'finer' else -1
+        second['grind']['target_particle_microns'] = second['grind']['microns'] = particle - direction * step
+        if reference is not None:
+            second['grind'].update(_settings(grinder, _clamp(reference - direction * rule['reference_step'], 'reference_dial')))
+            second['grind_setting'] = second['grind']['setting']
+    else:
+        low, high = COEFFICIENTS['bounds']['ratio']
+        step = rule['water_ratio_step']
+        change = 'less_water' if water / dose - step >= low else 'more_water'
+        target = round(_clamp(dose * (water / dose + (-step if change == 'less_water' else step)), 'water_g'))
+        second = rescale(second, dose_g=dose, water_g=target)
+        second['reasons'].pop()  # the rescale note; the experiment explains itself below
+        values['ratio'] = f"{recipe['ratio']} → {second['ratio']}"
+    why = _CHANGE_WHY[_EXPERIMENT_WHY[change]]
+    ru, en = _EXPERIMENT_TEXTS[change]
+    explanation = (ru.format(why=why[0], **values), en.format(why=why[1], **values))
+    second['reasons'].append(_reason(parameter, f'experiment_{change}', explanation[0], explanation[1]))
+    second['machine_compatible'] = _machine_compatible(second)
+    validate_calculated_recipe(second)
+    return {'parameter': parameter, 'change': change, 'recipes': [deepcopy(recipe), second],
+            'explanation': explanation[0], 'explanation_en': explanation[1]}

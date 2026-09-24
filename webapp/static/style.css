@@ -662,3 +662,31 @@ body[data-screen="start"] #screen-start, body[data-screen="settings"] #screen-se
 .takeaway-eyebrow { margin: 0; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); }
 .takeaway-title { margin: 2px 0 6px; font-size: 1.15rem; }
 .takeaway p:last-child { margin: 0; }
+
+/* School and lessons. */
+body[data-screen="school"] #screen-school, body[data-screen="lesson"] #screen-lesson { display: flex; flex-direction: column; }
+.school-progress { margin: 0 0 4px; font-weight: 700; }
+.school-module .section { margin-top: 20px; }
+.school-module .results { margin-bottom: 8px; }
+.lesson-badge { flex: none; font-size: .85rem; color: var(--muted); }
+.lesson-badge.done { color: var(--accent-ink); font-weight: 700; }
+.lesson-body { flex: 1; min-width: 0; padding-bottom: 16px; }
+.lesson-count { margin: 16px 0 6px; font-size: .85rem; font-weight: 700; color: var(--muted); font-variant-numeric: tabular-nums; }
+.lesson-card { padding: 20px 18px; border: 1.5px solid var(--line); border-radius: 16px; background: var(--card); }
+.lesson-card p { margin: 0 0 12px; font-size: 1.15rem; line-height: 1.45; }
+.experiment-cup { margin: 12px 0; padding: 12px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--card); }
+.experiment-cup.brewed { border-color: var(--orange); }
+.experiment-cup-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.experiment-cup .builder-tiles { margin: 10px 0; }
+.experiment-choice { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.experiment-choice [aria-checked="true"] { border-color: var(--orange); background: var(--accent-soft); color: var(--accent-ink); }
+.home-card .text-button { display: block; margin: 4px auto 0; color: var(--muted); }
+@media (min-width: 900px) {
+  #screen-school, #screen-lesson { grid-column: 1 / -1; width: 100%; max-width: 720px; margin: 0 auto; }
+  body[data-screen="school"] #screen-find, body[data-screen="school"] #screen-recipe,
+  body[data-screen="lesson"] #screen-find, body[data-screen="lesson"] #screen-recipe { display: none; }
+}
+.experiment-summary { margin: 8px 0 4px; font-size: 1rem; font-variant-numeric: tabular-nums; }
+.experiment-summary .changed { padding: 1px 6px; border-radius: 6px; background: var(--orange); color: var(--on-orange); font-weight: 700; }
+.experiment-summary span { white-space: nowrap; }
+.experiment-cup .edit-actions { grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); margin-top: 10px; }

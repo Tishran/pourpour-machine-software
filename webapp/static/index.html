@@ -247,6 +247,7 @@
       <div class="brew-controls" id="brew-done-controls" hidden>
         <button type="button" class="button primary big" id="brew-rate" hidden></button>
         <button type="button" class="button primary big" id="brew-again"></button>
+        <button type="button" class="button primary big" id="brew-lesson" hidden></button>
         <button type="button" class="button big" id="brew-new"></button>
       </div>
     </section>
@@ -268,6 +269,24 @@
           <a class="button survey-button" id="survey-link" href="https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb" target="_blank" rel="noopener noreferrer"></a>
         </div>
       </aside>
+    </section>
+
+    <section class="screen screen-school" id="screen-school" aria-labelledby="school-title">
+      <header class="bar"><button class="back" id="school-back" type="button"></button></header>
+      <h1 class="title" id="school-title" tabindex="-1"></h1>
+      <p class="subtitle" id="school-intro"></p>
+      <p class="demo-note" id="school-draft"></p>
+      <p class="status" id="school-status" role="status" aria-live="polite"></p>
+      <div class="school-modules" id="school-modules"></div>
+    </section>
+
+    <section class="screen screen-lesson" id="screen-lesson" aria-labelledby="lesson-title">
+      <header class="bar"><button class="back" id="lesson-back" type="button"></button></header>
+      <div class="lesson-body" id="lesson-body"></div>
+      <div class="cta-bar lesson-cta">
+        <p class="status" id="lesson-status" role="status" aria-live="polite"></p>
+        <div class="builder-cta-buttons" id="lesson-actions"></div>
+      </div>
     </section>
 
   </main>

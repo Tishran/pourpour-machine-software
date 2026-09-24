@@ -14,8 +14,8 @@ from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
 from brew_catalog import load_catalog, unique_object
 from plans import load_plans
 from course import load_course
-from brewing_engine import (BrewingInputError, adjust, adopt_roaster_recipe, build, rescale, restore_recipe,
-                            taste_options, validate_calculated_recipe)
+from brewing_engine import (BrewingInputError, adjust, adopt_roaster_recipe, build, experiment_pair, rescale,
+                            restore_recipe, taste_options, validate_calculated_recipe)
 
 ROOT = Path(__file__).parent / 'static'
 STATIC_FILES = {
@@ -127,7 +127,7 @@ class Handler(BaseHTTPRequestHandler):
                 return self.machine_post(url.path.removeprefix('/api/machine/'))
             if url.path not in ('/api/label', '/api/scan', '/api/recommend', '/api/recipes/build',
                                 '/api/recipes/adjust', '/api/recipes/rescale', '/api/recipes/import',
-                                '/api/recipes/adopt'):
+                                '/api/recipes/adopt', '/api/recipes/experiment'):
                 return self.send_json(404, {'error': 'Page not found.'})
             if not self.same_origin():
                 return self.send_json(403, {'error': 'The request must come from this application.'})
@@ -186,6 +186,10 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(body, dict) or set(body) != {'recipe', 'source'}:
                     raise BrewingInputError('Expected recipe and source fields.')
                 return self.send_json(200, {'recipe': adopt_roaster_recipe(body['recipe'], body['source'])})
+            if url.path == '/api/recipes/experiment':
+                if not isinstance(body, dict) or set(body) != {'recipe', 'parameter'}:
+                    raise BrewingInputError('Expected recipe and parameter fields.')
+                return self.send_json(200, experiment_pair(body['recipe'], body['parameter']))
             if url.path == '/api/recipes/import':
                 if not isinstance(body, dict) or set(body) != {'recipe'}:
                     raise BrewingInputError('Expected an object with a recipe field.')

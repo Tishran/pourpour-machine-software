@@ -122,5 +122,612 @@
       "source": "brewing_engine._TASTE_EXPLANATIONS (strength_needs_sweetness)"
     }
   },
-  "modules": []
+  "modules": [
+    {
+      "id": "basics",
+      "title": {
+        "ru": "Основы",
+        "en": "The basics"
+      },
+      "lessons": [
+        {
+          "id": "ratio",
+          "title": {
+            "ru": "Соотношение и весы",
+            "en": "Ratio and the scale"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Рецепт воронки держится на двух числах: сколько граммов кофе и сколько граммов воды. Их соотношение задаёт плотность чашки: меньше воды на ту же дозу — плотнее, больше — легче.",
+              "en": "A pour-over recipe rests on two numbers: grams of coffee and grams of water. Their ratio sets how dense the cup is: less water for the same dose is denser, more is lighter.",
+              "source": "brewing_engine._CHANGE_WHY (water_g)"
+            },
+            {
+              "ru": "Воду считают по весам. В рецепте после каждого вливания указан вес на весах — это сумма всей влитой воды, а не вес готового напитка: часть воды остаётся в гуще.",
+              "en": "Water is measured on the scale. After each pour the recipe shows the weight on the scale — all the water poured so far, not the weight of the drink: the grounds keep some.",
+              "source": "docs/BREWING.md#выход-и-структура-рецепта"
+            },
+            {
+              "ru": "Стартовая база First Brew — 15 г кофе на 250 г воды, около 1:16,7. Это отправная точка, а не доказанный лучший вариант для любого кофе.",
+              "en": "First Brew starts from 15 g of coffee to 250 g of water, about 1:16.7. It is a starting point, not a proven best for every coffee.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60"
+            }
+          },
+          "takeaway": {
+            "ru": "Взвешивайте и кофе, и воду. Когда числа повторяются, вкус можно сравнить и исправить: если он повторился, это ваш рецепт.",
+            "en": "Weigh both the coffee and the water. When the numbers repeat, the taste can be compared and corrected: if it repeats, it is your recipe.",
+            "source": "brewing_engine._TASTE_EXPLANATIONS (on_target)"
+          }
+        },
+        {
+          "id": "temperature",
+          "title": {
+            "ru": "Температура воды",
+            "en": "Water temperature"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Горячая вода извлекает вкус быстрее, более прохладная — мягче. Поэтому правка по вкусу двигает температуру на 2 °C за раз.",
+              "en": "Hotter water extracts faster, cooler water more gently. That is why a correction moves the temperature by 2 °C at a time.",
+              "source": "brewing_engine._CHANGE_WHY (temperature_c); brewing_engine.COEFFICIENTS (adjustment)"
+            },
+            {
+              "ru": "Для светлой обжарки First Brew начинает с воды около 94 °C, для средней — примерно на 2 °C прохладнее, для тёмной — на 5 °C.",
+              "en": "For a light roast First Brew starts with water at about 94 °C, for a medium roast about 2 °C cooler, for a dark roast 5 °C cooler.",
+              "source": "brewing_engine.COEFFICIENTS (base, roast)"
+            },
+            {
+              "ru": "Стекло и металл могут забирать тепло у воды. Прогрейте воронку перед завариванием.",
+              "en": "Glass and metal may take heat from the water. Preheat the brewer before you start.",
+              "source": "brewing_engine.build (material_heat)"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60",
+              "roast_level": "medium"
+            }
+          },
+          "takeaway": {
+            "ru": "Температура — рычаг экстракции: горячее — вкус извлекается полнее, прохладнее — мягче.",
+            "en": "Temperature is an extraction lever: hotter pulls out more flavor, cooler is gentler.",
+            "source": "brewing_engine._CHANGE_WHY (temperature_c)"
+          }
+        },
+        {
+          "id": "water",
+          "title": {
+            "ru": "Вода для кофе",
+            "en": "Water for coffee"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "В рецепте «вода» — это влитая вода. Вес готового напитка меньше: для рефрактометра его взвешивают отдельно.",
+              "en": "In a recipe, water means the water poured in. The finished drink weighs less: for a refractometer it is weighed separately.",
+              "source": "docs/BREWING.md#после-заваривания-измерение-и-обратная-связь"
+            },
+            {
+              "ru": "TDS воды — это не жёсткость. При TDS ниже 75 ppm First Brew пробует помол чуть мельче, выше 200 — чуть грубее. Эта поправка особенно ненадёжна.",
+              "en": "Water TDS is not hardness. Below 75 ppm First Brew tries a slightly finer grind, above 200 slightly coarser. This adjustment is especially uncertain.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            },
+            {
+              "ru": "pH воды пока сохраняется только как контекст: проверенного правила, как он меняет рецепт, нет.",
+              "en": "Water pH is kept only as context for now: there is no tested rule for how it changes a recipe.",
+              "source": "brewing_engine.build (water_ph); docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60",
+              "water_tds_ppm": 60
+            }
+          },
+          "takeaway": {
+            "ru": "Состав воды влияет на чашку, но по одному TDS точной поправки не сделать — проверяйте по вкусу.",
+            "en": "Water affects the cup, but TDS alone gives no precise adjustment — check by taste.",
+            "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+          },
+          "barista": "Нужен текст бариста о том, какую воду брать дома (бутилированная, фильтр) — в источниках этого нет."
+        },
+        {
+          "id": "ratio_experiment",
+          "title": {
+            "ru": "Эксперимент: соотношение",
+            "en": "Experiment: ratio"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Две чашки одного кофе. Во второй на ту же дозу чуть меньше воды: соотношение плотнее на 0,5, всё остальное то же.",
+              "en": "Two cups of the same coffee. The second has a little less water for the same dose: the ratio is 0.5 denser, everything else is the same.",
+              "source": "brewing_engine.experiment_pair (ratio)"
+            },
+            {
+              "ru": "Меньше воды на ту же дозу — плотнее чашка. Крепость меняют, когда в чашке уже есть сладость, иначе легко спрятать недоэкстракцию.",
+              "en": "Less water for the same dose makes a denser cup. Change strength once the cup is already sweet, or under-extraction hides behind it.",
+              "source": "brewing_engine._CHANGE_WHY (water_g); brewing_engine._TASTE_EXPLANATIONS (strength_needs_sweetness)"
+            }
+          ],
+          "practice": {
+            "kind": "experiment",
+            "params": {
+              "device_id": "v60"
+            },
+            "vary": "ratio"
+          },
+          "takeaway": {
+            "ru": "Соотношение отвечает за плотность: его подбирают после того, как в чашке появилась сладость.",
+            "en": "The ratio controls body: tune it after the cup has become sweet.",
+            "source": "brewing_engine._TASTE_EXPLANATIONS (weak_after_sweet)"
+          },
+          "conclusions": {
+            "a": {
+              "ru": "Вам вкуснее первая чашка: плотнее — уже лишнее. Оставьте исходное соотношение.",
+              "en": "You preferred the first cup: denser is too much. Keep the original ratio.",
+              "source": "brewing_engine._CHANGE_WHY (water_g)"
+            },
+            "b": {
+              "ru": "Вам вкуснее вторая, более плотная чашка. Попробуйте оставить меньше воды на ту же дозу.",
+              "en": "You preferred the second, denser cup. Try keeping less water for the same dose.",
+              "source": "brewing_engine._CHANGE_WHY (water_g)"
+            },
+            "same": {
+              "ru": "Разницы не заметно — это нормально. Шаг в 0,5 небольшой: ищите разницу в помоле или температуре.",
+              "en": "No difference — that is normal. A 0.5 step is small: look for it in the grind or the temperature.",
+              "source": "brewing_engine._CHANGE_WHY (water_g)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "grind",
+      "title": {
+        "ru": "Помол",
+        "en": "Grind"
+      },
+      "lessons": [
+        {
+          "id": "grind_surface",
+          "title": {
+            "ru": "Помол и поверхность",
+            "en": "Grind and surface"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Мельче помол открывает воде больше поверхности кофе, и вкус извлекается полнее. Грубее помол — поверхности меньше, вкус мягче.",
+              "en": "A finer grind exposes more of the coffee to water, so more flavor comes out. A coarser grind exposes less, and the cup is gentler.",
+              "source": "brewing_engine._CHANGE_WHY (grind)"
+            },
+            {
+              "ru": "Ход жернова на щелчок — это не размер частиц. Поэтому клики нельзя получить делением микронов на ход жернова.",
+              "en": "Burr travel per click is not particle size. So clicks cannot be computed by dividing microns by burr travel.",
+              "source": "docs/BREWING.md#кофемолки-критическое-различие-двух-микронов"
+            },
+            {
+              "ru": "Настройку шкалы First Brew показывает только для моделей из таблицы соответствий, и она приблизительная. Подстраивайте её по вкусу и сливу.",
+              "en": "First Brew shows a dial setting only for grinders in its comparison table, and it is approximate. Tune it by taste and drawdown.",
+              "source": "docs/BREWING.md#кофемолки-критическое-различие-двух-микронов"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60",
+              "grinder_id": "comandante_c40_standard"
+            }
+          },
+          "takeaway": {
+            "ru": "Помол — главный рычаг экстракции, но цифра на шкале — только ориентир для вашей кофемолки.",
+            "en": "Grind is the main extraction lever, but the number on the dial is only a guide for your grinder.",
+            "source": "docs/BREWING.md#кофемолки-критическое-различие-двух-микронов"
+          }
+        },
+        {
+          "id": "grind_experiment",
+          "title": {
+            "ru": "Эксперимент: помол",
+            "en": "Experiment: grind"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Две чашки одного кофе. Во второй помол на шаг мельче, всё остальное то же: доза, вода, температура и время.",
+              "en": "Two cups of the same coffee. The second has a grind one step finer; everything else is the same: dose, water, temperature and time.",
+              "source": "brewing_engine.experiment_pair (grind)"
+            },
+            {
+              "ru": "Меняйте одну вещь за раз: только так понятно, от чего изменился вкус. Правила First Brew проверяются такими сравнительными заварками.",
+              "en": "Change one thing at a time: only then is it clear what changed the taste. First Brew's rules are checked with comparative brews like this.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            }
+          ],
+          "practice": {
+            "kind": "experiment",
+            "params": {
+              "device_id": "v60",
+              "grinder_id": "comandante_c40_standard"
+            },
+            "vary": "grind"
+          },
+          "takeaway": {
+            "ru": "Мельче — полнее экстракция. Какой шаг лучше, решает ваш вкус, а не шкала.",
+            "en": "Finer means more extraction. Which step is better is decided by your taste, not the dial.",
+            "source": "brewing_engine._CHANGE_WHY (grind)"
+          },
+          "conclusions": {
+            "a": {
+              "ru": "Вам вкуснее исходный помол: мельче — уже лишнее для этого кофе. Оставьте прежнюю настройку.",
+              "en": "You preferred the original grind: finer is too much for this coffee. Keep the setting.",
+              "source": "brewing_engine._CHANGE_WHY (grind)"
+            },
+            "b": {
+              "ru": "Вам вкуснее помол мельче: этому кофе нужна экстракция полнее. Попробуйте оставить новую настройку.",
+              "en": "You preferred the finer grind: this coffee wants more extraction. Try keeping the new setting.",
+              "source": "brewing_engine._CHANGE_WHY (grind)"
+            },
+            "same": {
+              "ru": "Разницы на один шаг не заметно — это нормально. Попробуйте шаг побольше или другой параметр.",
+              "en": "No difference at one step — that is normal. Try a bigger step or another parameter.",
+              "source": "brewing_engine._CHANGE_WHY (grind)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pours",
+      "title": {
+        "ru": "Вливания",
+        "en": "Pours"
+      },
+      "lessons": [
+        {
+          "id": "bloom",
+          "title": {
+            "ru": "Блум",
+            "en": "The bloom"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Первое вливание смачивает весь кофе и даёт газу после обжарки выйти до основных вливаний.",
+              "en": "The first pour wets all the coffee and lets the gas from roasting escape before the main pours.",
+              "source": "brewing_engine._STEP_TEXTS (bloom)"
+            },
+            {
+              "ru": "Свежий кофе может активнее выделять газ, поэтому для обжарки до двух недель First Brew делает предсмачивание дольше. Граница в 14 дней условная.",
+              "en": "Fresh coffee may release more gas, so for coffee roasted less than two weeks ago First Brew makes the bloom longer. The 14-day line is a convention.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60",
+              "roast_age_band": "fresh"
+            }
+          },
+          "takeaway": {
+            "ru": "Блум — не пауза ради паузы: газ уходит, и вода потом смачивает кофе ровнее.",
+            "en": "The bloom is not a pause for its own sake: the gas leaves, and water then wets the coffee more evenly.",
+            "source": "brewing_engine._STEP_TEXTS (bloom)"
+          }
+        },
+        {
+          "id": "pour_rhythm",
+          "title": {
+            "ru": "Число и темп вливаний",
+            "en": "Number and pace of pours"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "После блума вливания поддерживают ровный уровень воды над слоем кофе. В таймере видно, сколько влить сейчас и какой вес должен быть на весах.",
+              "en": "After the bloom, pours keep the water level even above the bed. The timer shows how much to pour now and what the scale should read.",
+              "source": "brewing_engine._STEP_TEXTS (even); docs/BREWING.md#интерфейс-фазы-4"
+            },
+            {
+              "ru": "Для натуральной и анаэробной обработки и для высокого слоя First Brew пробует мягкую тонкую струю ближе к центру: она снижает турбулентность. Это гипотеза.",
+              "en": "For natural and anaerobic coffees and for a deep bed First Brew tries a gentle stream near the center: it reduces turbulence. It is a hypothesis.",
+              "source": "brewing_engine._STEP_TEXTS (gentle); docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            },
+            {
+              "ru": "Вариант «Ярче» — меньше вливаний, «Слаще» — на одно больше и на 10 секунд дольше контакт.",
+              "en": "The Brighter variant uses fewer pours; Sweeter uses one more and 10 seconds more contact.",
+              "source": "brewing_engine.COEFFICIENTS (variants)"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60",
+              "processing": "natural"
+            }
+          },
+          "takeaway": {
+            "ru": "Число и мягкость вливаний меняют контакт воды с кофе — это ещё один способ сдвинуть вкус.",
+            "en": "The number and gentleness of pours change the contact between water and coffee — another way to move the taste.",
+            "source": "brewing_engine.COEFFICIENTS (variants)"
+          },
+          "barista": "Нужны слова бариста о технике струи (высота, круги) — в источниках есть только «тонкая струя ближе к центру» и «плавно по кругу»."
+        }
+      ]
+    },
+    {
+      "id": "taste",
+      "title": {
+        "ru": "Вкус",
+        "en": "Taste"
+      },
+      "lessons": [
+        {
+          "id": "sour_bitter",
+          "title": {
+            "ru": "Кисло и горько",
+            "en": "Sour and bitter"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Кислинка без сладости, резкость или пустая середина обычно значат, что вода забрала из кофе слишком мало. Помогают вода горячее и помол мельче.",
+              "en": "Sourness without sweetness, sharpness or a hollow middle usually mean the water took too little. Hotter water and a finer grind help.",
+              "source": "brewing_engine._TASTE_EXPLANATIONS (under)"
+            },
+            {
+              "ru": "Горечь, сухость, терпкость или тяжесть часто появляются, когда вода вытягивает лишнее. Помогают вода прохладнее и помол грубее.",
+              "en": "Bitterness, dryness, astringency or heaviness often appear when the water pulls out too much. Cooler water and a coarser grind help.",
+              "source": "brewing_engine._TASTE_EXPLANATIONS (over)"
+            },
+            {
+              "ru": "Правка First Brew меняет не больше двух параметров за раз, чтобы было понятно, что сработало.",
+              "en": "A First Brew correction changes at most two parameters at a time, so it is clear what worked.",
+              "source": "brewing_engine.adjust"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60"
+            }
+          },
+          "takeaway": {
+            "ru": "Кисло — мало экстракции, горько — много. Отметьте вкус после чашки, и правка подскажет направление.",
+            "en": "Sour means too little extraction, bitter too much. Mark the taste after the cup and the correction shows the way.",
+            "source": "brewing_engine._TASTE_EXPLANATIONS (under, over)"
+          }
+        },
+        {
+          "id": "sweet_first",
+          "title": {
+            "ru": "Сначала сладость",
+            "en": "Sweetness first"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Если сладость есть, экстракция в порядке. Тогда водянистую чашку делают плотнее меньшим количеством воды, а тяжёлую — легче.",
+              "en": "If the cup is sweet, extraction is fine. Then a watery cup is made denser with less water, and a heavy one lighter with more.",
+              "source": "brewing_engine._TASTE_EXPLANATIONS (weak_after_sweet, heavy_after_sweet)"
+            },
+            {
+              "ru": "Крепость меняют только после того, как появилась сладость, иначе легко спрятать недоэкстракцию.",
+              "en": "Change strength only once sweetness shows up; otherwise under-extraction hides easily.",
+              "source": "brewing_engine._TASTE_EXPLANATIONS (strength_needs_sweetness)"
+            },
+            {
+              "ru": "Ориентир SCA — 18–22 % экстракции и 1,15–1,45 % TDS. Это не обязательная зона «вкусно» для всех.",
+              "en": "The SCA reference is 18–22 % extraction and 1.15–1.45 % TDS. It is not a required tasty zone for everyone.",
+              "source": "docs/BREWING.md#после-заваривания-измерение-и-обратная-связь"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60"
+            }
+          },
+          "takeaway": {
+            "ru": "Порядок такой: сначала сладость и баланс, потом крепость.",
+            "en": "The order is: sweetness and balance first, strength second.",
+            "source": "brewing_engine._TASTE_EXPLANATIONS (strength_needs_sweetness)"
+          }
+        },
+        {
+          "id": "temperature_experiment",
+          "title": {
+            "ru": "Эксперимент: температура",
+            "en": "Experiment: temperature"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Две чашки одного кофе. Во второй вода на 2 °C горячее, всё остальное то же.",
+              "en": "Two cups of the same coffee. The second has water 2 °C hotter; everything else is the same.",
+              "source": "brewing_engine.experiment_pair (temperature)"
+            },
+            {
+              "ru": "Горячая вода извлекает быстрее. Попробуйте, стала ли вторая чашка слаще — или появилась горечь.",
+              "en": "Hotter water extracts faster. Taste whether the second cup got sweeter — or bitter.",
+              "source": "brewing_engine._CHANGE_WHY (temperature_c)"
+            }
+          ],
+          "practice": {
+            "kind": "experiment",
+            "params": {
+              "device_id": "v60",
+              "roast_level": "medium"
+            },
+            "vary": "temperature"
+          },
+          "takeaway": {
+            "ru": "Два градуса — заметный шаг: так вы узнаёте, какой рычаг сильнее действует на ваш кофе.",
+            "en": "Two degrees is a noticeable step: this is how you learn which lever works more on your coffee.",
+            "source": "brewing_engine.COEFFICIENTS (adjustment)"
+          },
+          "conclusions": {
+            "a": {
+              "ru": "Вам вкуснее первая чашка: горячее — уже лишнее. Оставьте исходную температуру.",
+              "en": "You preferred the first cup: hotter is too much. Keep the original temperature.",
+              "source": "brewing_engine._CHANGE_WHY (temperature_c)"
+            },
+            "b": {
+              "ru": "Вам вкуснее горячая вода: этому кофе нужна экстракция полнее. Попробуйте оставить +2 °C.",
+              "en": "You preferred the hotter water: this coffee wants more extraction. Try keeping +2 °C.",
+              "source": "brewing_engine._CHANGE_WHY (temperature_c)"
+            },
+            "same": {
+              "ru": "Разницы не заметно — значит, температура для этого кофе не главный рычаг. Попробуйте помол.",
+              "en": "No difference — temperature is not the main lever for this coffee. Try the grind.",
+              "source": "brewing_engine._CHANGE_WHY (temperature_c)"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "coffee",
+      "title": {
+        "ru": "Кофе разный",
+        "en": "Every coffee differs"
+      },
+      "lessons": [
+        {
+          "id": "processing_roast",
+          "title": {
+            "ru": "Обработка, страна, обжарка",
+            "en": "Processing, origin, roast"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Для тёмной обжарки обычно начинают с воды прохладнее, помола грубее и контакта короче, чем для светлой.",
+              "en": "Darker roasts usually start cooler, coarser and with shorter contact than light roasts.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            },
+            {
+              "ru": "Для натуральной и анаэробной обработки пробуют помол грубее и мягкое вливание, для мытой — тоньше. Это гипотезы: они требуют сравнительных заварок.",
+              "en": "Natural and anaerobic coffees get a coarser grind and gentle pours to try; washed ones finer. These are hypotheses that need comparative brews.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            },
+            {
+              "ru": "Страна происхождения даёт контекст, но сама по себе не меняет числа рецепта: проверенных данных для такой поправки нет.",
+              "en": "The country of origin gives context but does not change the numbers by itself: there is no tested data for that.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60",
+              "processing": "natural",
+              "country": "ET"
+            }
+          },
+          "takeaway": {
+            "ru": "Обжарка и обработка сдвигают стартовый рецепт, а страна — нет. Остальное решает вкус.",
+            "en": "Roast and processing move the starting recipe; origin does not. Taste decides the rest.",
+            "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+          },
+          "barista": "Нужен текст бариста о вкусах разных стран и обработок — в источниках нет вкусовых описаний."
+        }
+      ]
+    },
+    {
+      "id": "gear",
+      "title": {
+        "ru": "Своё оборудование",
+        "en": "Your equipment"
+      },
+      "lessons": [
+        {
+          "id": "drippers",
+          "title": {
+            "ru": "Воронки и другие устройства",
+            "en": "Drippers and other brewers"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Воронка — это вливания. Френч-пресс и аэропресс — иммерсия: вся вода сразу, настаивание и отжим. Капельная кофеварка льёт сама.",
+              "en": "A dripper means pours. French press and AeroPress are immersion: all the water at once, steep, then press. A drip machine pours by itself.",
+              "source": "webapp/data/devices.json; brewing_engine._STEP_TEXTS"
+            },
+            {
+              "ru": "У плоскодонных воронок другое дно и иной слив, поэтому First Brew немного меняет для них помол.",
+              "en": "Flat-bottom drippers have a different bed and flow, so First Brew adjusts the grind a little for them.",
+              "source": "brewing_engine.build (flat_bed)"
+            },
+            {
+              "ru": "На машину First Brew уходят только рецепты воронки: иммерсию и автоматические программы помпа пока не поддерживает.",
+              "en": "Only pour-over recipes go to the First Brew machine: its pump does not support immersion or automatic programs yet.",
+              "source": "docs/BREWING.md#совместимость-с-first-brew-machine"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "kalita_wave"
+            }
+          },
+          "takeaway": {
+            "ru": "Устройство определяет схему заваривания: вливания, настаивание или автоматическая программа.",
+            "en": "The brewer decides the scheme: pours, steeping or an automatic program.",
+            "source": "webapp/data/devices.json"
+          }
+        },
+        {
+          "id": "filters_materials",
+          "title": {
+            "ru": "Фильтры и материал воронки",
+            "en": "Filters and brewer material"
+          },
+          "review": "draft",
+          "cards": [
+            {
+              "ru": "Плотный фильтр может замедлить слив, поэтому стартовый помол для него чуть грубее.",
+              "en": "A dense filter may slow the drawdown, so the starting grind for it is a little coarser.",
+              "source": "brewing_engine.build (dense_filter)"
+            },
+            {
+              "ru": "Стекло и металл могут забирать тепло: прогрейте воронку. Постоянную поправку температуры без измерений First Brew не вводит.",
+              "en": "Glass and metal may take heat: preheat the brewer. First Brew adds no fixed temperature change without measurements.",
+              "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+            },
+            {
+              "ru": "Для своей воронки нужны высота слоя на 15 г и посадка фильтра: по ним подбирается струя и стартовый помол.",
+              "en": "For your own dripper, give the bed height at 15 g and the filter fit: they set the pour and the starting grind.",
+              "source": "brewing_engine.build (custom_dripper)"
+            }
+          ],
+          "practice": {
+            "kind": "build",
+            "params": {
+              "device_id": "v60",
+              "material": "glass",
+              "filter_id": "dense_paper"
+            }
+          },
+          "takeaway": {
+            "ru": "Фильтр и материал воронки влияют на слив и тепло — учитывайте их, когда сравниваете чашки.",
+            "en": "Filter and brewer material affect flow and heat — keep them in mind when you compare cups.",
+            "source": "docs/BREWING.md#коэффициенты-и-научная-оговорка"
+          }
+        }
+      ]
+    }
+  ]
 }
