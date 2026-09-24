@@ -15,13 +15,14 @@ from brew_catalog import load_catalog, unique_object
 from plans import load_plans
 from course import load_course
 from champions import load_champions
-from brewing_engine import (BrewingInputError, adjust, adopt_roaster_recipe, build, experiment_pair, rescale,
-                            restore_recipe, taste_options, validate_calculated_recipe)
+from brewing_engine import (BrewingInputError, adjust, adopt_roaster_recipe, build, experiment_pair, extraction_chart,
+                            rescale, restore_recipe, shift_recipe, taste_options, validate_calculated_recipe)
 
 ROOT = Path(__file__).parent / 'static'
 STATIC_FILES = {
     '/': ('index.html', 'text/html; charset=utf-8'),
     '/app.js': ('app.js', 'text/javascript; charset=utf-8'),
+    '/taste-model.js': ('taste-model.js', 'text/javascript; charset=utf-8'),
     '/style.css': ('style.css', 'text/css; charset=utf-8'),
     '/manifest.webmanifest': ('manifest.webmanifest', 'application/manifest+json; charset=utf-8'),
     '/icon.svg': ('icon.svg', 'image/svg+xml'),
@@ -131,7 +132,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.machine_post(url.path.removeprefix('/api/machine/'))
             if url.path not in ('/api/label', '/api/scan', '/api/recommend', '/api/recipes/build',
                                 '/api/recipes/adjust', '/api/recipes/rescale', '/api/recipes/import',
-                                '/api/recipes/adopt', '/api/recipes/experiment'):
+                                '/api/recipes/adopt', '/api/recipes/experiment',
+                                '/api/recipes/shift'):
                 return self.send_json(404, {'error': 'Page not found.'})
             if not self.same_origin():
                 return self.send_json(403, {'error': 'The request must come from this application.'})
@@ -190,6 +192,11 @@ class Handler(BaseHTTPRequestHandler):
                 if not isinstance(body, dict) or set(body) != {'recipe', 'source'}:
                     raise BrewingInputError('Expected recipe and source fields.')
                 return self.send_json(200, {'recipe': adopt_roaster_recipe(body['recipe'], body['source'])})
+            if url.path == '/api/recipes/shift':
+                if not isinstance(body, dict) or set(body) != {'recipe', 'grind_steps', 'temperature_delta', 'ratio'}:
+                    raise BrewingInputError('Expected recipe, grind_steps, temperature_delta and ratio fields.')
+                shifted = shift_recipe(body['recipe'], body['grind_steps'], body['temperature_delta'], body['ratio'])
+                return self.send_json(200, {'recipe': shifted, 'chart': extraction_chart(shifted)})
             if url.path == '/api/recipes/experiment':
                 if not isinstance(body, dict) or set(body) != {'recipe', 'parameter'}:
                     raise BrewingInputError('Expected recipe and parameter fields.')

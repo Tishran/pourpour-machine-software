@@ -556,6 +556,44 @@ const STRINGS = {
     exp_same: 'No difference',
     exp_how: 'What stood out? Up to two',
     exp_done: 'Get the conclusion',
+    sandbox_title: 'Sandbox',
+    sandbox_eyebrow: 'Try it',
+    sandbox_entry_text: 'Move the grind, the water temperature and the ratio — see what happens to the cup, then brew it.',
+    sandbox_intro: 'Move one thing at a time. The strength chart is exact; the taste chances come from your own ratings.',
+    sandbox_lesson_hint: 'Try moving the sliders before you brew: the chart and the chances change with them.',
+    sandbox_as_recipe: 'as in the recipe',
+    sandbox_grind_steps: (n, finer) => `${n} step${n === 1 ? '' : 's'} ${finer ? 'finer' : 'coarser'}`,
+    sandbox_extraction: (sign, steps) => `Extraction: ${sign}${steps} step${steps === '1' ? '' : 's'} from the recipe`,
+    sandbox_more: 'More extraction: less sourness, more sweetness — overdo it and bitterness appears.',
+    sandbox_less: 'Less extraction: gentler and brighter — overdo it and the cup turns sour and hollow.',
+    sandbox_same: 'Extraction as in the recipe.',
+    sandbox_odds: (sour, ok, bitter) => `Your model: sour ${sour} · on target ${ok} · bitter ${bitter}`,
+    sandbox_model_known: 'The chances come from your own ratings and taste experiments.',
+    sandbox_model_unknown: 'The model does not know your taste yet, so it shows no chances. Brew this variant and rate it: after the first cup the chances sour / on target / bitter appear here.',
+    sandbox_strength: 'Strength and ratio',
+    sandbox_denser: 'Less water for the same dose: the recipe line goes up — the same extraction gives a stronger cup.',
+    sandbox_lighter: 'More water for the same dose: the recipe line goes down — the same extraction gives a lighter cup.',
+    sandbox_chart_note: 'The dashed line is your recipe: at any extraction it shows the strength you get. The zone is the SCA reference. The line is calculated; where your cup lands on it depends on extraction.',
+    sandbox_recipe: 'Your variant',
+    sandbox_brew: 'Brew this variant',
+    sandbox_back_to: 'Back to the sandbox',
+    model_title: 'Your taste model',
+    model_tendency: (n, steps, more) => `Across ${n} coffees you usually want about ${steps} step${steps === '1' ? '' : 's'} ${more ? 'more' : 'less'} extraction than the starting recipes. New recipes start from this.`,
+    model_eyebrow: 'ML · learns from your cups',
+    model_learned: (n) => `The model has learned from ${n} rating${n === 1 ? '' : 's'} of this coffee.`,
+    model_at_start: 'Your sweet spot is right at the first recipe.',
+    model_range_side: (near, far, more) => `Your sweet spot is most likely ${near}–${far} steps ${more ? 'more' : 'less'} extraction than the first recipe.`,
+    model_range_around: (low, high) => `Not sure yet: somewhere between ${low} steps less and ${high} steps more extraction than the first recipe.`,
+    model_axis_less: '← sourer',
+    model_axis_start: 'first recipe',
+    model_axis_more: 'more bitter →',
+    model_legend_curve: 'where your sweet spot probably is',
+    model_legend_band: '80 % likely',
+    model_legend_before: 'before this cup',
+    model_legend_candidate: 'this recipe',
+    model_odds: (sour, ok, bitter) => `This recipe by the model: sour ${sour} · on target ${ok} · bitter ${bitter}.`,
+    model_note: 'A step is 2 °C or one grind step. A small Bayesian model: it learns only from your ratings on this device and sends nothing.',
+    model_hint: (n, steps, more) => `Your taste model (${n} coffees): you usually want about ${steps} step${steps === '1' ? '' : 's'} ${more ? 'more' : 'less'} extraction than the starting recipes — try ${more ? 'water 2 °C hotter or the grind a step finer' : 'water 2 °C cooler or the grind a step coarser'}.`,
     why_button: 'Learn why',
     why_in_general: (text) => `In general: ${text}`,
     takeaway_eyebrow: 'Learn from every cup',
@@ -1118,6 +1156,44 @@ const STRINGS = {
     exp_same: 'Одинаково',
     exp_how: 'Чем? До двух',
     exp_done: 'Получить вывод',
+    sandbox_title: 'Песочница',
+    sandbox_eyebrow: 'Попробуйте',
+    sandbox_entry_text: 'Двигайте помол, температуру воды и соотношение — смотрите, что будет с чашкой, и заварите.',
+    sandbox_intro: 'Меняйте одну вещь за раз. График крепости точный; шансы по вкусу — из ваших собственных оценок.',
+    sandbox_lesson_hint: 'Прежде чем варить, подвигайте ползунки: график и шансы меняются вместе с ними.',
+    sandbox_as_recipe: 'как в рецепте',
+    sandbox_grind_steps: (n, finer) => `на ${n} ${n === 1 ? 'шаг' : 'шага'} ${finer ? 'мельче' : 'грубее'}`,
+    sandbox_extraction: (sign, steps) => `Экстракция: ${sign}${steps} ${steps === '1' ? 'шаг' : 'шага'} от рецепта`,
+    sandbox_more: 'Больше экстракции: меньше кислинки, больше сладости — а если перебрать, появится горечь.',
+    sandbox_less: 'Меньше экстракции: мягче и ярче — а если перебрать, чашка станет кислой и пустой.',
+    sandbox_same: 'Экстракция как в рецепте.',
+    sandbox_odds: (sour, ok, bitter) => `Ваша модель: кисло ${sour} · в ориентире ${ok} · горько ${bitter}`,
+    sandbox_model_known: 'Шансы посчитаны по вашим оценкам и вкусовым экспериментам.',
+    sandbox_model_unknown: 'Модель ещё не знает ваш вкус, поэтому шансов не показывает. Заварите этот вариант и оцените: после первой чашки здесь появятся шансы «кисло / в ориентире / горько».',
+    sandbox_strength: 'Крепость и соотношение',
+    sandbox_denser: 'Меньше воды на ту же дозу: линия рецепта идёт выше — при той же экстракции чашка крепче.',
+    sandbox_lighter: 'Больше воды на ту же дозу: линия рецепта идёт ниже — при той же экстракции чашка легче.',
+    sandbox_chart_note: 'Пунктир — ваш рецепт: для любой экстракции он показывает, какая получится крепость. Зона — ориентир SCA. Линия рассчитана точно; где на ней окажется чашка, зависит от экстракции.',
+    sandbox_recipe: 'Ваш вариант',
+    sandbox_brew: 'Заварить этот вариант',
+    sandbox_back_to: 'Вернуться в песочницу',
+    model_title: 'Модель вашего вкуса',
+    model_tendency: (n, steps, more) => `По ${n} кофе вам обычно нужно примерно на ${steps} шага ${more ? 'больше' : 'меньше'} экстракции, чем в стартовых рецептах. С этого модель начинает для нового кофе.`,
+    model_eyebrow: 'ML · учится на ваших чашках',
+    model_learned: (n) => `Модель учла ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'оценку' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'оценки' : 'оценок'} этого кофе.`,
+    model_at_start: 'Ваша сладкая точка — прямо у первого рецепта.',
+    model_range_side: (near, far, more) => `Ваша сладкая точка — скорее всего на ${near}–${far} шага ${more ? 'больше' : 'меньше'} экстракции, чем в первом рецепте.`,
+    model_range_around: (low, high) => `Модель пока не уверена: точка где-то между ${low} шага меньше и ${high} шага больше экстракции, чем в первом рецепте.`,
+    model_axis_less: '← кислее',
+    model_axis_start: 'первый рецепт',
+    model_axis_more: 'горче →',
+    model_legend_curve: 'где, вероятно, ваша сладкая точка',
+    model_legend_band: '80 % вероятности',
+    model_legend_before: 'до этой чашки',
+    model_legend_candidate: 'этот рецепт',
+    model_odds: (sour, ok, bitter) => `Этот рецепт по модели: кисло ${sour} · в ориентире ${ok} · горько ${bitter}.`,
+    model_note: 'Шаг — это 2 °C или одно деление помола. Небольшая байесовская модель: учится только на ваших оценках на этом устройстве и ничего не отправляет.',
+    model_hint: (n, steps, more) => `Модель вашего вкуса (по ${n} кофе): обычно вам нужно примерно на ${steps} шага ${more ? 'больше' : 'меньше'} экстракции, чем в стартовых рецептах — попробуйте ${more ? 'воду на 2 °C горячее или помол на шаг мельче' : 'воду на 2 °C прохладнее или помол на шаг грубее'}.`,
     why_button: 'Почему?',
     why_in_general: (text) => `В целом: ${text}`,
     takeaway_eyebrow: 'Каждая чашка — урок',
@@ -1471,7 +1547,7 @@ function selectRecent(entry) {
 // Screens and browser history
 // ---------------------------------------------------------------------------
 const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own', 'plans', 'start', 'settings',
-  'school', 'lesson', 'progress'];
+  'school', 'lesson', 'progress', 'sandbox'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
@@ -1492,6 +1568,7 @@ function show(screen, {push = true} = {}) {
   if (screen === 'find') renderHome();
   if (screen === 'school') renderSchool();
   if (screen === 'progress') renderProgress();
+  if (screen === 'sandbox') renderSandbox();
   if (screen === 'lesson') { renderLesson(); if (lesson.stage === 'practice') loadLessonRecipe(); }
   if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
   if (screen === 'brew' && brewMode === 'machine') renderMachine();
@@ -1504,7 +1581,8 @@ function show(screen, {push = true} = {}) {
     : screen === 'mine' ? $('mine-title') : screen === 'own' ? $('own-title')
     : screen === 'plans' ? $('plans-title') : screen === 'start' ? $('start-title')
     : screen === 'settings' ? $('settings-title') : screen === 'school' ? $('school-title')
-    : screen === 'lesson' ? $('lesson-title') : screen === 'progress' ? $('progress-title') : $('brew-toggle');
+    : screen === 'lesson' ? $('lesson-title') : screen === 'progress' ? $('progress-title')
+    : screen === 'sandbox' ? $('sandbox-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -1661,6 +1739,7 @@ function renderRecipe(index, editedRecipe = null) {
     <button type="button" class="button edit-trigger" id="edit-recipe">${t('edit_recipe')}</button>
     <div id="recipe-editor" hidden></div>
     <div id="recipe-summary">
+    ${modelHint()}
     <div class="why-scope"><div class="figures">${figures.map(([value, unit, label, key]) => `<div><b>${value}${unit ? `<small>${NBSP}${unit}</small>` : ''}</b><span>${label}</span>${whyButton(courseText('why', key), label)}</div>`).join('')}</div>${WHY_PANEL}</div>
     <div class="why-scope">
     <p class="line"><span>${t('grind')} ${whyButton(courseText('why', 'grind_roaster'), t('grind'))}</span><strong>${grind}</strong></p>
@@ -2704,6 +2783,7 @@ function renderBuilderResult() {
     <p class="subtitle">${t(`builder_summary_${recipe.id}`)}</p>
     <div class="builder-context">${shown}${rest}</div>
     <p class="note builder-caution">${t('builder_approximate')}</p>
+    ${modelHint()}
     ${calculatedTiles(recipe, 'data-adjust')}
     <h3 class="section">${t('builder_process')}</h3>
     ${calculatedSteps(recipe)}
@@ -2963,7 +3043,7 @@ function changeLine(change) {
 }
 
 // Inline SVG: extraction (x) against strength (y), ratio diagonals, the SCA zone and the cup.
-function extractionChart(chart) {
+function extractionChart(chart, noteOverride = null) {
   if (!chart) return '';
   const width = 340, height = 286, left = 46, right = 34, top = 14, bottom = 56;
   const [x0, x1] = chart.extraction_axis, [y0, y1] = chart.tds_axis;
@@ -3012,6 +3092,7 @@ function extractionChart(chart) {
     legend = `<li><i class="legend-estimate" aria-hidden="true"></i>${escape(t('chart_estimate'))}</li>`;
     description = t('chart_desc_estimate', num(chart.cup.extraction_range[0]), num(chart.cup.extraction_range[1]));
   }
+  if (noteOverride) note = noteOverride;
   return `<figure class="extraction-chart">
     <svg viewBox="0 0 ${width} ${height}" role="img" aria-labelledby="chart-title chart-desc">
       <title id="chart-title">${escape(t('chart_title'))}</title><desc id="chart-desc">${escape(description)}</desc>
@@ -3048,7 +3129,9 @@ function renderBuilderCorrection() {
     <h2 class="title" id="correction-title" tabindex="-1">${escape(ru ? data.diagnosis : data.diagnosis_en)}</h2>
     <p class="correction-explanation">${escape(ru ? data.explanation : data.explanation_en)}</p>
     ${takeawayCard(data.diagnosis_code)}
+    ${modelCard(builder.rated, recipe)}
     ${builder.ratingOrigin === 'lesson' && lesson.current ? `<button type="button" class="button builder-favorite" id="correction-lesson">${t('lesson_back_to')}</button>` : ''}
+    ${builder.ratingOrigin === 'sandbox' ? `<button type="button" class="button builder-favorite" id="correction-sandbox">${t('sandbox_back_to')}</button>` : ''}
     ${extractionChart(data.chart)}
     <h3 class="section">${t('correction_changes')}</h3>
     ${changes ? `<ul class="correction-changes">${changes}</ul>` : `<p class="note">${t(data.at_limit ? 'correction_at_limit' : 'correction_no_changes')}</p>`}
@@ -3151,6 +3234,7 @@ function wireFeedback() {
     const control = event.target.closest('[data-correction-adjust]');
     if (control) { adjustCorrectionQuantity(control.dataset.correctionAdjust); return; }
     if (event.target.closest('#correction-lesson')) { show('lesson'); return; }
+    if (event.target.closest('#correction-sandbox')) { show('sandbox'); return; }
     if (event.target.closest('#correction-machine')) {
       currentRecipe = builder.correction.recipe;
       brewOrigin = 'construct';
@@ -3162,7 +3246,7 @@ function wireFeedback() {
 function wireBuilder() {
   $('open-builder').addEventListener('click', beginBuilder);
   $('builder-back').addEventListener('click', () => {
-    if (builder.step === 3 && ['own', 'recipe', 'lesson'].includes(builder.ratingOrigin)) { back(builder.ratingOrigin); return; }
+    if (builder.step === 3 && ['own', 'recipe', 'lesson', 'sandbox'].includes(builder.ratingOrigin)) { back(builder.ratingOrigin); return; }
     if (builder.step > 0) {
       if (builder.step <= 2) captureBuilderDraft();
       clearTimeout(builder.correctionTimer);
@@ -3623,7 +3707,9 @@ function validJournalEntry(entry) {
     ['hand', 'machine'].includes(entry.method) &&
     (entry.ref == null || JOURNAL_REFS.includes(entry.ref.kind)) &&
     Array.isArray(entry.tastes) && entry.tastes.every(taste => typeof taste === 'string') &&
-    (entry.diagnosis_code == null || typeof entry.diagnosis_code === 'string');
+    (entry.diagnosis_code == null || typeof entry.diagnosis_code === 'string') &&
+    (entry.features == null || (typeof entry.features.series === 'string' &&
+      ['extraction', 'ratio'].every(key => Number.isFinite(entry.features[key]))));
 }
 function journalEntries() {
   try {
@@ -3663,26 +3749,129 @@ function recipeCoffee(recipe, origin) {
     lesson.current.practice.kind === 'experiment' ? ` · ${cupName(lesson.cup)}` : ''}`;
   if (origin === 'own' && own.entry) return ownName(own.entry);
   if (recipe?.origin === 'calculated') {
-    const chips = builder.ratedChips || (builder.options && recipe.basis !== 'roaster' ? builderContext(recipe) : []);
+    const chips = origin === 'sandbox' ? sandbox.chips
+      : builder.ratedChips || (builder.options && recipe.basis !== 'roaster' ? builderContext(recipe) : []);
     return [calculatedName(recipe), chips?.[0]].filter(Boolean).join(' · ');
   }
   return currentData ? recipeTitle() : '';
 }
 function logBrew(method) {
   if (!currentRecipe) return;
-  const entry = addJournal({method, coffee: recipeCoffee(currentRecipe, brewOrigin), ref: recipeRef(currentRecipe, brewOrigin)});
+  const entry = addJournal({method, coffee: recipeCoffee(currentRecipe, brewOrigin), ref: recipeRef(currentRecipe, brewOrigin),
+    features: recipeFeatures(currentRecipe, brewOrigin)});
   lastJournalId = entry?.id || null;
   onLessonBrewed(entry);
 }
 // A rating belongs to the cup it came from; a cup rated without the timer gets its own entry.
 function journalRating(recipe, feedback, code) {
-  const record = {tastes: [...(feedback.descriptors || [])], diagnosis_code: code || null};
+  const origin = ['own', 'recipe', 'lesson', 'sandbox'].includes(builder.ratingOrigin) ? builder.ratingOrigin : 'construct';
+  const record = {tastes: [...(feedback.descriptors || [])], diagnosis_code: code || null,
+    features: recipeFeatures(recipe, origin)};
   if (builder.journalId && updateJournal(builder.journalId, record)) return;
-  const origin = ['own', 'recipe', 'lesson'].includes(builder.ratingOrigin) ? builder.ratingOrigin : 'construct';
   const entry = addJournal({method: 'hand', coffee: builder.ratedName || recipeCoffee(recipe, origin),
     ref: recipeRef(recipe, origin), ...record});
   builder.journalId = entry?.id || null;
 }
+// Where a recipe sits for the taste model, in the engine's correction steps
+// (COEFFICIENTS['adjustment']: 2 °C, 30 µm or one roaster grind step, 0.5 of ratio).
+const MODEL_STEPS = {temperature_c: 2, particle_microns: 30, ratio: 0.5};
+function recipeFeatures(recipe, origin) {
+  if (recipe?.origin !== 'calculated' || !recipe.dose_g) return null;
+  const roaster = recipe.basis === 'roaster';
+  const finer = roaster ? -(recipe.grind?.steps_from_source || 0)
+    : -(recipe.grind?.target_particle_microns || 0) / MODEL_STEPS.particle_microns;
+  let series;
+  if (origin === 'lesson' && lesson.current) series = `lesson|${lesson.current.id}`;
+  else if (roaster) series = `roaster|${recipe.source?.name || ''}|${recipe.device_label || recipe.device_id}`;
+  else {
+    const chips = origin === 'own' && own.entry ? own.entry.context_chips
+      : origin === 'sandbox' ? sandbox.chips : builder.ratedChips || [];
+    series = `calc|${(chips || []).join('/')}|${recipe.device_id}|${recipe.grinder_id || ''}`;
+  }
+  const round = value => Math.round(value * 100) / 100;
+  return {series: series.slice(0, 240), extraction: round(recipe.temperature_c / MODEL_STEPS.temperature_c + finer),
+    ratio: round(recipe.water_g / recipe.dose_g / MODEL_STEPS.ratio)};
+}
+function tasteModel(axis = 'extraction') {
+  return window.TasteModel ? TasteModel.analyze(journalEntries(), axis) : null;
+}
+// A number of steps in words: "1,5 steps more extraction".
+function stepsText(value) {
+  const rounded = Math.round(Math.abs(value) * 2) / 2;
+  return num(rounded.toFixed(rounded % 1 ? 1 : 0));
+}
+function percent(value) { return `${Math.round(value * 100)}${NBSP}%`; }
+// The posterior as a small inline SVG: the curve, the 80 % range, the rated cups and a candidate.
+function tasteModelChart(group, {candidate = null, title = ''} = {}) {
+  if (!group?.fit) return '';
+  const width = 340, height = 150, left = 12, right = 12, top = 16, bottom = 40, span = 6;
+  const px = value => left + (Math.max(-span, Math.min(span, value)) + span) / (2 * span) * (width - left - right);
+  const fit = group.fit;
+  const visible = (points) => points.filter(([u]) => u >= -span && u <= span);
+  const peak = Math.max(...fit.density, ...(group.before?.density || [0]));
+  const py = p => height - bottom - p / peak * (height - top - bottom);
+  const path = density => visible(fit.grid.map((u, i) => [u, density[i]])).map(([u, p], i) => `${i ? 'L' : 'M'}${px(u).toFixed(1)},${py(p).toFixed(1)}`).join('');
+  const area = `${path(fit.density)}L${px(span).toFixed(1)},${py(0)}L${px(-span).toFixed(1)},${py(0)}Z`;
+  const band = `<rect class="model-band" x="${px(fit.low).toFixed(1)}" y="${top}" width="${(px(fit.high) - px(fit.low)).toFixed(1)}" height="${height - top - bottom}"/>`;
+  const marks = group.observations.map(obs => {
+    const x = px(obs.kind === 'pair' ? (obs.choice === 'b' ? obs.b : obs.choice === 'a' ? obs.a : (obs.a + obs.b) / 2) : obs.x);
+    const y = py(0) - 7;
+    const shape = obs.kind === 'under' ? `<path class="model-mark sour" d="M${x - 6},${y + 5}L${x + 6},${y + 5}L${x},${y - 6}Z"/>`
+      : obs.kind === 'over' ? `<path class="model-mark bitter" d="M${x - 6},${y - 5}L${x + 6},${y - 5}L${x},${y + 6}Z"/>`
+      : obs.kind === 'ok' ? `<circle class="model-mark ok" cx="${x}" cy="${y}" r="5.5"/>`
+      : `<path class="model-mark pair" d="M${x},${y - 6}L${x + 6},${y}L${x},${y + 6}L${x - 6},${y}Z"/>`;
+    return shape;
+  }).join('');
+  const zero = `<line class="model-zero" x1="${px(0)}" y1="${top}" x2="${px(0)}" y2="${py(0)}"/>`;
+  const cand = candidate == null ? '' : `<line class="model-candidate" x1="${px(candidate)}" y1="${top - 6}" x2="${px(candidate)}" y2="${py(0)}"/>`;
+  const label = (x, text, anchor) => `<text class="model-label" x="${x}" y="${height - 8}" text-anchor="${anchor}">${escape(text)}</text>`;
+  return `<figure class="model-chart"><svg viewBox="0 0 ${width} ${height}" role="img" aria-label="${escape(title || t('model_title'))}">
+    ${band}${zero}${group.before ? `<path class="model-before" d="${path(group.before.density)}"/>` : ''}
+    <path class="model-area" d="${area}"/><path class="model-curve" d="${path(fit.density)}"/>${cand}${marks}
+    <line class="model-axis" x1="${left}" y1="${py(0)}" x2="${width - right}" y2="${py(0)}"/>
+    ${label(left, t('model_axis_less'), 'start')}${label(px(0), t('model_axis_start'), 'middle')}${label(width - right, t('model_axis_more'), 'end')}
+  </svg><figcaption><ul class="chart-legend">
+    <li><i class="legend-model" aria-hidden="true"></i>${t('model_legend_curve')}</li>
+    <li><i class="legend-band" aria-hidden="true"></i>${t('model_legend_band')}</li>
+    ${group.before ? `<li><i class="legend-before" aria-hidden="true"></i>${t('model_legend_before')}</li>` : ''}
+    ${candidate == null ? '' : `<li><i class="legend-candidate" aria-hidden="true"></i>${t('model_legend_candidate')}</li>`}
+  </ul></figcaption></figure>`;
+}
+// Where the sweet spot is, in words, relative to the first recipe of this coffee.
+function modelRangeText(fit) {
+  if (fit.low >= -0.25 && fit.high <= 0.25) return t('model_at_start');
+  if (fit.low >= 0 || fit.high <= 0) {
+    const [near, far] = [fit.low, fit.high].map(Math.abs).sort((a, b) => a - b);
+    return t('model_range_side', stepsText(near), stepsText(far), fit.median > 0);
+  }
+  return t('model_range_around', stepsText(fit.low), stepsText(fit.high));
+}
+// The card after a correction: what this cup taught the model, and the odds for the corrected recipe.
+function modelCard(rated, corrected) {
+  const model = tasteModel();
+  const key = recipeFeatures(rated, builder.ratingOrigin)?.series;
+  const group = model?.series.find(item => item.key === key);
+  if (!group?.fit) return '';
+  const next = recipeFeatures(corrected, builder.ratingOrigin);
+  const x = next ? next.extraction - group.start : null;
+  const odds = x == null ? null : TasteModel.chances(group.fit, x);
+  const cups = group.observations.length;
+  return `<div class="model-card" id="model-card"><p class="takeaway-eyebrow">${t('model_eyebrow')}</p>
+    <h3 class="takeaway-title">${t('model_title')}</h3>
+    <p>${t('model_learned', cups)} ${escape(modelRangeText(group.fit))}</p>
+    ${tasteModelChart(group, {candidate: x})}
+    ${odds ? `<p class="model-odds">${t('model_odds', percent(odds.sour), percent(odds.ok), percent(odds.bitter))}</p>` : ''}
+    <p class="model-note">${t('model_note')}</p></div>`;
+}
+// A hint for a new coffee, once the model has seen at least two coffees.
+function modelHint() {
+  const model = tasteModel();
+  const tendency = model?.tendency;
+  if (!tendency || tendency.coffees < 2 || Math.abs(tendency.value) < 0.75) return '';
+  const more = tendency.value > 0;
+  return `<p class="note model-hint">${t('model_hint', tendency.coffees, stepsText(tendency.value), more)}</p>`;
+}
+
 // "Cups that came out great": the engine's own diagnosis, nothing invented.
 function greatCups(entries = journalEntries()) {
   const rated = entries.filter(entry => entry.diagnosis_code).slice(0, 10);
@@ -3744,10 +3933,25 @@ function renderProgress() {
       ${card(t('progress_taste'), taste.length ? taste.map(([id]) => escape(names[id] || id)).join(', ') : '—',
         taste.length ? t('progress_taste_note') : t('progress_taste_empty'), full)}
     </div>
+    ${progressModel(full)}
     ${full ? '' : `<button type="button" class="button progress-unlock" id="progress-unlock">${LOCK} ${escape(benefit('journal_full'))}</button>`}
     <h2 class="section">${t('progress_journal')}</h2>
     <div class="results" role="list">${shown.map(journalLine).join('')}</div>
     ${hidden ? `<button type="button" class="button progress-more" id="progress-more">${LOCK} ${t('progress_more', hidden)}</button>` : ''}`;
+}
+// The taste model on the progress screen: the usual offset across coffees and the latest coffee.
+function progressModel(full) {
+  const model = tasteModel();
+  const latest = model?.series.filter(group => group.observations.length).at(-1);
+  if (!latest) return '';
+  if (!full) return `<div class="home-card progress-card locked"><p class="home-eyebrow">${LOCK} ${t('model_title')}</p></div>`;
+  const tendency = model.tendency;
+  return `<div class="model-card"><p class="takeaway-eyebrow">${t('model_eyebrow')}</p>
+    <h3 class="takeaway-title">${t('model_title')}</h3>
+    ${tendency.coffees >= 2 ? `<p>${t('model_tendency', tendency.coffees, stepsText(tendency.value), tendency.value > 0)}</p>` : ''}
+    <p><strong>${escape(latest.label || '')}</strong>: ${escape(modelRangeText(latest.fit))}</p>
+    ${tasteModelChart(latest)}
+    <p class="model-note">${t('model_note')}</p></div>`;
 }
 function wireProgress() {
   $('open-progress').addEventListener('click', () => show('progress'));
@@ -4051,7 +4255,10 @@ function renderSchool() {
   setText('school-draft', t('school_draft'));
   if (!COURSE) { $('school-modules').innerHTML = `<p class="note">${t('err_generic')}</p>`; return; }
   const counts = schoolCounts();
-  $('school-modules').innerHTML = `<p class="school-progress">${t('school_progress', counts.done, counts.total)}</p>` +
+  $('school-modules').innerHTML = `<button type="button" class="home-card sandbox-entry" id="open-sandbox">
+      <span class="home-eyebrow">${t('sandbox_eyebrow')}</span><strong class="home-card-title">${t('sandbox_title')}</strong>
+      <span class="home-card-meta">${t('sandbox_entry_text')}</span></button>
+    <p class="school-progress">${t('school_progress', counts.done, counts.total)}</p>` +
     COURSE.modules.map((module, index) => `<section class="school-module" aria-labelledby="module-${escape(module.id)}">
       <h2 class="section" id="module-${escape(module.id)}">${index + 1}. ${escape(module.title[LANG])}</h2>
       <div class="results">${module.lessons.map(item => {
@@ -4107,12 +4314,14 @@ function renderLesson() {
     actions.push(action('next', t(last ? 'lesson_to_practice' : 'lesson_next'), true));
   } else if (lesson.stage === 'practice' && item.practice.kind === 'build') {
     const recipe = lesson.recipe;
+    if (recipe && !(sandbox.where === 'lesson' && sandbox.base === recipe)) openSandbox(recipe, {where: 'lesson'});
     body = `<h2 class="section">${t('lesson_practice')}</h2><p>${t('lesson_practice_text')}</p>
-      ${recipe ? `<p class="builder-origin">${t('builder_calculated')}</p>${calculatedTiles(recipe, null)}
-        <h3 class="section">${t('builder_process')}</h3>${calculatedSteps(recipe)}` : `<p class="status">${t('lesson_loading')}</p>`}`;
+      ${recipe && sandbox.where === 'lesson' && sandbox.base === recipe ? `<p class="sandbox-hint">${t('sandbox_lesson_hint')}</p>${sandboxControls()}`
+        : `<p class="status">${t('lesson_loading')}</p>`}`;
     if (recipe) {
-      if (machine(recipe)) actions.push(action('machine-a', t('machine_button')));
-      actions.push(action('brew-a', t('lesson_brew'), !lesson.brewed.a));
+      const ready = Boolean(sandbox.recipe) && !sandbox.busy;
+      if (machine(recipe)) actions.push(action('machine-a', t('machine_button'), false, !ready));
+      actions.push(action('brew-a', t('lesson_brew'), !lesson.brewed.a, !ready));
       if (lesson.brewed.a) {
         actions.push(action('rate', t('builder_rate'), true));
         actions.push(action('finish', t('lesson_finish')));
@@ -4152,6 +4361,7 @@ function renderLesson() {
     actions.push(action('school', t('lesson_to_school')));
   }
   $('lesson-body').innerHTML = head + body;
+  if ($('sandbox-output')) sandboxOutput();
   $('lesson-actions').innerHTML = actions.join('');
   $('lesson-actions').classList.toggle('pair', actions.length === 2);
 }
@@ -4161,7 +4371,7 @@ async function loadLessonRecipe() {
   lesson.busy = true;
   try {
     const built = (await post('/api/recipes/build', JSON.stringify({params: item.practice.params}), 'application/json')).variants[0];
-    if (item.practice.kind === 'build') lesson.recipe = built;
+    if (item.practice.kind === 'build') { lesson.recipe = built; openSandbox(built, {where: 'lesson'}); }
     else lesson.pair = await post('/api/recipes/experiment', JSON.stringify({recipe: built, parameter: item.practice.vary}), 'application/json');
     setStatus('lesson-status', '');
   } catch (error) { setStatus('lesson-status', error.message || t('err_generic'), true); }
@@ -4169,12 +4379,20 @@ async function loadLessonRecipe() {
   if (currentScreen() === 'lesson' && lesson.current === item) renderLesson();
 }
 function lessonRecipe(cup) {
-  return lesson.current.practice.kind === 'build' ? lesson.recipe : lesson.pair?.recipes[cup === 'a' ? 0 : 1];
+  if (lesson.current.practice.kind === 'build') return sandbox.where === 'lesson' && sandbox.recipe ? sandbox.recipe : lesson.recipe;
+  return lesson.pair?.recipes[cup === 'a' ? 0 : 1];
+}
+// While the sandbox recalculates, the brew buttons wait; the sliders are not redrawn.
+function updateLessonActions() {
+  const ready = Boolean(sandbox.recipe) && !sandbox.busy;
+  document.querySelectorAll('#lesson-actions [data-lesson-action="brew-a"], #lesson-actions [data-lesson-action="machine-a"]')
+    .forEach(button => { button.disabled = !ready; });
 }
 function brewLesson(cup, onMachine) {
   const recipe = lessonRecipe(cup);
   if (!recipe) return;
   lesson.cup = cup;
+  lesson.brewedRecipe = recipe;
   currentRecipe = recipe;
   brewOrigin = 'lesson';
   brewName = lesson.current.practice.kind === 'experiment' ? cupName(cup) : lesson.current.title[LANG];
@@ -4201,7 +4419,7 @@ function lessonAction(name) {
     brewLesson(name.slice(-1), name.startsWith('machine-'));
     return;
   } else if (name === 'rate') {
-    rateLessonRecipe(lesson.recipe, lesson.journal.a || null).then(ok => { if (ok) show('construct'); });
+    rateLessonRecipe(lesson.brewedRecipe || lesson.recipe, lesson.journal.a || null).then(ok => { if (ok) show('construct'); });
     return;
   } else if (name === 'finish') { markLessonDone(item); lesson.stage = 'done'; }
   else if (name === 'compare') lesson.stage = 'compare';
@@ -4209,6 +4427,12 @@ function lessonAction(name) {
     markLessonDone(item, lesson.choice);
     const chosen = lesson.choice === 'same' ? null : lesson.journal[lesson.choice];
     if (chosen && lesson.tastes.length) updateJournal(chosen, {tastes: [...lesson.tastes]});
+    // The choice between the two cups teaches the personal taste model.
+    const axis = item.practice.vary === 'ratio' ? 'ratio' : 'extraction';
+    const [a, b] = lesson.pair.recipes.map(recipe => recipeFeatures(recipe, 'lesson')?.[axis]);
+    if (lesson.journal.b && Number.isFinite(a) && Number.isFinite(b)) {
+      updateJournal(lesson.journal.b, {pair: {axis, a, b, choice: lesson.choice}});
+    }
     lesson.stage = 'done';
   } else if (name === 'next-lesson') {
     const index = allLessons().findIndex(({lesson: other}) => other === item);
@@ -4237,6 +4461,7 @@ function renderCourseViews() {
 function wireSchool() {
   $('school-back').addEventListener('click', () => back('find'));
   $('school-modules').addEventListener('click', event => {
+    if (event.target.closest('#open-sandbox')) { openSandboxScreen(); return; }
     const item = event.target.closest('[data-lesson]');
     if (item) openLesson(item.dataset.lesson);
   });
@@ -4319,6 +4544,139 @@ async function saveChampion() {
     if (saved) setStatus('cta-status', t('builder_saved_status'));
     else if (saved === false) setStatus('cta-status', t('builder_save_error'), true);
   } catch (error) { setStatus('cta-status', t('rate_incomplete'), true); }
+}
+
+// ---------------------------------------------------------------------------
+// Sandbox: move the grind, the temperature and the ratio of a recipe and see what it does.
+// The strength chart is exact (the ratio line); extraction is shown on the personal taste
+// model as chances, never as an invented percentage. "Brew this" closes the loop:
+// brew → rate → the model learns → the next sandbox knows more.
+// ---------------------------------------------------------------------------
+const sandbox = {base: null, recipe: null, chart: null, grind: 0, temperature: 0, ratio: 0,
+  chips: null, where: null, request: null, timer: null, busy: false};
+function openSandbox(base, {where = 'screen', chips = null} = {}) {
+  Object.assign(sandbox, {base, recipe: base, chart: null, grind: 0, temperature: 0, ratio: 0,
+    chips, where, busy: false});
+  requestSandbox();
+}
+function sandboxRatio() {
+  return Math.round((sandbox.base.water_g / sandbox.base.dose_g + sandbox.ratio * MODEL_STEPS.ratio) * 10) / 10;
+}
+// The model for the sandbox's coffee; a coffee it has not seen starts from the usual offset.
+function sandboxModel() {
+  const model = tasteModel();
+  if (!model) return null;
+  const origin = sandbox.where === 'lesson' ? 'lesson' : 'sandbox';
+  const base = recipeFeatures(sandbox.base, origin);
+  const group = model.series.find(item => item.key === base?.series);
+  const x = sandbox.grind + sandbox.temperature / MODEL_STEPS.temperature_c;
+  if (group) return {group, x: base.extraction - group.start + x, known: group.observations.length > 0};
+  const prior = {mean: model.tendency.value, sd: TasteModel.PRIOR_SD};
+  return {group: {fit: TasteModel.fit([], prior), observations: [], before: null}, x, known: model.tendency.coffees > 0};
+}
+function sandboxControls() {
+  const recipe = sandbox.base;
+  const slider = (id, label, value, min, max, step, text) => `<div class="sandbox-control">
+    <div class="sandbox-control-head"><label for="sandbox-${id}">${label}</label><output id="sandbox-${id}-value" for="sandbox-${id}">${text}</output></div>
+    <input type="range" id="sandbox-${id}" data-sandbox="${id}" min="${min}" max="${max}" step="${step}" value="${value}"></div>`;
+  return `<div class="sandbox-controls">
+    ${slider('grind', t('grind'), sandbox.grind, -3, 3, 1, sandboxGrindText())}
+    ${slider('temperature', t('temperature'), sandbox.temperature, -6, 6, 2, celsius(recipe.temperature_c + sandbox.temperature))}
+    ${slider('ratio', t('ratio'), sandbox.ratio, -3, 3, 1, t('ratio_value', num(sandboxRatio())))}
+  </div><div id="sandbox-output" aria-live="polite"></div>`;
+}
+function sandboxGrindText() {
+  return sandbox.grind === 0 ? t('sandbox_as_recipe')
+    : t('sandbox_grind_steps', Math.abs(sandbox.grind), sandbox.grind > 0);
+}
+function sandboxOutput() {
+  const box = $('sandbox-output');
+  if (!box || !sandbox.base) return;
+  const view = sandboxModel();
+  const steps = sandbox.grind + sandbox.temperature / MODEL_STEPS.temperature_c;
+  const odds = view ? TasteModel.chances(view.group.fit, view.x) : null;
+  const direction = steps > 0 ? t('sandbox_more') : steps < 0 ? t('sandbox_less') : t('sandbox_same');
+  const strength = sandbox.ratio < 0 ? t('sandbox_denser') : sandbox.ratio > 0 ? t('sandbox_lighter') : '';
+  box.innerHTML = `
+    <div class="sandbox-result">
+      <p class="sandbox-steps"><strong>${t('sandbox_extraction', steps > 0 ? '+' : steps < 0 ? '−' : '', stepsText(steps))}</strong></p>
+      <p>${direction}</p>
+      ${odds ? `${view.known ? `<p class="model-odds">${t('sandbox_odds', percent(odds.sour), percent(odds.ok), percent(odds.bitter))}</p>` : ''}
+        <p class="model-note">${view.known ? t('sandbox_model_known') : t('sandbox_model_unknown')}</p>
+        ${tasteModelChart(view.group, {candidate: view.x, title: t('model_title')})}` : ''}
+    </div>
+    <h3 class="section">${t('sandbox_strength')}</h3>
+    ${strength ? `<p>${strength}</p>` : ''}
+    ${sandbox.chart ? extractionChart(sandbox.chart, t('sandbox_chart_note')) : ''}
+    ${sandbox.recipe ? `<h3 class="section">${t('sandbox_recipe')}</h3>${calculatedTiles(sandbox.recipe, null)}` : ''}`;
+}
+function renderSandbox() {
+  setText('sandbox-title', t('sandbox_title'));
+  setText('sandbox-intro', t('sandbox_intro'));
+  setText('sandbox-brew', t('sandbox_brew'));
+  if (!sandbox.base) { $('sandbox-root').innerHTML = `<p class="status">${t('lesson_loading')}</p>`; return; }
+  $('sandbox-root').innerHTML = sandboxControls();
+  sandboxOutput();
+  $('sandbox-brew').disabled = sandbox.busy || !sandbox.recipe;
+}
+async function requestSandbox() {
+  clearTimeout(sandbox.timer);
+  sandbox.request?.abort();
+  const request = sandbox.request = new AbortController();
+  sandbox.busy = true;
+  if ($('sandbox-brew')) $('sandbox-brew').disabled = true;
+  try {
+    const reply = await post('/api/recipes/shift', JSON.stringify({recipe: sandbox.base, grind_steps: sandbox.grind,
+      temperature_delta: sandbox.temperature, ratio: sandbox.ratio ? sandboxRatio() : null}), 'application/json', request.signal);
+    if (sandbox.request !== request) return;
+    sandbox.recipe = reply.recipe;
+    sandbox.chart = reply.chart;
+    setStatus(sandbox.where === 'lesson' ? 'lesson-status' : 'sandbox-status', '');
+  } catch (error) {
+    if (error.name === 'AbortError') return;
+    sandbox.recipe = null;
+    setStatus(sandbox.where === 'lesson' ? 'lesson-status' : 'sandbox-status', error.message || t('err_generic'), true);
+  } finally {
+    if (sandbox.request === request) {
+      sandbox.busy = false;
+      if ($('sandbox-brew')) $('sandbox-brew').disabled = !sandbox.recipe;
+      sandboxOutput();
+      if (sandbox.where === 'lesson' && currentScreen() === 'lesson') updateLessonActions();
+    }
+  }
+}
+function wireSandbox() {
+  document.addEventListener('input', event => {
+    const key = event.target.dataset?.sandbox;
+    if (!key || !sandbox.base) return;
+    sandbox[key] = Number(event.target.value);
+    setText(`sandbox-${key}-value`, key === 'grind' ? sandboxGrindText()
+      : key === 'temperature' ? celsius(sandbox.base.temperature_c + sandbox.temperature) : t('ratio_value', num(sandboxRatio())));
+    sandbox.recipe = null;
+    sandboxOutput();
+    clearTimeout(sandbox.timer);
+    sandbox.timer = setTimeout(requestSandbox, 250);
+  });
+  $('sandbox-back').addEventListener('click', () => back('school'));
+  $('sandbox-brew').addEventListener('click', () => {
+    if (!sandbox.recipe || sandbox.busy) return;
+    currentRecipe = sandbox.recipe;
+    brewOrigin = 'sandbox';
+    brewName = t('sandbox_title');
+    if (brewMode === 'machine') leaveMachineMode();
+    resetTimer();
+    show('brew');
+  });
+}
+// The standalone sandbox starts from the engine's V60 starting recipe.
+async function openSandboxScreen() {
+  show('sandbox');
+  if (sandbox.where === 'screen' && sandbox.base) return;
+  try {
+    const base = (await post('/api/recipes/build', JSON.stringify({params: {device_id: 'v60'}}), 'application/json')).variants[0];
+    openSandbox(base, {where: 'screen', chips: [t('sandbox_title')]});
+    renderSandbox();
+  } catch (error) { setStatus('sandbox-status', error.message || t('err_generic'), true); }
 }
 
 // ---------------------------------------------------------------------------
@@ -4540,7 +4898,7 @@ function updateDoneActions() {
   $('brew-rate').hidden = !rateable;
   $('brew-lesson').hidden = !inLesson;
   $('brew-again').hidden = inLesson;
-  $('brew-new').hidden = inLesson;
+  $('brew-new').hidden = inLesson || brewOrigin === 'sandbox';
   $('brew-lesson').classList.toggle('primary', !rateable);
   $('brew-again').classList.toggle('primary', !rateable);
   const machine = brewMode === 'machine';
@@ -4925,6 +5283,8 @@ function localize() {
   $('settings-back').textContent = t('back');
   $('school-back').textContent = t('back');
   $('progress-back').textContent = t('back');
+  $('sandbox-back').textContent = t('school_title');
+  if (currentScreen() === 'sandbox') renderSandbox();
   renderChampions();
   if (currentScreen() === 'progress') renderProgress();
   $('lesson-back').textContent = t('school_title');
@@ -5077,7 +5437,13 @@ function init() {
     if (brewOrigin === 'recipe') { rateRoasterRecipe(); return; }
     if (brewMode === 'machine') leaveMachineMode();
     resetTimer();
-    if (brewOrigin === 'lesson' && lesson.current) {
+    if (brewOrigin === 'sandbox') {
+      if (await ensureBuilderOptions()) {
+        openBuilderRating(recipe, {fresh: true, origin: 'sandbox', name: t('sandbox_title'), chips: sandbox.chips, journal: lastJournalId});
+        history.replaceState({screen: 'construct'}, '', '#construct');
+        show('construct', {push: false});
+      }
+    } else if (brewOrigin === 'lesson' && lesson.current) {
       if (await rateLessonRecipe(recipe, lastJournalId)) {
         history.replaceState({screen: 'construct'}, '', '#construct');
         show('construct', {push: false});
@@ -5124,6 +5490,7 @@ function init() {
   wirePlans();
   wireHome();
   wireSchool();
+  wireSandbox();
   wireProgress();
   $('champion-list').addEventListener('click', event => {
     const card = event.target.closest('[data-champion]');

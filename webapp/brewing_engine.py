@@ -1179,3 +1179,59 @@ def experiment_pair(recipe, parameter):
     validate_calculated_recipe(second)
     return {'parameter': parameter, 'change': change, 'recipes': [deepcopy(recipe), second],
             'explanation': explanation[0], 'explanation_en': explanation[1]}
+
+
+def shift_recipe(recipe, grind_steps=0, temperature_delta=0, ratio=None):
+    """A copy of a recipe for the sandbox: the grind moved by whole steps (positive = finer),
+    the water hotter or cooler by whole degrees and, optionally, another ratio for the same dose.
+
+    Steps are the engine's own: 30 µm of the nominal target (with the grinder table) or one step
+    of the roaster's setting. Timing and step texts stay; the result is a valid calculated recipe.
+    """
+    dose, water, temperature, particle, reference, grinder = validate_calculated_recipe(recipe)
+    for value, name in ((grind_steps, 'grind_steps'), (temperature_delta, 'temperature_delta')):
+        if not isinstance(value, int) or isinstance(value, bool) or abs(value) > 12:
+            raise BrewingInputError(f'{name}: expected a small whole number')
+    rule = COEFFICIENTS['adjustment']
+    result = deepcopy(recipe)
+    result.pop('edited', None)
+    notes_ru, notes_en = [], []
+    if grind_steps:
+        if recipe['id'] == _ROASTER_ID:
+            label, source_setting, offset = _validate_roaster_grind(recipe)
+            limit = COEFFICIENTS['roaster']['grind_max_steps']
+            new_offset = offset - grind_steps
+            if abs(new_offset) > limit:
+                raise BrewingInputError('grind_steps: too far from the roaster setting')
+            setting = _roaster_setting(source_setting, label, new_offset)
+            result['grind'].update(steps_from_source=new_offset, setting=setting)
+            result['grind_setting'] = setting
+        else:
+            target = particle - grind_steps * rule['particle_step_microns']
+            _number(target, 'grind_steps', *COEFFICIENTS['bounds']['particle_microns'])
+            result['grind']['target_particle_microns'] = result['grind']['microns'] = target
+            if reference is not None:
+                result['grind'].update(_settings(grinder, _clamp(reference - grind_steps * rule['reference_step'], 'reference_dial')))
+                result['grind_setting'] = result['grind']['setting']
+        finer = grind_steps > 0
+        notes_ru.append(f'помол на {abs(grind_steps)} шаг. {"мельче" if finer else "грубее"}')
+        notes_en.append(f'grind {abs(grind_steps)} step(s) {"finer" if finer else "coarser"}')
+    if temperature_delta:
+        result['temperature_c'] = round(_number(temperature + temperature_delta, 'temperature_delta',
+                                                *COEFFICIENTS['bounds']['temperature_c']))
+        notes_ru.append(f'вода {temperature_delta:+d} °C')
+        notes_en.append(f'water {temperature_delta:+d} °C')
+    if ratio is not None:
+        _number(ratio, 'ratio', *COEFFICIENTS['bounds']['ratio'])
+        target = round(dose * ratio)
+        if target != water:
+            result = rescale(result, dose_g=dose, water_g=target)
+            result['reasons'].pop()  # the rescale note; the sandbox note below says what changed
+            notes_ru.append(f'соотношение {result["ratio"]}')
+            notes_en.append(f'ratio {result["ratio"]}')
+    if notes_ru:
+        result['reasons'].append(_reason('sandbox', 'sandbox', 'Песочница: ' + ', '.join(notes_ru) + '.',
+                                         'Sandbox: ' + ', '.join(notes_en) + '.'))
+    result['machine_compatible'] = _machine_compatible(result)
+    validate_calculated_recipe(result)
+    return result

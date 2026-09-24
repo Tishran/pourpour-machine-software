@@ -16,6 +16,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <title>First Brew</title>
   <link rel="stylesheet" href="/style.css">
+  <script src="/taste-model.js" defer></script>
   <script src="/app.js" defer></script>
 </head>
 <body data-screen="find">
@@ -281,6 +282,17 @@
       <h1 class="title" id="progress-title" tabindex="-1"></h1>
       <p class="status" id="progress-status" role="status" aria-live="polite"></p>
       <div class="progress-body" id="progress-body"></div>
+    </section>
+
+    <section class="screen screen-sandbox" id="screen-sandbox" aria-labelledby="sandbox-title">
+      <header class="bar"><button class="back" id="sandbox-back" type="button"></button></header>
+      <h1 class="title" id="sandbox-title" tabindex="-1"></h1>
+      <p class="subtitle" id="sandbox-intro"></p>
+      <div id="sandbox-root"></div>
+      <div class="cta-bar">
+        <p class="status" id="sandbox-status" role="status" aria-live="polite"></p>
+        <button type="button" class="button primary big" id="sandbox-brew"></button>
+      </div>
     </section>
 
     <section class="screen screen-school" id="screen-school" aria-labelledby="school-title">
