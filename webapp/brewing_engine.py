@@ -752,7 +752,8 @@ def extraction_chart(recipe, cup=None):
 
 _ROASTER_ID = 'roaster'
 _ROASTER_WHY = 'Шаг из рецепта обжарщика.'
-_ROASTER_KINDS = {'catalog', 'catalog_match', 'closest_reference', 'suggested_baseline'}
+# 'champion': a published champion recipe with attribution, rated the same unchanged way.
+_ROASTER_KINDS = {'catalog', 'catalog_match', 'closest_reference', 'suggested_baseline', 'champion'}
 _ROASTER_URL = re.compile(r'https://theweldercatherine\.ru/catalog/[\w\-./%]{1,250}')
 
 

@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "id": "example_2026",
+      "barista": "Example Barista",
+      "event": "Example Brewers Cup (test fixture, not a real result)",
+      "year": 2026,
+      "place": 1,
+      "brewer": "Hario V60",
+      "coffee": {"country": "Эфиопия", "processing": "washed", "variety": null},
+      "coffee_g": 15,
+      "water_g": 250,
+      "temperature_c": 93,
+      "duration_seconds": 180,
+      "grind_setting": null,
+      "grind_description": "medium-fine",
+      "steps": [
+        {"instruction": "Предсмачивание", "water_g": 50, "start_seconds": 0, "stop_seconds": 10},
+        {"instruction": "Вливание", "water_g": 100, "start_seconds": 40, "stop_seconds": 60},
+        {"instruction": "Вливание", "water_g": 100, "start_seconds": 80, "stop_seconds": 100}
+      ],
+      "source_url": "https://example.com/champion-recipe",
+      "source_note": "Test fixture for the schema and the API. Not a published recipe."
+    }
+  ]
+}

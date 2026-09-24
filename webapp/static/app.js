@@ -495,6 +495,14 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · included months until ${date}`,
     settings_owner: 'machine owner',
     settings_open_plans: 'Plans and membership',
+    champions_title: 'Champion recipes',
+    champions_soon: 'Coming: champion recipes',
+    champions_soon_text: 'We are adding recipes of champion baristas — with the name, the competition and a link to the source.',
+    champions_place: (n) => `place ${n}`,
+    champions_subtitle: (event, year, place) => `${event} ${year}${place ? ` · place ${place}` : ''}`,
+    champions_source: 'Source',
+    origin_champion: 'Champion recipe, unchanged',
+    origin_champion_corrected: 'Corrected from your rating · based on a champion recipe, no longer theirs',
     progress_title: 'Progress and journal',
     progress_open: (n) => `Journal and progress · ${n}`,
     progress_empty: 'Brew and rate at least three cups — your progress appears here.',
@@ -1049,6 +1057,14 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · включённые месяцы до ${date}`,
     settings_owner: 'владелец машины',
     settings_open_plans: 'Тарифы и подписка',
+    champions_title: 'Рецепты чемпионов',
+    champions_soon: 'Скоро: рецепты чемпионов',
+    champions_soon_text: 'Добавляем рецепты чемпионов-бариста — с именем, соревнованием и ссылкой на источник.',
+    champions_place: (n) => `${n} место`,
+    champions_subtitle: (event, year, place) => `${event} ${year}${place ? ` · ${place} место` : ''}`,
+    champions_source: 'Источник',
+    origin_champion: 'Рецепт чемпиона без изменений',
+    origin_champion_corrected: 'Исправлено по вашей оценке · на основе рецепта чемпиона, уже не его рецепт',
     progress_title: 'Прогресс и дневник',
     progress_open: (n) => `Дневник и прогресс · ${n}`,
     progress_empty: 'Заварите и оцените хотя бы три чашки — здесь появится ваш прогресс.',
@@ -1289,6 +1305,7 @@ function entitlementChanged() {
   if (currentScreen() === 'plans') renderPlans();
   if (currentScreen() === 'progress') renderProgress();
   if (currentScreen() === 'school') renderSchool();
+  renderChampions();
 }
 
 // ---------------------------------------------------------------------------
@@ -1615,6 +1632,7 @@ function renderRecipe(index, editedRecipe = null) {
   const recipe = currentRecipe = editedRecipe || currentData.recipes[index];
   const kind = currentData.recommendation_kind;
   const suggested = ['closest_reference', 'suggested_baseline'].includes(kind);
+  const champion = kind === 'champion' ? currentData.champion : null;
   const variants = currentData.recipes.length > 1
     ? `<div class="variants" role="group" aria-label="${t('variant')}">${currentData.recipes.map((r, i) =>
         `<button type="button" class="chip" data-variant="${i}" aria-pressed="${i === index}">${escape(r.device || 'V60')}${NBSP}· ${grams(r.coffee_g)}</button>`).join('')}</div>`
@@ -1630,8 +1648,9 @@ function renderRecipe(index, editedRecipe = null) {
     ? t('grind_setting', escape(recipe.grinder || t('grinder_unknown')), recipe.grind_setting ? escape(recipe.grind_setting) : t('setting_unknown'))
     : t('grind_unknown');
   $('recipe-body').innerHTML = `
-    <h1 class="title" id="recipe-title" tabindex="-1">${escape(recipeTitle())}</h1>
-    <p class="subtitle">${escape(suggested ? t('starting_from', currentData.reference_name || currentData.product.name) : t('recipe_subtitle'))}</p>
+    <h1 class="title" id="recipe-title" tabindex="-1">${escape(champion ? champion.barista : recipeTitle())}</h1>
+    <p class="subtitle">${escape(champion ? t('champions_subtitle', champion.event, champion.year, champion.place) : suggested ? t('starting_from', currentData.reference_name || currentData.product.name) : t('recipe_subtitle'))}</p>
+    ${champion ? `<p class="note champion-source">${escape(champion.source_note)} <a href="${escape(champion.source_url)}" target="_blank" rel="noopener noreferrer">${t('champions_source')} ↗</a></p>` : ''}
     ${variants}
     ${suggested ? `<p class="note recommendation-basis">${t(currentData.confirmed_label?.decaf || currentData.confirmed_label?.espresso_or_dark ? 'general_note' : 'starting_recipe')}</p>` : ''}
     ${currentData.ocr_uncertain ? `<p class="note error">${t('recognition_review')}</p>` : ''}
@@ -1650,15 +1669,17 @@ function renderRecipe(index, editedRecipe = null) {
     <div class="why-scope"><div class="why-heading"><h2 class="section">${t('pours')}</h2>${whyButton(courseText('why', 'pours'), t('pours'))}</div>${WHY_PANEL}</div>
     ${steps ? `<ol class="pours">${steps}</ol>` : `<p class="status">${t('no_steps')}</p>`}
     ${recipe.notes ? `<p class="note">${escape(sourceNote(recipe.notes))}</p>` : ''}
-    <div class="recipe-alt"><p><strong>${t('recipe_builder_title')}</strong> ${t('recipe_builder_text')}</p>
-      <button type="button" class="button" id="recipe-builder">${t('recipe_builder')}</button></div>
-    <p class="source"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${suggested ? t('reference_page') : t('coffee_page')} ↗</a></p></div>`;
+    ${champion ? `<button type="button" class="button builder-favorite" id="champion-save">${locked('own_recipes', t('builder_favorite'))}</button>`
+      : `<div class="recipe-alt"><p><strong>${t('recipe_builder_title')}</strong> ${t('recipe_builder_text')}</p>
+      <button type="button" class="button" id="recipe-builder">${t('recipe_builder')}</button></div>`}
+    <p class="source"><a href="${escape(currentData.product.url)}" target="_blank" rel="noopener noreferrer">${champion ? t('champions_source') : suggested ? t('reference_page') : t('coffee_page')} ↗</a></p></div>`;
   document.querySelectorAll('[data-variant]').forEach(button => button.addEventListener('click', () => {
     renderRecipe(Number(button.dataset.variant));
     $('recipe-title').focus({preventScroll: true});
   }));
   $('edit-recipe').addEventListener('click', () => openRecipeEditor(index));
-  $('recipe-builder').addEventListener('click', () => {
+  $('champion-save')?.addEventListener('click', saveChampion);
+  $('recipe-builder')?.addEventListener('click', () => {
     // A reference recipe belongs to another coffee: only the confirmed label describes this one.
     const sameCoffee = ['catalog_match', undefined, null].includes(currentData.recommendation_kind);
     openPrefilledBuilder({label: currentData.confirmed_label || null, url: sameCoffee ? currentData.product?.url : null,
@@ -2499,6 +2520,7 @@ async function rateRoasterRecipe() {
 // Where a calculated recipe comes from, in one line.
 function calculatedOrigin(recipe) {
   if (recipe.basis !== 'roaster') return t('builder_calculated');
+  if (recipe.source?.kind === 'champion') return t(recipe.revision ? 'origin_champion_corrected' : 'origin_champion');
   return t(recipe.revision ? 'origin_roaster_corrected' : 'origin_roaster');
 }
 function grindInfo(recipe) {
@@ -4239,6 +4261,67 @@ function wireSchool() {
 }
 
 // ---------------------------------------------------------------------------
+// Champion recipes: attributed records from data/champion_recipes.json. The names are
+// visible to everyone, the recipe needs champion_recipes. No records, no pretend content.
+// ---------------------------------------------------------------------------
+let CHAMPIONS = [];
+async function loadChampions() {
+  try { CHAMPIONS = (await api('/api/champions')).items || []; } catch (error) { CHAMPIONS = []; }
+  renderChampions();
+}
+function championTitle(item) {
+  return `${item.barista} · ${item.event} ${item.year}`;
+}
+function renderChampions() {
+  setText('champions-title', t('champions_title'));
+  const list = $('champion-list');
+  if (!CHAMPIONS.length) {
+    list.innerHTML = `<div class="home-card champion-soon"><p class="home-card-title">${t('champions_soon')}</p>
+      <p class="home-card-meta">${t('champions_soon_text')}</p></div>`;
+    return;
+  }
+  const open = can('champion_recipes');
+  list.innerHTML = CHAMPIONS.map((item, index) => `<button type="button" class="coffee champion-card" role="listitem" data-champion="${index}">
+    <span class="coffee-copy"><strong>${escape(item.barista)}</strong>
+    <small>${escape(item.event)} ${item.year}${item.place ? ` · ${t('champions_place', item.place)}` : ''} · ${escape(item.brewer)}</small></span>
+    ${open ? '' : `<span class="lesson-badge">${LOCK}</span>`}<span class="arrow" aria-hidden="true">→</span></button>`).join('');
+}
+function championRecipe(item) {
+  return {device: item.brewer, grinder: '', grind_setting: item.grind_setting || item.grind_description || '',
+    coffee_g: item.coffee_g, water_g: item.water_g, temperature_c: item.temperature_c,
+    duration_seconds: item.duration_seconds, ratio: Math.round(item.water_g / item.coffee_g * 10) / 10,
+    steps: item.steps.map(step => ({...step})).map((step, index, steps) => ({...step,
+      total_water_g: steps.slice(0, index + 1).reduce((sum, other) => sum + other.water_g, 0)})),
+    notes: '', warnings: []};
+}
+function openChampion(index) {
+  const item = CHAMPIONS[index];
+  if (!item || !requireFeature('champion_recipes', 'status')) return;
+  cancelPhotoRequests();
+  recipeRequest?.abort();
+  resetTimer();
+  currentProduct = {id: null, name: championTitle(item), url: item.source_url};
+  currentData = {product: currentProduct, recipes: [championRecipe(item)], recommendation_kind: 'champion', champion: item, stale: false};
+  recipeLoading = false;
+  markSelected();
+  renderRecipe(0);
+  show('recipe');
+}
+// Saving keeps the champion's numbers: the same unchanged copy that rating uses.
+async function saveChampion() {
+  const recipe = currentRecipe;
+  try {
+    const reply = await post('/api/recipes/adopt', JSON.stringify({recipe: {device: recipe.device, grinder: null,
+      grind_setting: recipe.grind_setting, coffee_g: recipe.coffee_g, water_g: recipe.water_g, temperature_c: recipe.temperature_c,
+      duration_seconds: recipe.duration_seconds, steps: recipe.steps.map(({instruction, water_g, start_seconds, stop_seconds}) =>
+        ({instruction, water_g, start_seconds, stop_seconds}))}, source: roasterSource()}), 'application/json');
+    const saved = saveNewOwn(newOwnEntry(reply.recipe, {source: 'built', context_chips: [currentData.champion.brewer]}), 'cta-status');
+    if (saved) setStatus('cta-status', t('builder_saved_status'));
+    else if (saved === false) setStatus('cta-status', t('builder_save_error'), true);
+  } catch (error) { setStatus('cta-status', t('rate_incomplete'), true); }
+}
+
+// ---------------------------------------------------------------------------
 // Plans: the membership screen. Prices and texts come from data/plans.json.
 // ---------------------------------------------------------------------------
 let plansFrom = 'find';
@@ -4842,6 +4925,7 @@ function localize() {
   $('settings-back').textContent = t('back');
   $('school-back').textContent = t('back');
   $('progress-back').textContent = t('back');
+  renderChampions();
   if (currentScreen() === 'progress') renderProgress();
   $('lesson-back').textContent = t('school_title');
   setText('brew-lesson', t('lesson_back_to'));
@@ -5041,6 +5125,11 @@ function init() {
   wireHome();
   wireSchool();
   wireProgress();
+  $('champion-list').addEventListener('click', event => {
+    const card = event.target.closest('[data-champion]');
+    if (card) openChampion(Number(card.dataset.champion));
+  });
+  loadChampions();
   loadPlans();
   if (shared) openShareLink(shared);
   refreshMachine();
