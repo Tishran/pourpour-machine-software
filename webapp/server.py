@@ -12,6 +12,7 @@ from label_ocr import MAX_IMAGE_BYTES, OCRError, status as ocr_status
 from recommender import RecipeModel, RECOMMENDATION_POLICY, COUNTRIES, PROCESSING, VARIETIES
 from machine import BUSY_STATES, MachineError, create_machine, recipe_to_machine
 from brew_catalog import load_catalog, unique_object
+from plans import load_plans
 from brewing_engine import (BrewingInputError, adjust, adopt_roaster_recipe, build, rescale, restore_recipe,
                             taste_options, validate_calculated_recipe)
 
@@ -27,6 +28,7 @@ STATIC_FILES = {
     '/apple-touch-icon.png': ('apple-touch-icon.png', 'image/png'),
 }
 service = CoffeeService()
+PLANS = load_plans()  # bad plan data stops the server at start, not at the first request
 model = None
 machine = None  # set by set_machine(); None means `--machine none`
 MACHINE_COMMANDS = ('start', 'pause', 'resume', 'abort', 'tare')
@@ -86,6 +88,8 @@ class Handler(BaseHTTPRequestHandler):
                 row = next((r for r in get_model().rows if r['coffee']['url'] == target), None)
                 profile = row and {key: row['profile'].get(key) for key in ('country', 'processing', 'variety', 'region')}
                 return self.send_json(200, {'profile': profile})
+            if url.path == '/api/plans':
+                return self.send_json(200, PLANS)
             if url.path == '/api/catalog/options':
                 return self.send_json(200, {'schema_version': 1, **load_catalog(), 'tastes': taste_options()})
             if url.path == '/api/search':

@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "currency": "RUB",
+  "cafe_cup_rub": 500,
+  "home_cup_rub": 100,
+  "price_is_hypothesis": true,
+  "survey_url": "https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb",
+  "limits": {
+    "free_builder_tries": 1,
+    "free_adjustments": 1,
+    "own_recipes_free": 3,
+    "journal_recent": 3
+  },
+  "entitlements": {
+    "roaster_recipe": {
+      "access": "free",
+      "benefit": {"ru": "Поиск, фото пачки, рецепт обжарщика и таймер.", "en": "Search, bag photo, the roaster's recipe and the timer."}
+    },
+    "learn_why": {
+      "access": "free",
+      "benefit": {"ru": "Объяснение каждого числа рецепта.", "en": "Every number of the recipe explained."}
+    },
+    "builder": {
+      "access": "member",
+      "free_limit": "free_builder_tries",
+      "benefit": {"ru": "Рецепт под любую пачку, вашу воронку и кофемолку.", "en": "A recipe for any bag, your dripper and your grinder."}
+    },
+    "recipe_adjust": {
+      "access": "member",
+      "free_limit": "free_adjustments",
+      "benefit": {"ru": "Исправленный рецепт после каждой чашки.", "en": "A corrected recipe after every cup."}
+    },
+    "champion_recipes": {
+      "access": "member",
+      "benefit": {"ru": "Рецепты чемпионов-бариста у вас дома.", "en": "Champion baristas' recipes at home."}
+    },
+    "school_intro": {
+      "access": "free",
+      "benefit": {"ru": "Первый урок Школы.", "en": "The first School lesson."}
+    },
+    "school_full": {
+      "access": "member",
+      "benefit": {"ru": "Все уроки Школы: помол, вливания, вкус, ваше оборудование.", "en": "Every School lesson: grind, pours, taste, your equipment."}
+    },
+    "experiments": {
+      "access": "member",
+      "benefit": {"ru": "Вкусовые эксперименты: одна перемена — и вы чувствуете разницу.", "en": "Taste experiments: change one thing and taste the difference."}
+    },
+    "journal_recent": {
+      "access": "free",
+      "benefit": {"ru": "Последние заварки в дневнике.", "en": "Your latest brews in the journal."}
+    },
+    "journal_full": {
+      "access": "member",
+      "benefit": {"ru": "Весь дневник и прогресс: сколько чашек получились отличными.", "en": "Your full journal and progress: how many cups came out great."}
+    },
+    "own_recipes": {
+      "access": "member",
+      "free_limit": "own_recipes_free",
+      "benefit": {"ru": "Сколько угодно своих рецептов.", "en": "As many saved recipes as you like."}
+    },
+    "machine_brew": {
+      "access": "machine_owner",
+      "benefit": {"ru": "Машина First Brew льёт рецепт сама.", "en": "The First Brew machine pours the recipe for you."}
+    }
+  },
+  "plans": [
+    {
+      "id": "free",
+      "name": {"ru": "Бесплатное приложение", "en": "Free app"},
+      "tagline": {"ru": "Попробуйте", "en": "Try it"},
+      "role": {"ru": "Так нас находят", "en": "How people find us"},
+      "price_rub": 0,
+      "price_note": {"ru": "без регистрации", "en": "no sign-up"},
+      "features": [
+        {"entitlement": "roaster_recipe", "ru": "Скан пачки и рецепт обжарщика", "en": "Scan the bag, get the roaster's recipe"},
+        {"entitlement": "roaster_recipe", "ru": "Таймер по вливаниям", "en": "A timer that guides every pour"},
+        {"entitlement": "learn_why", "ru": "Почему такие числа — объяснение каждого", "en": "Learn why: every number explained"},
+        {"entitlement": "builder", "ru": "Первый рецепт под ваше оборудование", "en": "Your first recipe for your gear"},
+        {"entitlement": "recipe_adjust", "ru": "Первое исправление после чашки", "en": "Your first fix after a cup"}
+      ],
+      "cta": "demo"
+    },
+    {
+      "id": "member",
+      "name": {"ru": "Подписка", "en": "Membership"},
+      "tagline": {"ru": "Научи меня", "en": "Teach me"},
+      "role": {"ru": "Для тех, кто хочет научиться", "en": "For people who want to learn"},
+      "price_rub": 300,
+      "period": "month",
+      "price_note": {"ru": "цену проверяем — меньше одной чашки в кофейне", "en": "price being tested — less than one café cup"},
+      "features": [
+        {"entitlement": null, "ru": "Всё из бесплатного", "en": "Everything in Free"},
+        {"entitlement": "builder", "ru": "Рецепт под любую пачку и ваше оборудование", "en": "A recipe for any bag and your equipment"},
+        {"entitlement": "recipe_adjust", "ru": "Исправление после каждой чашки", "en": "A fix after every cup"},
+        {"entitlement": "school_full", "ru": "Школа: уроки и вкусовые эксперименты", "en": "The School: lessons and taste experiments"},
+        {"entitlement": "journal_full", "ru": "Прогресс: сколько чашек получились отличными", "en": "Progress: how many cups came out great"},
+        {"entitlement": "champion_recipes", "status": "coming", "ru": "Рецепты чемпионов", "en": "Champion recipes"}
+      ],
+      "cta": "demo"
+    },
+    {
+      "id": "machine_bundle",
+      "name": {"ru": "Машина + подписка", "en": "Machine + membership"},
+      "tagline": {"ru": "Свари за меня", "en": "Brew it for me"},
+      "role": {"ru": "Для тех, кто хочет просто отличный кофе", "en": "For people who just want great coffee"},
+      "price_rub": {"min": 30000, "max": 40000},
+      "included_months": 3,
+      "price_note": {"ru": "первые месяцы подписки включены", "en": "first months of membership included"},
+      "features": [
+        {"entitlement": null, "ru": "Всё из подписки", "en": "Everything in Membership"},
+        {"entitlement": "machine_brew", "ru": "Машина льёт рецепт сама", "en": "The machine pours the recipe itself"},
+        {"entitlement": "machine_brew", "ru": "Одно нажатие из приложения", "en": "One tap from the app"}
+      ],
+      "cta": "survey"
+    }
+  ]
+}

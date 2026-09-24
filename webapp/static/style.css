@@ -541,3 +541,33 @@ select { font: inherit; color: var(--ink); background: var(--card); min-height: 
 .builder-catalog { border-color: var(--orange); }
 .builder-catalog p { margin: 0 0 10px; }
 .builder-catalog .button { width: 100%; }
+
+/* Membership: the lock sheet and the plans screen. */
+.demo-note {
+  display: inline-flex; align-self: flex-start; margin: 0 0 12px; padding: 4px 10px; border-radius: 999px;
+  border: 1.5px dashed var(--muted); color: var(--muted); font-size: .85rem; font-weight: 600;
+}
+.sheet-backdrop {
+  position: fixed; inset: 0; z-index: 50; display: flex; align-items: flex-end; justify-content: center;
+  padding: 16px 0 0; background: rgba(0, 0, 0, .45);
+}
+.sheet {
+  display: flex; flex-direction: column; gap: 10px; width: 100%; max-width: 520px;
+  padding: 20px 16px calc(16px + var(--safe-bottom)); border-radius: 20px 20px 0 0; background: var(--paper);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, .25);
+}
+.sheet-eyebrow { margin: 0; font-size: .82rem; font-weight: 700; color: var(--accent-ink); text-transform: uppercase; letter-spacing: .06em; }
+.sheet-title { margin: 0 0 4px; font-size: 1.3rem; line-height: 1.25; letter-spacing: -.01em; }
+.sheet .demo-note { margin-bottom: 4px; }
+@media (min-width: 900px) {
+  .sheet-backdrop { align-items: center; }
+  .sheet { border-radius: 20px; }
+  #screen-plans { grid-column: 1 / -1; width: 100%; max-width: 1000px; margin: 0 auto; }
+}
+body[data-screen="plans"] #screen-plans { display: flex; flex-direction: column; }
+.plan-cards { display: grid; gap: 12px; margin: 4px 0 16px; }
+.plan-card { min-width: 0; padding: 16px; border: 1.5px solid var(--line); border-radius: 16px; background: var(--card); }
+.plan-tagline { margin: 0 0 2px; font-size: .82rem; font-weight: 700; color: var(--accent-ink); text-transform: uppercase; letter-spacing: .06em; }
+.plan-name { margin: 0; font-size: 1.2rem; }
+.plan-price { margin: 8px 0 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.plan-note { margin: 2px 0 0; font-size: .85rem; color: var(--muted); }

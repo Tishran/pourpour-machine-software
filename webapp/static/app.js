@@ -457,6 +457,12 @@ const STRINGS = {
     err_photo_open: 'Could not open the photo. Save it as JPEG and try again.',
     err_generic: 'Could not load data. Please try again.',
     err_label: 'Could not process the photo.',
+    lock_eyebrow: 'In the membership',
+    lock_view: 'See the membership',
+    lock_later: 'Not now',
+    lock_inline: (benefit) => `🔒 ${benefit} It comes with the membership.`,
+    demo_notice: 'Demo: payment is not connected',
+    plans_title: 'One membership. Three ways in.',
   },
   ru: {
     app: 'First Brew',
@@ -895,6 +901,12 @@ const STRINGS = {
     err_photo_open: 'Не удалось открыть фото. Сохраните его как JPEG и попробуйте снова.',
     err_generic: 'Не удалось загрузить данные. Попробуйте ещё раз.',
     err_label: 'Не удалось обработать фото.',
+    lock_eyebrow: 'В подписке',
+    lock_view: 'Посмотреть подписку',
+    lock_later: 'Не сейчас',
+    lock_inline: (benefit) => `🔒 ${benefit} Это входит в подписку.`,
+    demo_notice: 'Демо: оплата не подключена',
+    plans_title: 'Одна подписка. Три способа начать.',
   },
 };
 const SETTINGS_KEY = 'firstbrew.settings.v1';
@@ -948,9 +960,110 @@ const builder = {options: null, step: 0, mode: 'basic', draft: {}, variants: [],
   rated: null, feedbackMode: 'taste', tastes: [], tasteHelp: null,
   measure: {tds: '', yield: '', dose: '', drawdown: ''},
   correction: null, correctionRequest: null, correctionTimer: null,
-  ratingOrigin: 'builder', ratedChips: null, ratedName: null};
+  ratingOrigin: 'builder', ratedChips: null, ratedName: null,
+  adjustCounted: null};  // the rated recipe whose free correction is already used
 const MACHINE_ACTIVE = ['PREHEAT', 'READY', 'BREWING', 'PAUSED'];
 const prefs = {vibrate: true, sound: true};
+
+// ---------------------------------------------------------------------------
+// Membership: plans and rights come from /api/plans (data/plans.json). There are no
+// payments: the plan is a demo state on this device. Every access check goes
+// through can(); the machine is the owner's right and never needs a paid plan.
+// ---------------------------------------------------------------------------
+const MEMBERSHIP_KEY = 'firstbrew.membership.v1';
+const LOCK = '🔒';
+let PLANS = null;
+const membership = loadMembership();
+function loadMembership() {
+  const state = {plan: 'free', machineOwner: false, demo: true, includedUntil: null,
+    used: {builder: 0, adjust: 0}, upgradeShownAt: 0};
+  try {
+    const saved = JSON.parse(localStorage.getItem(MEMBERSHIP_KEY) || '{}');
+    if (['free', 'member'].includes(saved.plan)) state.plan = saved.plan;
+    if (typeof saved.machineOwner === 'boolean') state.machineOwner = saved.machineOwner;
+    if (typeof saved.includedUntil === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(saved.includedUntil)) state.includedUntil = saved.includedUntil;
+    for (const key of ['builder', 'adjust']) {
+      if (Number.isInteger(saved.used?.[key]) && saved.used[key] >= 0) state.used[key] = saved.used[key];
+    }
+    if (Number.isFinite(saved.upgradeShownAt)) state.upgradeShownAt = saved.upgradeShownAt;
+  } catch (error) { /* private mode: the demo state lives in memory for this visit */ }
+  return state;
+}
+function saveMembership() {
+  try { localStorage.setItem(MEMBERSHIP_KEY, JSON.stringify(membership)); } catch (error) { /* in memory only */ }
+}
+// Included months of a machine bundle end on their date; the machine stays the owner's.
+function entitlement() {
+  const expired = membership.plan === 'member' && membership.includedUntil && localToday() > membership.includedUntil;
+  return {plan: expired ? 'free' : membership.plan, machineOwner: membership.machineOwner, demo: true,
+    includedUntil: membership.includedUntil};
+}
+function limit(name) { return PLANS?.limits?.[name] ?? 0; }
+// What a free limit has already used on this device.
+function used(name) {
+  if (name === 'own_recipes_free') return ownEntries().length;
+  if (name === 'free_builder_tries') return membership.used.builder;
+  if (name === 'free_adjustments') return membership.used.adjust;
+  return 0;
+}
+function can(feature) {
+  const rule = PLANS?.entitlements?.[feature];
+  if (!rule) return true;  // the plans have not loaded: nothing is locked by accident
+  if (rule.access === 'free') return true;
+  const state = entitlement();
+  if (rule.access === 'machine_owner') return state.machineOwner === true;
+  if (state.plan === 'member') return true;
+  return Boolean(rule.free_limit) && used(rule.free_limit) < limit(rule.free_limit);
+}
+function countUse(name) {
+  membership.used[name] = (membership.used[name] || 0) + 1;
+  saveMembership();
+}
+function benefit(feature) {
+  return PLANS?.entitlements?.[feature]?.benefit?.[LANG] || '';
+}
+const locked = (feature, text) => can(feature) ? text : `${LOCK} ${text}`;
+
+// One sheet for every closed feature: one phrase of benefit, closed with one tap.
+// Never during a brew, and once per screen per visit; after that a quiet line instead.
+const lockSheet = {shownOn: new Set(), returnFocus: null};
+function requireFeature(feature, statusId) {
+  if (can(feature)) return true;
+  const screen = currentScreen();
+  if (screen === 'brew' || lockSheet.shownOn.has(screen)) {
+    if (statusId && $(statusId)) setStatus(statusId, t('lock_inline', benefit(feature)));
+    return false;
+  }
+  lockSheet.shownOn.add(screen);
+  lockSheet.returnFocus = document.activeElement;
+  setText('lock-title', benefit(feature));
+  $('lock-sheet').hidden = false;
+  $('lock-plans').focus({preventScroll: true});
+  return false;
+}
+function closeLockSheet() {
+  if ($('lock-sheet').hidden) return;
+  $('lock-sheet').hidden = true;
+  lockSheet.returnFocus?.focus?.({preventScroll: true});
+}
+function wireLockSheet() {
+  $('lock-later').addEventListener('click', closeLockSheet);
+  $('lock-sheet').addEventListener('click', event => { if (event.target === $('lock-sheet')) closeLockSheet(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape') closeLockSheet(); });
+  $('lock-plans').addEventListener('click', () => { closeLockSheet(); openPlans(); });
+}
+async function loadPlans() {
+  try {
+    PLANS = await api('/api/plans');
+    entitlementChanged();
+  } catch (error) { PLANS = null; }
+}
+// Redraw everything that shows a lock or a plan.
+function entitlementChanged() {
+  updateCtaBar();
+  if (builder.options) { updateBuilderStep(); renderBuilderResult(); }
+  if (currentScreen() === 'plans') renderPlans();
+}
 
 function loadPrefs() {
   try {
@@ -1049,7 +1162,7 @@ function selectRecent(entry) {
 // ---------------------------------------------------------------------------
 // Screens and browser history
 // ---------------------------------------------------------------------------
-const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own'];
+const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own', 'plans'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
@@ -1063,6 +1176,7 @@ function show(screen, {push = true} = {}) {
   if (screen === 'confirm') renderConfirmation();
   if (screen === 'mine') renderMine();
   if (screen === 'own') renderOwn();
+  if (screen === 'plans') renderPlans();
   if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
   if (screen === 'brew' && brewMode === 'machine') renderMachine();
   if (push && history.state?.screen !== screen) {
@@ -1071,7 +1185,8 @@ function show(screen, {push = true} = {}) {
   window.scrollTo(0, 0);
   const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title')
     : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? builderFocusTarget()
-    : screen === 'mine' ? $('mine-title') : screen === 'own' ? $('own-title') : $('brew-toggle');
+    : screen === 'mine' ? $('mine-title') : screen === 'own' ? $('own-title')
+    : screen === 'plans' ? $('plans-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -1351,8 +1466,9 @@ function updateBrewStartLabel() {
   updateCtaBar();
 }
 
+// The machine button needs a connected machine and its owner; a plan never matters.
 function machineConnected() {
-  return Boolean(machineInfo?.enabled && machineOnline);
+  return Boolean(machineInfo?.enabled && machineOnline) && can('machine_brew');
 }
 
 function updateCtaBar() {
@@ -1846,17 +1962,19 @@ function updateBuilderStep() {
   const variant = builder.variants[builder.selected];
   const correction = builder.correction;
   const unchanged = correction && !correction.changes.length;
-  $('builder-next').textContent = t(['builder_next', 'builder_build', 'builder_brew', 'builder_get_correction',
+  const nextLabel = t(['builder_next', 'builder_build', 'builder_brew', 'builder_get_correction',
     unchanged ? 'builder_brew' : 'builder_brew_corrected'][step]);
+  $('builder-next').textContent = step === 1 ? locked('builder', nextLabel)
+    : step === 3 && builder.adjustCounted !== builder.rated ? locked('recipe_adjust', nextLabel) : nextLabel;
   $('builder-next').disabled = builder.busy || !builder.options || (step === 2 && !variant) ||
     (step === 3 && !feedbackPayload()) || (step === 4 && !correction);
   const secondary = step === 2 ? variant : step === 4 ? correction : null;
   const saved = step === 4 && Boolean(correction) && ownEntries().some(entry => entry.key === ownRecipeKey(correction.recipe));
   $('builder-secondary').hidden = !secondary;
-  $('builder-secondary').textContent = t(step === 2 ? 'builder_rate' : saved ? 'builder_saved_own' : 'builder_save_own');
+  $('builder-secondary').textContent = step === 2 ? t('builder_rate') : saved ? t('builder_saved_own') : locked('own_recipes', t('builder_save_own'));
   $('builder-secondary').disabled = saved || builder.busy;
   document.querySelector('.builder-cta-buttons').classList.toggle('pair', Boolean(secondary));
-  $('builder-rebuild').textContent = t('builder_rebuild');
+  $('builder-rebuild').textContent = locked('builder', t('builder_rebuild'));
   $('builder-rebuild').hidden = !builder.variants.length;
   $('builder-photo').textContent = t('builder_photo');
   $('builder-photo').hidden = step !== 0 || !modelOptions?.ocr?.available;
@@ -1878,10 +1996,13 @@ function builderFocusTarget() {
 }
 
 // Status next to what the person is looking at: the form, or the sticky action bar.
+function builderStatusId() {
+  return matchMedia('(min-width: 900px)').matches || [0, 1, 3].includes(builder.step) ? 'builder-status' : 'builder-cta-status';
+}
 function builderStatus(text, error = false) {
-  const inForm = matchMedia('(min-width: 900px)').matches || [0, 1, 3].includes(builder.step);
-  setStatus(inForm ? 'builder-status' : 'builder-cta-status', text, error);
-  setStatus(inForm ? 'builder-cta-status' : 'builder-status', '');
+  const id = builderStatusId();
+  setStatus(id, text, error);
+  setStatus(id === 'builder-status' ? 'builder-cta-status' : 'builder-status', '');
 }
 
 const COMBO_SOURCES = {'cb-country': 'countries', 'cb-grinder': 'grinders'};
@@ -2145,6 +2266,7 @@ async function beginBuilder() {
 }
 
 async function buildBuilderRecipes() {
+  if (!requireFeature('builder', builderStatusId())) return;
   let params;
   try { params = builderParams(); }
   catch (error) { setStatus('builder-status', error.message, true); return; }
@@ -2157,6 +2279,7 @@ async function buildBuilderRecipes() {
     const data = await post('/api/recipes/build', JSON.stringify({params}), 'application/json', request.signal);
     if (builder.request !== request) return;
     builder.variants = data.variants;
+    if (entitlement().plan !== 'member') countUse('builder');
     builder.selected = Math.min(builder.selected, builder.variants.length - 1);
     builder.rated = builder.correction = null;
     renderBuilderCorrection();
@@ -2193,7 +2316,8 @@ function toggleBuilderFavorite() {
   const entries = ownEntries();
   const saved = entries.some(entry => entry.key === key)
     ? writeOwnEntries(entries.filter(entry => entry.key !== key))
-    : saveOwnEntry(newOwnEntry(recipe, {source: 'built', context_chips: builderContext(recipe)}));
+    : saveNewOwn(newOwnEntry(recipe, {source: 'built', context_chips: builderContext(recipe)}), builderStatusId());
+  if (saved === null) return;
   builderStatus(saved ? '' : t('builder_save_error'), !saved);
   renderBuilderResult();
 }
@@ -2256,7 +2380,7 @@ function renderBuilderResult() {
     <h3 class="section">${t('builder_process')}</h3>
     ${calculatedSteps(recipe)}
     ${calculatedReasons(recipe)}
-    <button type="button" class="button builder-favorite" id="builder-favorite" aria-pressed="${favored}">${t(favored ? 'builder_unfavorite' : 'builder_favorite')}</button>
+    <button type="button" class="button builder-favorite" id="builder-favorite" aria-pressed="${favored}">${favored ? t('builder_unfavorite') : locked('own_recipes', t('builder_favorite'))}</button>
     ${recipe.machine_compatible ? `<button type="button" class="button builder-machine" id="builder-machine"${machineConnected() ? '' : ' hidden'}>${t('builder_machine')}</button>` : ''}
   </div>`;
   $('builder-prev-variant').addEventListener('click', () => { builder.selected--; renderBuilderResult(); });
@@ -2447,14 +2571,19 @@ async function requestCorrection({focus = false} = {}) {
   if (!feedback) return;
   clearTimeout(builder.correctionTimer);
   builder.correctionRequest?.abort();
-  const request = builder.correctionRequest = new AbortController();
   const rated = builder.rated;
+  // The first correction of a rated cup is free; its live updates on desktop are the same correction.
+  const fresh = builder.adjustCounted !== rated;
+  if (fresh && !requireFeature('recipe_adjust', 'builder-status')) return;
+  const request = builder.correctionRequest = new AbortController();
   builder.busy = true;
   updateBuilderStep();
   builderStatus(t('correction_loading'));
   try {
     const data = await post('/api/recipes/adjust', JSON.stringify({recipe: rated, feedback}), 'application/json', request.signal);
     if (builder.correctionRequest !== request) return;
+    if (fresh && entitlement().plan !== 'member') countUse('adjust');
+    builder.adjustCounted = rated;
     builder.correction = {...data, feedback};
     builder.step = 4;
     builderStatus('');
@@ -2631,7 +2760,9 @@ function saveOwnRecipe() {
   const entry = newOwnEntry(recipe, {source: 'corrected', context_chips: builder.ratedChips || builderContext(recipe),
     feedback: data.feedback, diagnosis_code: data.diagnosis_code, measurement_kind: data.measurement_kind,
     extraction_percent: data.extraction_percent});
-  if (saveOwnEntry(entry)) setStatus('builder-cta-status', t('builder_saved_status'));
+  const saved = saveNewOwn(entry, 'builder-cta-status');
+  if (saved === null) return;
+  if (saved) setStatus('builder-cta-status', t('builder_saved_status'));
   else setStatus('builder-cta-status', t('builder_save_error'), true);
   updateBuilderStep();
 }
@@ -2740,7 +2871,7 @@ function wireBuilder() {
 
 function scheduleBuilderUpdate() {
   clearTimeout(builder.updateTimer);
-  if (!builder.variants.length || !matchMedia('(min-width: 900px)').matches) return;
+  if (!builder.variants.length || !matchMedia('(min-width: 900px)').matches || !can('builder')) return;
   builder.updateTimer = setTimeout(buildBuilderRecipes, 500);
 }
 
@@ -2796,6 +2927,13 @@ function newOwnEntry(recipe, details = {}) {
 // Saving the same recipe twice keeps one entry, the newest on top.
 function saveOwnEntry(entry) {
   return writeOwnEntries([entry, ...ownEntries().filter(item => item.key !== entry.key)]);
+}
+// A new entry counts against the free limit; saved ones are never removed or blocked.
+// Returns null when the limit stopped it (the lock sheet explains why).
+function saveNewOwn(entry, statusId) {
+  const exists = ownEntries().some(item => item.key === entry.key);
+  if (!exists && !requireFeature('own_recipes', statusId)) return null;
+  return saveOwnEntry(entry);
 }
 function updateOwnEntry(id, changes) {
   const entries = ownEntries();
@@ -2902,7 +3040,7 @@ function renderOwn() {
         <button type="button" class="button" id="own-delete-no">${t('cancel')}</button></div>
       </div></div>` : ''}
   </div>`;
-  $('own-primary').textContent = t(saved ? 'builder_brew' : 'own_save');
+  $('own-primary').textContent = saved ? t('builder_brew') : locked('own_recipes', t('own_save'));
   $('own-secondary').textContent = t(saved ? 'builder_rate' : 'builder_brew');
 }
 
@@ -3078,8 +3216,9 @@ function wireOwn() {
   $('own-primary').addEventListener('click', () => {
     const entry = own.entry;
     if (!entry || ownSaved(entry)) { brewOwn(); return; }
-    if (saveOwnEntry(entry)) { renderOwn(); setStatus('own-status', t('builder_saved_status')); }
-    else setStatus('own-status', t('builder_save_error'), true);
+    const saved = saveNewOwn(entry, 'own-status');
+    if (saved) { renderOwn(); setStatus('own-status', t('builder_saved_status')); }
+    else if (saved === false) setStatus('own-status', t('builder_save_error'), true);
   });
   $('own-secondary').addEventListener('click', async () => {
     const entry = own.entry;
@@ -3125,6 +3264,34 @@ function wireOwn() {
     renderMineEntry();
     if (currentScreen() === 'mine') renderMine();
   });
+}
+
+// ---------------------------------------------------------------------------
+// Plans: the membership screen. Prices and texts come from data/plans.json.
+// ---------------------------------------------------------------------------
+let plansFrom = 'find';
+function openPlans() {
+  plansFrom = currentScreen() === 'plans' ? plansFrom : currentScreen();
+  show('plans');
+}
+function rubles(value) {
+  const format = number => new Intl.NumberFormat(LANG === 'ru' ? 'ru-RU' : 'en-US').format(number);
+  if (value && typeof value === 'object') return `${format(value.min)}–${format(value.max)}${NBSP}₽`;
+  return `${format(value)}${NBSP}₽`;
+}
+function renderPlans() {
+  setText('plans-title', t('plans_title'));
+  setText('plans-demo', t('demo_notice'));
+  if (!PLANS) { $('plan-cards').innerHTML = `<p class="note">${t('err_generic')}</p>`; return; }
+  $('plan-cards').innerHTML = PLANS.plans.map(plan => `<article class="plan-card" data-plan="${escape(plan.id)}">
+    <p class="plan-tagline">${escape(plan.tagline[LANG])}</p>
+    <h2 class="plan-name">${escape(plan.name[LANG])}</h2>
+    <p class="plan-price">${rubles(plan.price_rub)}</p>
+    <p class="plan-note">${escape(plan.price_note[LANG])}</p>
+  </article>`).join('');
+}
+function wirePlans() {
+  $('plans-back').addEventListener('click', () => back(plansFrom));
 }
 
 // ---------------------------------------------------------------------------
@@ -3410,7 +3577,7 @@ function onMachineState(previous, state) {
 }
 
 async function startMachineBrew() {
-  if (!currentRecipe?.duration_seconds) return;
+  if (!currentRecipe?.duration_seconds || !can('machine_brew')) return;
   resetTimer();
   brewMode = 'machine';
   machineStopped = false;
@@ -3638,6 +3805,12 @@ function localize() {
   $('mine-empty-text').textContent = t('mine_empty');
   $('mine-builder').textContent = t('builder_open');
   $('own-back').textContent = t('back');
+  $('plans-back').textContent = t('back');
+  setText('lock-eyebrow', `${LOCK} ${t('lock_eyebrow')}`);
+  setText('lock-demo', t('demo_notice'));
+  setText('lock-plans', t('lock_view'));
+  setText('lock-later', t('lock_later'));
+  if (currentScreen() === 'plans') renderPlans();
   if (currentScreen() === 'mine') renderMine();
   if (currentScreen() === 'own') renderOwn();
   $('builder-back').textContent = t('back');
@@ -3796,6 +3969,9 @@ function init() {
 
   wireRecognition();
   wireOwn();
+  wireLockSheet();
+  wirePlans();
+  loadPlans();
   if (shared) openShareLink(shared);
   refreshMachine();
   setStatus('status', t('status_checking'));
