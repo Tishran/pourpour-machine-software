@@ -755,3 +755,20 @@ body[data-screen="sandbox"] #screen-sandbox { display: flex; flex-direction: col
   #screen-sandbox { grid-column: 1 / -1; width: 100%; max-width: 720px; margin: 0 auto; }
   body[data-screen="sandbox"] #screen-find, body[data-screen="sandbox"] #screen-recipe { display: none; }
 }
+
+/* Quiz and "guess, then taste". */
+.quiz-question { font-weight: 700; }
+.quiz-options { display: grid; gap: 8px; margin: 8px 0; }
+.quiz-option { justify-content: flex-start; text-align: left; }
+.quiz-option[aria-checked="true"] { border-color: var(--orange); background: var(--accent-soft); color: var(--accent-ink); }
+.quiz-option.correct { border-color: #3f8a4f; background: rgba(63, 138, 79, .12); opacity: 1; }
+.quiz-option.correct::before { content: "✓"; }
+.quiz-option.wrong { border-color: var(--orange); opacity: 1; }
+.quiz-option.wrong::before { content: "✗"; }
+.quiz-explain { margin-top: 8px; padding: 10px 12px; border-radius: 10px; background: var(--paper); font-size: .95rem; }
+.quiz-explain.correct { border-left: 4px solid #3f8a4f; }
+.quiz-explain.wrong { border-left: 4px solid var(--orange); }
+.prediction { margin: 10px 0 4px; padding: 10px 12px; border: 1.5px dashed var(--orange); border-radius: 12px; }
+.prediction-title { margin: 0; font-weight: 700; }
+.prediction-made { margin: 8px 0 0; font-weight: 600; color: var(--accent-ink); }
+.prediction-result { margin-top: 12px; }

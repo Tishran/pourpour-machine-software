@@ -138,7 +138,18 @@ async function learnAndLock(browser) {
     assert.equal(await screen(page), 'lesson');
     await page.locator('[data-lesson-action="next"]').click();
     await page.locator('[data-lesson-action="next"]').click();
+    // A quick check after the theory: the answer is explained either way.
+    assert.match(await text(page, '.lesson-count'), /Вопрос 1 из 1/);
+    assert.ok(await page.locator('[data-lesson-action="quiz-next"]').isDisabled(), 'answer first');
+    await page.locator('[data-quiz-option="0"]').click();
+    assert.match(await text(page, '.quiz-explain'), /^Верно\./);
+    await page.locator('[data-lesson-action="quiz-next"]').click();
     await page.waitForSelector('[data-lesson-action="brew-b"]');
+    // Guess, then taste: cup B waits for the guess.
+    assert.ok(await page.locator('[data-lesson-action="brew-b"]').isDisabled());
+    await page.locator('[data-predict="fuller"]').click();
+    assert.match(await text(page, '.prediction-made'), /Ваш прогноз: Насыщеннее, слаще/);
+    assert.equal(await page.locator('[data-lesson-action="brew-b"]').isDisabled(), false);
     assert.match(await text(page, '#lesson-body .note'), /помол на шаг мельче, всё остальное то же/);
     assert.equal(await page.locator('.experiment-summary .changed').count(), 1, 'one change stands out');
     assert.ok(await page.locator('[data-lesson-action="compare"]').isDisabled());
@@ -155,10 +166,17 @@ async function learnAndLock(browser) {
     await page.locator('[data-lesson-action="compare"]').click();
     await page.locator('[data-exp-choice="b"]').click();
     await page.locator('[data-exp-taste="sweet"]').check();
+    assert.ok(await page.locator('[data-lesson-action="conclude"]').isDisabled(), 'what was different in cup B?');
+    await page.locator('[data-observe="fuller"]').click();
     await page.locator('[data-lesson-action="conclude"]').click();
     assert.match(await text(page, '#lesson-body .takeaway'), /Вам вкуснее помол мельче/);
+    assert.match(await text(page, '.prediction-result'), /Прогноз совпал[\s\S]*Именно так обычно действует/);
+    assert.match(await text(page, '#lesson-body .model-card:not(.prediction-result)'), /Ваш выбор между чашками сдвинул модель/);
+    assert.equal(await page.locator('#lesson-body .model-chart').count(), 1);
     const school = await page.evaluate(() => JSON.parse(localStorage.getItem('firstbrew.school.v1')));
     assert.equal(school.experiments.grind_experiment.choice, 'b');
+    assert.deepEqual([school.experiments.grind_experiment.predicted, school.experiments.grind_experiment.observed, school.experiments.grind_experiment.quiz],
+      ['fuller', 'fuller', '1/1']);
     await page.goto(baseURL);
     await page.locator('#open-progress').click();
     assert.equal(await screen(page), 'progress');
@@ -241,6 +259,69 @@ async function ownerWithoutMembership(browser) {
   } finally { await context.close(); }
 }
 
+// The sandbox and the personal taste model: move the levers, brew, rate, and the model learns.
+async function sandboxAndModel(browser) {
+  const context = await browser.newContext(phone);
+  await context.addInitScript(() => {
+    if (!localStorage.getItem('firstbrew.membership.v1')) localStorage.setItem('firstbrew.membership.v1', JSON.stringify({plan: 'member'}));
+    if (!localStorage.getItem('firstbrew.settings.v1')) localStorage.setItem('firstbrew.settings.v1', JSON.stringify({mode: 'learn'}));
+  });
+  const page = await context.newPage();
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const brewAndRate = async (grind, taste) => {
+    await page.locator('#sandbox-grind').fill(String(grind));
+    await page.waitForFunction(() => !document.getElementById('sandbox-brew').disabled);
+    await page.locator('#sandbox-brew').click();
+    await page.locator('#brew-toggle').click();
+    await finishAndRate(page);
+    await page.locator(`[name="taste"][value="${taste}"]`).check();
+    await page.locator('#builder-next').click();
+    await page.waitForSelector('#model-card');
+  };
+  try {
+    await page.goto(baseURL);
+    await page.locator('#home-school-all').click();
+    await page.locator('#open-sandbox').click();
+    await page.waitForSelector('#sandbox-grind');
+    await page.locator('#sandbox-grind').fill('2');
+    await page.locator('#sandbox-ratio').fill('-2');
+    await page.waitForFunction(() => /Экстракция: \+2 шага/.test(document.querySelector('.sandbox-steps')?.textContent || ''));
+    assert.match(await text(page, '#sandbox-grind-value'), /на 2 шага мельче/);
+    assert.equal(await page.locator('.sandbox-result .model-odds').count(), 0, 'no chances before the model knows the taste');
+    assert.match(await text(page, '.sandbox-result'), /Модель ещё не знает ваш вкус/);
+    await page.waitForSelector('#sandbox-output .extraction-chart');
+    assert.match(await text(page, '#sandbox-output'), /Меньше воды на ту же дозу: линия рецепта идёт выше/);
+    assert.ok(await noHorizontalScroll(page));
+    await snap(page, 'sandbox.png', true);
+    // Bitter two steps finer, sour two steps coarser: the model brackets the sweet spot.
+    await brewAndRate(2, 'bitter');
+    assert.match(await text(page, '#model-card'), /Модель учла 1 оценку этого кофе/);
+    await page.locator('#correction-sandbox').click();
+    await brewAndRate(-2, 'sour');
+    assert.match(await text(page, '#model-card'), /Модель учла 2 оценки этого кофе[\s\S]*Этот рецепт по модели: кисло \d+\s% · в ориентире \d+\s% · горько \d+\s%/);
+    assert.equal(await page.locator('#model-card .model-before').count(), 1, 'the curve before this cup is drawn');
+    await page.locator('#model-card').scrollIntoViewIfNeeded();
+    await snap(page, 'model-card.png');
+    await page.locator('#correction-sandbox').click();
+    // The model now knows both sides: where it was bitter it expects bitter, where sour — sour.
+    const oddsAt = async grind => {
+      await page.locator('#sandbox-grind').fill(String(grind));
+      await page.waitForFunction(() => /Ваша модель: кисло/.test(document.querySelector('.sandbox-result')?.textContent || ''));
+      const [sour, ok, bitter] = (await text(page, '.sandbox-result .model-odds')).match(/\d+/g).map(Number);
+      return {sour, ok, bitter};
+    };
+    const finer = await oddsAt(2), coarser = await oddsAt(-2), middle = await oddsAt(0);
+    assert.ok(finer.bitter > 50 && coarser.sour > 50, `bitter where it was bitter, sour where it was sour: ${JSON.stringify({finer, coarser})}`);
+    assert.ok(middle.ok > finer.ok && middle.ok > coarser.ok, `on target is likelier between the two cups: ${JSON.stringify(middle)}`);
+    await page.goto(baseURL);
+    await page.locator('#open-progress').click();
+    assert.match(await text(page, '#progress-body'), /Модель вашего вкуса/);
+    assert.deepEqual(errors, []);
+    console.log('PASS sandbox and taste model: levers → exact strength line → brew → rate → the model learns and gives chances.');
+  } finally { await context.close(); }
+}
+
 // RU/EN, light and dark, 320 px without horizontal scroll, and a private window without storage.
 async function layouts(browser) {
   for (const colorScheme of ['light', 'dark']) {
@@ -314,6 +395,7 @@ async function layouts(browser) {
   try {
     await learnAndLock(browser);
     await ownerWithoutMembership(browser);
+    await sandboxAndModel(browser);
     await layouts(browser);
   } finally { await browser.close(); }
 })().catch(error => { console.error(error); process.exit(1); });

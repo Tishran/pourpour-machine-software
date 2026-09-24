@@ -556,6 +556,19 @@ const STRINGS = {
     exp_same: 'No difference',
     exp_how: 'What stood out? Up to two',
     exp_done: 'Get the conclusion',
+    quiz_start: 'Check yourself',
+    quiz_n: (n, total) => `Question ${n} of ${total}`,
+    quiz_right: 'Right.',
+    quiz_wrong: 'Not quite.',
+    predict_title: 'Before cup B: what do you think will change?',
+    predict_made: (text) => `Your guess: ${text}. Now brew and taste.`,
+    predict_observed: 'What was different in cup B?',
+    predict_eyebrow: 'Guess, then taste',
+    predict_compare: (guess, got) => `You guessed: ${guess}. You tasted: ${got}.`,
+    predict_match: 'Your guess was right.',
+    predict_miss: 'Your guess was different — that is how tasting is learned.',
+    predict_expected: 'This is what this change usually does.',
+    predict_unexpected: 'This is not the usual effect: brew it again to check, one cup can surprise.',
     sandbox_title: 'Sandbox',
     sandbox_eyebrow: 'Try it',
     sandbox_entry_text: 'Move the grind, the water temperature and the ratio — see what happens to the cup, then brew it.',
@@ -578,14 +591,16 @@ const STRINGS = {
     sandbox_brew: 'Brew this variant',
     sandbox_back_to: 'Back to the sandbox',
     model_title: 'Your taste model',
+    model_pair_extraction: 'Your choice between the two cups moved the model: the curve shows where your sweet spot now probably is on this lesson’s recipe (0 = cup A).',
+    model_pair_ratio: 'Your choice between the two cups moved the model on the ratio axis (0 = cup A; left — less water, right — more).',
     model_tendency: (n, steps, more) => `Across ${n} coffees you usually want about ${steps} step${steps === '1' ? '' : 's'} ${more ? 'more' : 'less'} extraction than the starting recipes. New recipes start from this.`,
     model_eyebrow: 'ML · learns from your cups',
     model_learned: (n) => `The model has learned from ${n} rating${n === 1 ? '' : 's'} of this coffee.`,
-    model_at_start: 'Your sweet spot is right at the first recipe.',
-    model_range_side: (near, far, more) => `Your sweet spot is most likely ${near}–${far} steps ${more ? 'more' : 'less'} extraction than the first recipe.`,
-    model_range_around: (low, high) => `Not sure yet: somewhere between ${low} steps less and ${high} steps more extraction than the first recipe.`,
+    model_at_start: 'Your sweet spot is right at your first rated cup.',
+    model_range_side: (near, far, more) => `Your sweet spot is most likely ${near}–${far} steps ${more ? 'more' : 'less'} extraction than your first rated cup.`,
+    model_range_around: (low, high) => `Not sure yet: somewhere between ${low} steps less and ${high} steps more extraction than your first rated cup.`,
     model_axis_less: '← sourer',
-    model_axis_start: 'first recipe',
+    model_axis_start: 'first cup',
     model_axis_more: 'more bitter →',
     model_legend_curve: 'where your sweet spot probably is',
     model_legend_band: '80 % likely',
@@ -1156,6 +1171,19 @@ const STRINGS = {
     exp_same: 'Одинаково',
     exp_how: 'Чем? До двух',
     exp_done: 'Получить вывод',
+    quiz_start: 'Проверить себя',
+    quiz_n: (n, total) => `Вопрос ${n} из ${total}`,
+    quiz_right: 'Верно.',
+    quiz_wrong: 'Не совсем.',
+    predict_title: 'Перед чашкой B: как думаете, что изменится?',
+    predict_made: (text) => `Ваш прогноз: ${text}. Теперь заварите и попробуйте.`,
+    predict_observed: 'Чем отличалась чашка B?',
+    predict_eyebrow: 'Угадай, потом попробуй',
+    predict_compare: (guess, got) => `Прогноз: ${guess}. На вкус: ${got}.`,
+    predict_match: 'Прогноз совпал.',
+    predict_miss: 'Прогноз не совпал — так и учатся чувствовать вкус.',
+    predict_expected: 'Именно так обычно действует эта перемена.',
+    predict_unexpected: 'Обычно эта перемена действует иначе: заварите ещё раз, одна чашка может удивить.',
     sandbox_title: 'Песочница',
     sandbox_eyebrow: 'Попробуйте',
     sandbox_entry_text: 'Двигайте помол, температуру воды и соотношение — смотрите, что будет с чашкой, и заварите.',
@@ -1178,14 +1206,16 @@ const STRINGS = {
     sandbox_brew: 'Заварить этот вариант',
     sandbox_back_to: 'Вернуться в песочницу',
     model_title: 'Модель вашего вкуса',
+    model_pair_extraction: 'Ваш выбор между чашками сдвинул модель: кривая показывает, где теперь вероятнее всего ваша сладкая точка для рецепта урока (0 — чашка A).',
+    model_pair_ratio: 'Ваш выбор между чашками сдвинул модель по оси соотношения (0 — чашка A; левее — меньше воды, правее — больше).',
     model_tendency: (n, steps, more) => `По ${n} кофе вам обычно нужно примерно на ${steps} шага ${more ? 'больше' : 'меньше'} экстракции, чем в стартовых рецептах. С этого модель начинает для нового кофе.`,
     model_eyebrow: 'ML · учится на ваших чашках',
     model_learned: (n) => `Модель учла ${n} ${n % 10 === 1 && n % 100 !== 11 ? 'оценку' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? 'оценки' : 'оценок'} этого кофе.`,
-    model_at_start: 'Ваша сладкая точка — прямо у первого рецепта.',
-    model_range_side: (near, far, more) => `Ваша сладкая точка — скорее всего на ${near}–${far} шага ${more ? 'больше' : 'меньше'} экстракции, чем в первом рецепте.`,
-    model_range_around: (low, high) => `Модель пока не уверена: точка где-то между ${low} шага меньше и ${high} шага больше экстракции, чем в первом рецепте.`,
+    model_at_start: 'Ваша сладкая точка — прямо у первой оценённой чашки.',
+    model_range_side: (near, far, more) => `Ваша сладкая точка — скорее всего на ${near}–${far} шага ${more ? 'больше' : 'меньше'} экстракции, чем в первой оценённой чашке.`,
+    model_range_around: (low, high) => `Модель пока не уверена: точка где-то между ${low} шага меньше и ${high} шага больше экстракции, чем в первой оценённой чашке.`,
     model_axis_less: '← кислее',
-    model_axis_start: 'первый рецепт',
+    model_axis_start: 'первая чашка',
     model_axis_more: 'горче →',
     model_legend_curve: 'где, вероятно, ваша сладкая точка',
     model_legend_band: '80 % вероятности',
@@ -3802,7 +3832,7 @@ function stepsText(value) {
 }
 function percent(value) { return `${Math.round(value * 100)}${NBSP}%`; }
 // The posterior as a small inline SVG: the curve, the 80 % range, the rated cups and a candidate.
-function tasteModelChart(group, {candidate = null, title = ''} = {}) {
+function tasteModelChart(group, {candidate = null, title = '', start = null} = {}) {
   if (!group?.fit) return '';
   const width = 340, height = 150, left = 12, right = 12, top = 16, bottom = 40, span = 6;
   const px = value => left + (Math.max(-span, Math.min(span, value)) + span) / (2 * span) * (width - left - right);
@@ -3829,7 +3859,7 @@ function tasteModelChart(group, {candidate = null, title = ''} = {}) {
     ${band}${zero}${group.before ? `<path class="model-before" d="${path(group.before.density)}"/>` : ''}
     <path class="model-area" d="${area}"/><path class="model-curve" d="${path(fit.density)}"/>${cand}${marks}
     <line class="model-axis" x1="${left}" y1="${py(0)}" x2="${width - right}" y2="${py(0)}"/>
-    ${label(left, t('model_axis_less'), 'start')}${label(px(0), t('model_axis_start'), 'middle')}${label(width - right, t('model_axis_more'), 'end')}
+    ${label(left, t('model_axis_less'), 'start')}${label(px(0), start || t('model_axis_start'), 'middle')}${label(width - right, t('model_axis_more'), 'end')}
   </svg><figcaption><ul class="chart-legend">
     <li><i class="legend-model" aria-hidden="true"></i>${t('model_legend_curve')}</li>
     <li><i class="legend-band" aria-hidden="true"></i>${t('model_legend_band')}</li>
@@ -3913,6 +3943,7 @@ function renderProgress() {
   if (entries.length < 3) {
     $('progress-body').innerHTML = `<div class="mine-empty"><p class="note">${t('progress_empty')}</p>
       <button type="button" class="button primary big" id="progress-first">${t('progress_first_cup')}</button></div>
+      ${progressModel(can('journal_full'))}
       ${entries.length ? `<h2 class="section">${t('progress_journal')}</h2><div class="results" role="list">${entries.map(journalLine).join('')}</div>` : ''}`;
     return;
   }
@@ -4231,7 +4262,9 @@ function lessonDone(id) {
 function markLessonDone(item, choice = null) {
   const state = schoolState();
   const record = {done_at: new Date().toISOString()};
-  if (item.practice.kind === 'experiment') state.experiments[item.id] = {...record, choice};
+  if (item.quiz?.length && lesson.current === item && lesson.stage !== 'card') record.quiz = `${lesson.correct}/${item.quiz.length}`;
+  if (item.practice.kind === 'experiment') state.experiments[item.id] = {...record, choice,
+    predicted: lesson.predicted, observed: lesson.observed};
   else state.lessons[item.id] = record;
   saveSchool(state);
 }
@@ -4278,11 +4311,56 @@ function openLesson(id) {
   if (!found) return;
   if (!requireFeature(lessonFeature(found.lesson), currentScreen() === 'school' ? 'school-status' : 'status')) return;
   Object.assign(lesson, {current: found.lesson, module: found.module, stage: lessonDone(id) ? 'done' : 'card', card: 0,
-    recipe: null, pair: null, cup: null, brewed: {}, journal: {}, choice: null, tastes: [], busy: false, rated: false});
+    recipe: null, pair: null, cup: null, brewed: {}, journal: {}, choice: null, tastes: [], busy: false, rated: false,
+    quiz: 0, picked: null, correct: 0, predicted: null, observed: null, brewedRecipe: null});
   show('lesson');
 }
 function lessonCardHtml(card) {
   return `<div class="lesson-card"><p>${escape(card[LANG])}</p></div>`;
+}
+// Quiz options in a stable shuffled order, so the right answer is not always first.
+function quizOrder(item, number) {
+  const indexes = item.quiz[number].options.map((_, index) => index);
+  let seed = [...`${item.id}:${number}`].reduce((sum, char) => (sum * 31 + char.charCodeAt(0)) >>> 0, 7);
+  for (let i = indexes.length - 1; i > 0; i--) {
+    seed = (seed * 1103515245 + 12345) >>> 0;
+    const j = seed % (i + 1);
+    [indexes[i], indexes[j]] = [indexes[j], indexes[i]];
+  }
+  return indexes;
+}
+// Guess before tasting: cup B waits until the person has said what they expect.
+function predictionBlock(item) {
+  const prediction = item.prediction;
+  if (!prediction) return '';
+  if (lesson.predicted) {
+    const chosen = prediction.options.find(option => option.id === lesson.predicted);
+    return `<p class="prediction-made">${t('predict_made', escape(chosen?.[LANG] || ''))}</p>`;
+  }
+  return `<div class="prediction"><p class="prediction-title">${t('predict_title')}</p>
+    <div class="quiz-options" role="radiogroup" aria-label="${escape(t('predict_title'))}">${prediction.options.map(option =>
+      `<button type="button" class="button quiz-option" role="radio" aria-checked="false" data-predict="${escape(option.id)}">${escape(option[LANG])}</button>`).join('')}</div></div>`;
+}
+function predictionResult(item) {
+  const prediction = item.prediction;
+  if (!prediction || !lesson.predicted || !lesson.observed) return '';
+  const name = id => { const text = prediction.options.find(option => option.id === id)?.[LANG] || ''; return text.charAt(0).toLowerCase() + text.slice(1); };
+  const match = lesson.predicted === lesson.observed;
+  const expected = prediction.expected.includes(lesson.observed);
+  return `<div class="model-card prediction-result"><p class="takeaway-eyebrow">${t('predict_eyebrow')}</p>
+    <p>${t('predict_compare', escape(name(lesson.predicted)), escape(name(lesson.observed)))}</p>
+    <p><strong>${t(match ? 'predict_match' : 'predict_miss')}</strong> ${t(expected ? 'predict_expected' : 'predict_unexpected')}</p>
+    <p>${escape(prediction.explain[LANG])}</p></div>${lessonModelCard(item)}`;
+}
+// After an experiment: the choice between the two cups has just taught the model.
+function lessonModelCard(item) {
+  const axis = item.practice.vary === 'ratio' ? 'ratio' : 'extraction';
+  const group = tasteModel(axis)?.series.find(entry => entry.key === `lesson|${item.id}`);
+  if (!group?.observations.length) return '';
+  return `<div class="model-card"><p class="takeaway-eyebrow">${t('model_eyebrow')}</p>
+    <h3 class="takeaway-title">${t('model_title')}</h3>
+    <p>${t(axis === 'ratio' ? 'model_pair_ratio' : 'model_pair_extraction')}</p>
+    ${tasteModelChart(group, {start: t('exp_a')})}<p class="model-note">${t('model_note')}</p></div>`;
 }
 // One line per experiment cup; the parameter that differs stands out on cup B.
 function cupSummary(recipe, parameter, changed) {
@@ -4311,7 +4389,20 @@ function renderLesson() {
     const last = lesson.card === item.cards.length - 1;
     body = `<p class="lesson-count">${t('lesson_card_n', lesson.card + 1, item.cards.length)}</p>${lessonCardHtml(item.cards[lesson.card])}`;
     if (lesson.card > 0) actions.push(action('prev', t('lesson_prev')));
-    actions.push(action('next', t(last ? 'lesson_to_practice' : 'lesson_next'), true));
+    actions.push(action('next', t(last ? (item.quiz?.length ? 'quiz_start' : 'lesson_to_practice') : 'lesson_next'), true));
+  } else if (lesson.stage === 'quiz') {
+    const question = item.quiz[lesson.quiz];
+    const answered = lesson.picked != null;
+    const right = answered && lesson.picked === question.answer;
+    body = `<p class="lesson-count">${t('quiz_n', lesson.quiz + 1, item.quiz.length)}</p>
+      <div class="lesson-card quiz-card"><p class="quiz-question">${escape(question.question[LANG])}</p>
+      <div class="quiz-options" role="radiogroup" aria-label="${escape(question.question[LANG])}">${quizOrder(item, lesson.quiz).map(index => {
+        const state = !answered ? '' : index === question.answer ? ' correct' : index === lesson.picked ? ' wrong' : '';
+        return `<button type="button" class="button quiz-option${state}" role="radio" aria-checked="${lesson.picked === index}" data-quiz-option="${index}"${answered ? ' disabled' : ''}>${escape(question.options[index][LANG])}</button>`;
+      }).join('')}</div>
+      ${answered ? `<div class="quiz-explain ${right ? 'correct' : 'wrong'}" role="status"><strong>${t(right ? 'quiz_right' : 'quiz_wrong')}</strong> ${escape(question.explain[LANG])}</div>` : ''}</div>`;
+    const last = lesson.quiz === item.quiz.length - 1;
+    actions.push(action('quiz-next', t(last ? 'lesson_to_practice' : 'lesson_next'), true, !answered));
   } else if (lesson.stage === 'practice' && item.practice.kind === 'build') {
     const recipe = lesson.recipe;
     if (recipe && !(sandbox.where === 'lesson' && sandbox.base === recipe)) openSandbox(recipe, {where: 'lesson'});
@@ -4336,8 +4427,9 @@ function renderLesson() {
           return `<div class="experiment-cup${lesson.brewed[cup] ? ' brewed' : ''}"><div class="experiment-cup-head"><strong>${cupName(cup)}</strong>
             ${lesson.brewed[cup] ? `<span class="lesson-badge done">✓ ${t('exp_brewed')}</span>` : ''}</div>
             ${cupSummary(recipe, pair.parameter, i === 1)}
-            <div class="edit-actions">${action(`brew-${cup}`, t('lesson_brew'), !lesson.brewed[cup])}
-            ${machine(recipe) ? action(`machine-${cup}`, t('machine_button')) : ''}</div></div>`;
+            ${cup === 'b' ? predictionBlock(item) : ''}
+            <div class="edit-actions">${action(`brew-${cup}`, t('lesson_brew'), !lesson.brewed[cup], cup === 'b' && !lesson.predicted)}
+            ${machine(recipe) ? action(`machine-${cup}`, t('machine_button'), false, cup === 'b' && !lesson.predicted) : ''}</div></div>`;
         }).join('')}` : `<p class="status">${t('lesson_loading')}</p>`}`;
     const both = lesson.brewed.a && lesson.brewed.b;
     actions.push(action('compare', t('exp_compare'), both, !both));
@@ -4349,13 +4441,17 @@ function renderLesson() {
         `<button type="button" class="button" role="radio" data-exp-choice="${choice}" aria-checked="${lesson.choice === choice}">${t(`exp_${choice}`)}</button>`).join('')}</div>
       <h2 class="section">${t('exp_how')}</h2>
       <div class="taste-options">${COMPARE_TASTES.map(id => `<div class="taste-option${lesson.tastes.includes(id) ? ' selected' : ''}">
-        <label class="taste-choice"><input type="checkbox" data-exp-taste="${id}"${lesson.tastes.includes(id) ? ' checked' : ''}${!lesson.tastes.includes(id) && lesson.tastes.length >= 2 ? ' disabled' : ''}><span>${escape(names[id])}</span></label></div>`).join('')}</div>`;
-    actions.push(action('conclude', t('exp_done'), true, !lesson.choice));
+        <label class="taste-choice"><input type="checkbox" data-exp-taste="${id}"${lesson.tastes.includes(id) ? ' checked' : ''}${!lesson.tastes.includes(id) && lesson.tastes.length >= 2 ? ' disabled' : ''}><span>${escape(names[id])}</span></label></div>`).join('')}</div>
+      ${item.prediction ? `<h2 class="section">${t('predict_observed')}</h2>
+      <div class="quiz-options" role="radiogroup" aria-label="${escape(t('predict_observed'))}">${item.prediction.options.map(option =>
+        `<button type="button" class="button quiz-option" role="radio" data-observe="${escape(option.id)}" aria-checked="${lesson.observed === option.id}">${escape(option[LANG])}</button>`).join('')}</div>` : ''}`;
+    actions.push(action('conclude', t('exp_done'), true, !lesson.choice || (item.prediction && !lesson.observed)));
   } else {
     const conclusion = item.practice.kind === 'experiment' && lesson.choice ? item.conclusions[lesson.choice][LANG] : '';
     body = `<div class="takeaway"><p class="takeaway-eyebrow">${t('lesson_done_title')}</p>
       <h2 class="takeaway-title">${t('takeaway_title')}</h2>
-      ${conclusion ? `<p>${escape(conclusion)}</p>` : ''}<p>${escape(item.takeaway[LANG])}</p></div>`;
+      ${conclusion ? `<p>${escape(conclusion)}</p>` : ''}<p>${escape(item.takeaway[LANG])}</p></div>
+      ${predictionResult(item)}`;
     const next = allLessons()[index + 1];
     if (next) actions.push(action('next-lesson', `${can(lessonFeature(next.lesson)) ? '' : `${LOCK} `}${t('lesson_next_lesson')}`, true));
     actions.push(action('school', t('lesson_to_school')));
@@ -4414,6 +4510,11 @@ function lessonAction(name) {
   if (name === 'prev') lesson.card = Math.max(0, lesson.card - 1);
   else if (name === 'next') {
     if (lesson.card < item.cards.length - 1) lesson.card++;
+    else if (item.quiz?.length) { lesson.stage = 'quiz'; lesson.quiz = 0; lesson.picked = null; lesson.correct = 0; }
+    else { lesson.stage = 'practice'; loadLessonRecipe(); }
+  } else if (name === 'quiz-next') {
+    if (lesson.picked === item.quiz[lesson.quiz].answer) lesson.correct++;
+    if (lesson.quiz < item.quiz.length - 1) { lesson.quiz++; lesson.picked = null; }
     else { lesson.stage = 'practice'; loadLessonRecipe(); }
   } else if (name.startsWith('brew-') || name.startsWith('machine-')) {
     brewLesson(name.slice(-1), name.startsWith('machine-'));
@@ -4473,6 +4574,12 @@ function wireSchool() {
   $('lesson-body').addEventListener('click', event => {
     const button = event.target.closest('[data-lesson-action]');
     if (button && !button.disabled) { lessonAction(button.dataset.lessonAction); return; }
+    const quiz = event.target.closest('[data-quiz-option]');
+    if (quiz && lesson.picked == null) { lesson.picked = Number(quiz.dataset.quizOption); renderLesson(); return; }
+    const predict = event.target.closest('[data-predict]');
+    if (predict) { lesson.predicted = predict.dataset.predict; renderLesson(); return; }
+    const observe = event.target.closest('[data-observe]');
+    if (observe) { lesson.observed = observe.dataset.observe; renderLesson(); return; }
     const choice = event.target.closest('[data-exp-choice]');
     if (choice) { lesson.choice = choice.dataset.expChoice; renderLesson(); $(`lesson-body`).querySelector(`[data-exp-choice="${lesson.choice}"]`)?.focus(); }
   });
@@ -4653,6 +4760,9 @@ function wireSandbox() {
     setText(`sandbox-${key}-value`, key === 'grind' ? sandboxGrindText()
       : key === 'temperature' ? celsius(sandbox.base.temperature_c + sandbox.temperature) : t('ratio_value', num(sandboxRatio())));
     sandbox.recipe = null;
+    sandbox.busy = true;
+    if ($('sandbox-brew')) $('sandbox-brew').disabled = true;
+    if (sandbox.where === 'lesson') updateLessonActions();
     sandboxOutput();
     clearTimeout(sandbox.timer);
     sandbox.timer = setTimeout(requestSandbox, 250);

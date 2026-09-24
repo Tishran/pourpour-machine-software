@@ -71,6 +71,9 @@ class CourseTests(unittest.TestCase):
             self.assertEqual(set(lesson['conclusions']), {'a', 'b', 'same'})
         for lesson in lessons():
             self.assertTrue(2 <= len(lesson['cards']) <= 4)
+            self.assertTrue(1 <= len(lesson['quiz']) <= 2, 'every lesson checks understanding')
+        for lesson in experiments:
+            self.assertTrue(set(lesson['prediction']['expected']) <= {o['id'] for o in lesson['prediction']['options']})
 
     def test_broken_lessons_are_rejected(self):
         first = lambda d: d['modules'][0]['lessons'][0]
@@ -85,6 +88,13 @@ class CourseTests(unittest.TestCase):
             lambda d: d['modules'][0]['lessons'].insert(0, deepcopy(experiment(d)) | {'id': 'first_experiment'}),
             lambda d: d['modules'][1]['lessons'].append(deepcopy(first(d))),
             lambda d: d.__setitem__('modules', []),
+            lambda d: first(d).pop('quiz'),
+            lambda d: first(d)['quiz'][0].__setitem__('answer', 9),
+            lambda d: first(d)['quiz'][0]['explain'].pop('source'),
+            lambda d: first(d)['quiz'][0].__setitem__('options', [first(d)['quiz'][0]['options'][0]]),
+            lambda d: experiment(d).pop('prediction'),
+            lambda d: experiment(d)['prediction'].__setitem__('expected', ['teleport']),
+            lambda d: first(d).__setitem__('prediction', deepcopy(experiment(d)['prediction'])),
         ]
         for index, change in enumerate(cases):
             with self.subTest(case=index), self.assertRaises(CatalogError):

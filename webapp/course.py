@@ -39,10 +39,45 @@ def keyed_texts(data, where, keys):
         text_pair(data[key], f'{where}.{key}')
 
 
+def validate_quiz(quiz, where):
+    """1–2 questions after the theory cards; every answer is explained with a source."""
+    require(isinstance(quiz, list) and 1 <= len(quiz) <= 2, where, 'expected 1–2 questions')
+    for index, item in enumerate(quiz):
+        point = f'{where}[{index}]'
+        fields(item, point, ('question', 'options', 'answer', 'explain'))
+        require(set(item) == {'question', 'options', 'answer', 'explain'}, point, 'unknown question field')
+        text_pair(item['question'], f'{point}.question', 160, source=False)
+        options = item['options']
+        require(isinstance(options, list) and 2 <= len(options) <= 4, point, 'expected 2–4 options')
+        for number, option in enumerate(options):
+            text_pair(option, f'{point}.options[{number}]', 80, source=False)
+        require(isinstance(item['answer'], int) and not isinstance(item['answer'], bool) and
+                0 <= item['answer'] < len(options), point, 'answer must point at an option')
+        text_pair(item['explain'], f'{point}.explain')
+
+
+def validate_prediction(prediction, where):
+    """Guess before tasting: 3–4 options, the ones the physics expects, and why."""
+    fields(prediction, where, ('options', 'expected', 'explain'))
+    require(set(prediction) == {'options', 'expected', 'explain'}, where, 'unknown prediction field')
+    options = prediction['options']
+    require(isinstance(options, list) and 3 <= len(options) <= 4, where, 'expected 3–4 options')
+    ids = []
+    for number, option in enumerate(options):
+        fields(option, f'{where}.options[{number}]', ('id', 'ru', 'en'))
+        require(isinstance(option['id'], str) and option['id'].isalpha() and option['id'] not in ids,
+                f'{where}.options[{number}]', 'option ids must be unique words')
+        ids.append(option['id'])
+        text_pair({'ru': option['ru'], 'en': option['en']}, f'{where}.options[{number}]', 80, source=False)
+    expected = prediction['expected']
+    require(isinstance(expected, list) and expected and set(expected) <= set(ids), where, 'expected must name options')
+    text_pair(prediction['explain'], f'{where}.explain')
+
+
 def validate_lesson(lesson, where, seen):
     fields(lesson, where, ('id', 'title', 'review', 'cards', 'practice', 'takeaway'))
-    require(set(lesson) <= {'id', 'title', 'review', 'cards', 'practice', 'takeaway', 'conclusions', 'barista'},
-            where, 'unknown lesson field')
+    require(set(lesson) <= {'id', 'title', 'review', 'cards', 'practice', 'takeaway', 'conclusions', 'barista',
+                            'quiz', 'prediction'}, where, 'unknown lesson field')
     require(isinstance(lesson['id'], str) and lesson['id'].replace('_', '').isalnum() and lesson['id'] not in seen,
             where, 'lesson ids must be unique words')
     seen.add(lesson['id'])
@@ -62,6 +97,11 @@ def validate_lesson(lesson, where, seen):
         variants = build(practice['params'])
     except BrewingInputError as exc:
         require(False, f'{where}.practice.params', f'the engine refuses them: {exc}')
+    validate_quiz(lesson.get('quiz'), f'{where}.quiz')
+    if practice['kind'] == 'experiment':
+        validate_prediction(lesson.get('prediction'), f'{where}.prediction')
+    else:
+        require('prediction' not in lesson, where, 'only experiments ask for a prediction')
     if practice['kind'] == 'experiment':
         require(set(practice) == {'kind', 'params', 'vary'} and practice['vary'] in EXPERIMENT_PARAMETERS,
                 where, f'an experiment varies one of {", ".join(EXPERIMENT_PARAMETERS)}')
