@@ -566,7 +566,22 @@ select { font: inherit; color: var(--ink); background: var(--card); min-height: 
 }
 body[data-screen="plans"] #screen-plans { display: flex; flex-direction: column; }
 .plan-cards { display: grid; gap: 12px; margin: 4px 0 16px; }
-.plan-card { min-width: 0; padding: 16px; border: 1.5px solid var(--line); border-radius: 16px; background: var(--card); }
+.plan-card { display: flex; flex-direction: column; min-width: 0; padding: 16px; border: 1.5px solid var(--line); border-radius: 16px; background: var(--card); }
+.plan-card.featured { border: 2px solid var(--orange); box-shadow: 0 8px 24px rgba(103, 43, 20, .14); }
+.plan-card.featured .plan-tagline::after { content: "★"; margin-left: 6px; }
+.plan-features { flex: 1; margin: 12px 0 0; padding: 0; list-style: none; font-size: .95rem; }
+.plan-features li { position: relative; padding: 5px 0 5px 26px; }
+.plan-features li::before { content: "✓"; position: absolute; left: 2px; top: 5px; font-weight: 700; color: var(--orange); }
+.plan-features li.coming::before { content: "…"; color: var(--muted); }
+.plan-features small { font-size: .8rem; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.plan-role { margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--line); font-size: .875rem; color: var(--muted); font-style: italic; }
+.plan-cta { width: 100%; margin-top: 12px; text-decoration: none; }
+.plan-current { margin: 12px 0 0; min-height: 48px; display: grid; place-items: center; font-weight: 700; color: var(--accent-ink); border-radius: 12px; background: var(--accent-soft); }
+.plan-price small { font-size: .9rem; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.plans-line { margin: 0 0 8px; font-size: .95rem; }
+.plans-lock-in { padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--orange); background: var(--accent-soft); color: var(--accent-ink); font-weight: 600; }
+#screen-plans .survey-offer { margin: 12px 0 32px; }
+@media (min-width: 760px) { .plan-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; } }
 .plan-tagline { margin: 0 0 2px; font-size: .82rem; font-weight: 700; color: var(--accent-ink); text-transform: uppercase; letter-spacing: .06em; }
 .plan-name { margin: 0; font-size: 1.2rem; }
 .plan-price { margin: 8px 0 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }

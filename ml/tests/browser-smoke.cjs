@@ -2,12 +2,14 @@
 const { chromium } = require('playwright');
 const path = require('path');
 const assert = require('node:assert/strict');
+const {presetDemo} = require('./demo-state.cjs');
 
 (async () => {
   const browser = await chromium.launch({headless: true, channel: process.env.POURPOUR_BROWSER_CHANNEL || undefined});
   try {
     const baseURL = process.env.POURPOUR_TEST_URL || 'http://127.0.0.1:8002';
     const page = await browser.newPage({baseURL, locale: 'en-US', viewport: {width: 1280, height: 900}});
+    await presetDemo(page);
     const errors = [];
     page.on('pageerror', error => errors.push(error.message));
     await page.goto(baseURL);

@@ -2,6 +2,7 @@
 // taste/refractometer correction (phase 6), my recipes (phase 7), any coffee and photo prefill (phase 8).
 const { chromium } = require('playwright');
 const assert = require('node:assert/strict');
+const {presetDemo} = require('./demo-state.cjs');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -24,6 +25,7 @@ const smallText = (page, selector) => page.evaluate(selector => [...document.que
 // prefilled from the catalog or the photo; country and grinder open a real list.
 async function checkAnyCoffee(browser) {
   const context = await browser.newContext({viewport: {width: 375, height: 812}});
+  await presetDemo(context);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -157,6 +159,7 @@ async function checkAnyCoffee(browser) {
 // Phase 7: saved recipes on the device, reuse, text and link export, deletion and import.
 async function checkOwnRecipes(browser) {
   const context = await browser.newContext({viewport: {width: 375, height: 812}});
+  await presetDemo(context);
   await context.grantPermissions(['clipboard-read', 'clipboard-write'], {origin: new URL(baseURL).origin});
   const page = await context.newPage();
   const errors = [];
@@ -288,6 +291,7 @@ async function checkOwnRecipes(browser) {
 
 async function checkFeedback(browser) {
   const context = await browser.newContext({viewport: {width: 375, height: 812}});
+  await presetDemo(context);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -439,6 +443,7 @@ async function checkFeedback(browser) {
 async function run() {
   const browser = await chromium.launch({headless: true, ...(channel ? {channel} : {})});
   const context = await browser.newContext({viewport: {width: 375, height: 812}, locale: 'en-US'});
+  await presetDemo(context);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));

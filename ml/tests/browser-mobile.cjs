@@ -6,6 +6,7 @@ const { chromium, firefox, devices } = require('playwright');
 const path = require('path');
 const fs = require('fs');
 const assert = require('node:assert/strict');
+const {presetDemo} = require('./demo-state.cjs');
 
 const baseURL = process.env.POURPOUR_TEST_URL || 'http://127.0.0.1:8002';
 const fixture = (name) => path.join(__dirname, 'fixtures', name);
@@ -24,6 +25,7 @@ const tapTargets = (page) => page.evaluate(() => [...document.querySelectorAll('
 
 async function checkDevice(browser, deviceName) {
   const context = await browser.newContext({...devices[deviceName], baseURL, locale: 'en-US'});
+  await presetDemo(context);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -31,8 +33,11 @@ async function checkDevice(browser, deviceName) {
     await page.goto('/');
     assert.equal(await page.title(), 'First Brew');
     assert.equal(await page.getAttribute('html', 'lang'), 'ru', 'Russian is the default for every browser locale');
+    // The pre-order survey lives on the plans screen.
+    await page.locator('#open-plans').click();
     assert.match(await text(page, '#survey-title'), /15%/);
     assert.equal(await page.locator('#survey-link').getAttribute('href'), 'https://forms.yandex.ru/u/6ab10c8390fa7ba71fa6d1cb');
+    await page.locator('#plans-back').click();
     await page.locator('#language').selectOption('en');
     assert.equal(await page.getAttribute('html', 'lang'), 'en');
     assert.equal(await screen(page), 'find');
@@ -218,6 +223,7 @@ async function checkDevice(browser, deviceName) {
 
 async function recognitionChecks(browser) {
   const context = await browser.newContext({...devices['iPhone 13'], baseURL, locale: 'ru-RU'});
+  await presetDemo(context);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));
@@ -317,6 +323,7 @@ async function screenshots(browser, dir) {
   fs.mkdirSync(dir, {recursive: true});
   for (const colorScheme of ['light', 'dark']) {
     const context = await browser.newContext({baseURL, viewport: {width: 375, height: 812}, deviceScaleFactor: 2, isMobile: true, hasTouch: true, locale: 'ru-RU', colorScheme});
+    await presetDemo(context);
     const page = await context.newPage();
     await page.goto('/');
     await page.waitForFunction(() => !document.getElementById('status').textContent.includes('Проверяем'));

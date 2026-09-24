@@ -3,6 +3,7 @@
 // then: node ml/tests/browser-machine.cjs
 const { chromium, devices } = require('playwright');
 const assert = require('node:assert/strict');
+const {presetDemo} = require('./demo-state.cjs');
 
 const baseURL = process.env.POURPOUR_TEST_URL || 'http://127.0.0.1:8002';
 const text = (page, selector) => page.locator(selector).textContent();
@@ -11,6 +12,7 @@ const machineState = (page) => page.evaluate(() => window.firstBrew.state().mach
 (async () => {
   const browser = await chromium.launch({headless: true, channel: process.env.POURPOUR_BROWSER_CHANNEL || undefined});
   const context = await browser.newContext({...devices['iPhone 13'], baseURL, locale: 'en-US'});
+  await presetDemo(context);
   const page = await context.newPage();
   const errors = [];
   page.on('pageerror', error => errors.push(error.message));

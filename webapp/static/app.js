@@ -26,9 +26,9 @@ const STRINGS = {
     desktop_photo: 'Choose a photo',
     settings: 'Settings',
     language: 'Language',
-    survey_eyebrow: 'PourPour pre-order',
+    survey_eyebrow: 'First Brew machine pre-order',
     survey_title: '15% off your pre-order',
-    survey_text: 'Take a short survey about how you brew coffee and get a 15% discount on your PourPour pre-order.',
+    survey_text: 'Take a short survey about how you brew coffee and get a 15% discount on your First Brew machine pre-order.',
     survey_button: 'Take the survey',
     builder_open: 'Build a recipe for my coffee',
     builder_title: 'Build a starting recipe',
@@ -495,6 +495,25 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · included months until ${date}`,
     settings_owner: 'machine owner',
     settings_open_plans: 'Plans and membership',
+    plan_period_month: '/ month',
+    plan_period_year: '/ year',
+    plan_included: (n) => `${n} months`,
+    plan_coming: 'coming',
+    plan_current: 'Your plan',
+    plan_demo_free: 'Use the free app',
+    plan_demo_member: 'Turn on the demo membership',
+    plan_demo_machine_bundle: 'Turn on the demo bundle',
+    plan_survey: 'Pre-order: 15% off after a survey',
+    plans_cheaper: (price, cafe) => `The membership costs ${price} a month — less than one café cup (${cafe}).`,
+    plans_no_lock_in: 'No lock-in: the machine brews your saved recipes even without a membership.',
+    plans_demo_on: 'Demo plan switched on. Payment is not connected.',
+    settings_demo: 'Demo switches',
+    settings_demo_plan: 'Show the app as',
+    settings_demo_owner: 'I own a First Brew machine',
+    settings_demo_reset: 'Reset the free limits',
+    settings_demo_reset_done: 'Free limits reset.',
+    settings_demo_end_months: 'End the included months',
+    settings_demo_months_over: 'The included months are over: the plan is free, the machine keeps brewing.',
   },
   ru: {
     app: 'First Brew',
@@ -518,9 +537,9 @@ const STRINGS = {
     desktop_photo: 'Выбрать фото',
     settings: 'Настройки',
     language: 'Язык',
-    survey_eyebrow: 'Предзаказ PourPour',
+    survey_eyebrow: 'Предзаказ машины First Brew',
     survey_title: 'Скидка 15% на предзаказ',
-    survey_text: 'Пройдите короткий опрос о том, как вы завариваете кофе, и получите скидку 15% на предзаказ PourPour.',
+    survey_text: 'Пройдите короткий опрос о том, как вы завариваете кофе, и получите скидку 15% на предзаказ машины First Brew.',
     survey_button: 'Пройти опрос',
     builder_open: 'Собрать рецепт для своего кофе',
     builder_title: 'Собрать стартовый рецепт',
@@ -971,6 +990,25 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · включённые месяцы до ${date}`,
     settings_owner: 'владелец машины',
     settings_open_plans: 'Тарифы и подписка',
+    plan_period_month: '/ месяц',
+    plan_period_year: '/ год',
+    plan_included: (n) => `${n} мес.`,
+    plan_coming: 'скоро',
+    plan_current: 'Ваш тариф',
+    plan_demo_free: 'Пользоваться бесплатно',
+    plan_demo_member: 'Включить демо-подписку',
+    plan_demo_machine_bundle: 'Включить демо-набор',
+    plan_survey: 'Предзаказ: скидка 15% после опроса',
+    plans_cheaper: (price, cafe) => `Подписка — ${price} в месяц, дешевле одной чашки в кофейне (${cafe}).`,
+    plans_no_lock_in: 'No lock-in: машина варит сохранённые рецепты и без подписки.',
+    plans_demo_on: 'Демо-тариф включён. Оплата не подключена.',
+    settings_demo: 'Демо-переключатели',
+    settings_demo_plan: 'Показать приложение как',
+    settings_demo_owner: 'У меня машина First Brew',
+    settings_demo_reset: 'Сбросить бесплатные лимиты',
+    settings_demo_reset_done: 'Бесплатные лимиты сброшены.',
+    settings_demo_end_months: 'Завершить включённые месяцы',
+    settings_demo_months_over: 'Включённые месяцы закончились: тариф бесплатный, машина продолжает варить.',
   },
 };
 const SETTINGS_KEY = 'firstbrew.settings.v1';
@@ -3558,6 +3596,14 @@ function wireHome() {
       savePrefs();
       setToggle('brew-sound', 'sound');
       setToggle('brew-vibrate', 'vibrate');
+    } else if (target.id === 'settings-demo-plan') {
+      setDemoPlan(target.value);
+      setStatus('settings-status', t('plans_demo_on'));
+    } else if (target.id === 'settings-demo-owner') {
+      membership.machineOwner = target.checked;
+      if (!target.checked) membership.includedUntil = null;
+      saveMembership();
+      entitlementChanged();
     } else if (target.name === 'settings-mode') {
       prefs.mode = target.value;
       if (target.value === 'machine' && !membership.machineOwner) { membership.machineOwner = true; saveMembership(); }
@@ -3570,6 +3616,20 @@ function wireHome() {
     const id = event.target.closest('button')?.id;
     if (id === 'settings-plans') openPlans();
     else if (id === 'settings-start') show('start');
+    else if (id === 'settings-demo-reset') {
+      membership.used = {builder: 0, adjust: 0};
+      builder.adjustCounted = null;
+      saveMembership();
+      entitlementChanged();
+      setStatus('settings-status', t('settings_demo_reset_done'));
+    } else if (id === 'settings-demo-expire') {
+      // The included months are over: the plan falls back to free, the machine stays.
+      const yesterday = new Date(Date.now() - 86400000);
+      membership.includedUntil = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, '0')}-${String(yesterday.getDate()).padStart(2, '0')}`;
+      saveMembership();
+      entitlementChanged();
+      setStatus('settings-status', t('settings_demo_months_over'));
+    }
   });
 }
 function planName(id) {
@@ -3596,7 +3656,14 @@ function renderSettings() {
     <h2 class="section">${t('settings_plan')}</h2>
     <p class="settings-plan">${escape(planLine)}${state.machineOwner ? ` · ${t('settings_owner')}` : ''}</p>
     <p class="demo-note">${t('demo_notice')}</p>
-    <button type="button" class="button settings-wide" id="settings-plans">${t('settings_open_plans')}</button>`;
+    <button type="button" class="button settings-wide" id="settings-plans">${t('settings_open_plans')}</button>
+    <h2 class="section">${t('settings_demo')}</h2>
+    <label class="builder-field" for="settings-demo-plan"><span class="settings-label">${t('settings_demo_plan')}</span>
+      <select id="settings-demo-plan">${(PLANS?.plans || []).map(plan => `<option value="${escape(plan.id)}"${currentPlanId() === plan.id ? ' selected' : ''}>${escape(plan.tagline[LANG])} · ${escape(plan.name[LANG])}</option>`).join('')}</select></label>
+    <label class="settings-switch"><input type="checkbox" id="settings-demo-owner"${state.machineOwner ? ' checked' : ''}><span>${t('settings_demo_owner')}</span></label>
+    ${bundle && state.plan === 'member' ? `<button type="button" class="button settings-wide" id="settings-demo-expire">${t('settings_demo_end_months')}</button>` : ''}
+    <button type="button" class="button settings-wide" id="settings-demo-reset">${t('settings_demo_reset')}</button>
+    <p class="status" id="settings-status" role="status" aria-live="polite"></p>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -3612,19 +3679,68 @@ function rubles(value) {
   if (value && typeof value === 'object') return `${format(value.min)}–${format(value.max)}${NBSP}₽`;
   return `${format(value)}${NBSP}₽`;
 }
+// The plan a card stands for is the one in force: a bundle is membership plus the machine.
+function currentPlanId() {
+  const state = entitlement();
+  if (state.plan === 'member' && state.includedUntil && state.machineOwner) return 'machine_bundle';
+  return state.plan;
+}
+function planPrice(plan) {
+  if (!plan.price_rub) return rubles(0);
+  const price = rubles(plan.price_rub);
+  const text = PLANS.price_is_hypothesis && plan.id === 'member' ? `≈${NBSP}${price}` : price;
+  return plan.period ? `${text} <small>${t(`plan_period_${plan.period}`)}</small>` : text;
+}
 function renderPlans() {
   setText('plans-title', t('plans_title'));
   setText('plans-demo', t('demo_notice'));
+  for (const [id, key] of [['survey-eyebrow', 'survey_eyebrow'], ['survey-title', 'survey_title'], ['survey-text', 'survey_text']]) setText(id, t(key));
+  setText('survey-link', `${t('survey_button')} ↗`);
   if (!PLANS) { $('plan-cards').innerHTML = `<p class="note">${t('err_generic')}</p>`; return; }
-  $('plan-cards').innerHTML = PLANS.plans.map(plan => `<article class="plan-card" data-plan="${escape(plan.id)}">
-    <p class="plan-tagline">${escape(plan.tagline[LANG])}</p>
-    <h2 class="plan-name">${escape(plan.name[LANG])}</h2>
-    <p class="plan-price">${rubles(plan.price_rub)}</p>
-    <p class="plan-note">${escape(plan.price_note[LANG])}</p>
-  </article>`).join('');
+  const current = currentPlanId();
+  $('plan-cards').innerHTML = PLANS.plans.map(plan => {
+    const features = plan.features.map(feature => `<li${feature.status === 'coming' ? ' class="coming"' : ''}>${escape(feature[LANG])}${feature.status === 'coming' ? ` <small>${t('plan_coming')}</small>` : ''}</li>`).join('');
+    const mine = plan.id === current;
+    const action = mine ? `<p class="plan-current">✓ ${t('plan_current')}</p>`
+      : plan.cta === 'survey' ? `<a class="button plan-cta" href="${escape(PLANS.survey_url)}" target="_blank" rel="noopener noreferrer">${t('plan_survey')} ↗</a>`
+      : `<button type="button" class="button plan-cta${plan.id === 'member' ? ' primary' : ''}" data-demo-plan="${escape(plan.id)}">${t(`plan_demo_${plan.id}`)}</button>`;
+    return `<article class="plan-card${plan.id === 'member' ? ' featured' : ''}" data-plan="${escape(plan.id)}" aria-labelledby="plan-${escape(plan.id)}-name">
+      <p class="plan-tagline">${escape(plan.tagline[LANG])}</p>
+      <h2 class="plan-name" id="plan-${escape(plan.id)}-name">${escape(plan.name[LANG])}</h2>
+      <p class="plan-price">${planPrice(plan)}</p>
+      <p class="plan-note">${escape(plan.price_note[LANG])}${plan.included_months ? ` · ${t('plan_included', plan.included_months)}` : ''}</p>
+      <ul class="plan-features">${features}</ul>
+      <p class="plan-role">${escape(plan.role[LANG])}</p>
+      ${action}
+    </article>`;
+  }).join('');
+  const member = PLANS.plans.find(plan => plan.id === 'member');
+  setText('plans-cheaper', member.price_rub < PLANS.cafe_cup_rub
+    ? t('plans_cheaper', rubles(member.price_rub), rubles(PLANS.cafe_cup_rub)) : '');
+  setText('plans-lock-in', t('plans_no_lock_in'));
+}
+// Demo only: switching a plan changes the state on this device; nothing is paid.
+function setDemoPlan(id) {
+  if (id === 'machine_bundle') {
+    const months = PLANS?.plans.find(plan => plan.id === id)?.included_months || 1;
+    const until = new Date();
+    until.setMonth(until.getMonth() + months);
+    Object.assign(membership, {plan: 'member', machineOwner: true,
+      includedUntil: `${until.getFullYear()}-${String(until.getMonth() + 1).padStart(2, '0')}-${String(until.getDate()).padStart(2, '0')}`});
+  } else Object.assign(membership, {plan: id === 'member' ? 'member' : 'free', includedUntil: null});
+  saveMembership();
+  entitlementChanged();
 }
 function wirePlans() {
   $('plans-back').addEventListener('click', () => back(plansFrom));
+  $('plan-cards').addEventListener('click', event => {
+    const button = event.target.closest('[data-demo-plan]');
+    if (!button) return;
+    setDemoPlan(button.dataset.demoPlan);
+    renderPlans();
+    setStatus('plans-status', t('plans_demo_on'));
+    $(`plan-${button.dataset.demoPlan}-name`)?.closest('.plan-card')?.querySelector('.plan-current')?.focus?.();
+  });
 }
 
 // ---------------------------------------------------------------------------
@@ -4128,10 +4244,6 @@ function localize() {
   $('photo-cancel').textContent = t('cancel');
   $('language-label').textContent = t('language');
   $('language').value = LANG;
-  $('survey-eyebrow').textContent = t('survey_eyebrow');
-  $('survey-title').textContent = t('survey_title');
-  $('survey-text').textContent = t('survey_text');
-  $('survey-link').textContent = `${t('survey_button')} ↗`;
   $('open-builder').textContent = t('builder_open');
   renderMineEntry();
   $('mine-back').textContent = t('back');
