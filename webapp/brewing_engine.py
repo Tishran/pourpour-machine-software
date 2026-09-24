@@ -611,6 +611,7 @@ _DIAGNOSES = {
     'on_target': ('Рецепт в ориентире', 'The recipe is on target'),
     'strength_needs_sweetness': ('Сначала сладость, потом крепость', 'Sweetness first, then strength'),
 }
+DIAGNOSIS_CODES = tuple(_DIAGNOSES)
 _TASTE_EXPLANATIONS = {
     'under': ('Кислинка без сладости, резкость или пустая середина обычно значат, что вода '
               'забрала из кофе слишком мало. Делаем воду горячее и помол мельче, чтобы вкус '

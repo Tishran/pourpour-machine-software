@@ -495,6 +495,12 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · included months until ${date}`,
     settings_owner: 'machine owner',
     settings_open_plans: 'Plans and membership',
+    why_button: 'Learn why',
+    why_in_general: (text) => `In general: ${text}`,
+    takeaway_eyebrow: 'Learn from every cup',
+    takeaway_title: 'What you learned',
+    brew_why_hide: 'Hide the notes',
+    brew_why_show: 'Why this step?',
     plan_period_month: '/ month',
     plan_period_year: '/ year',
     plan_included: (n) => `${n} months`,
@@ -990,6 +996,12 @@ const STRINGS = {
     settings_plan_until: (plan, date) => `${plan} · включённые месяцы до ${date}`,
     settings_owner: 'владелец машины',
     settings_open_plans: 'Тарифы и подписка',
+    why_button: 'Почему?',
+    why_in_general: (text) => `В целом: ${text}`,
+    takeaway_eyebrow: 'Каждая чашка — урок',
+    takeaway_title: 'Что вы узнали',
+    brew_why_hide: 'Скрыть пояснения',
+    brew_why_show: 'Зачем этот шаг?',
     plan_period_month: '/ месяц',
     plan_period_year: '/ год',
     plan_included: (n) => `${n} мес.`,
@@ -1066,7 +1078,7 @@ const builder = {options: null, step: 0, mode: 'basic', draft: {}, variants: [],
   adjustCounted: null};  // the rated recipe whose free correction is already used
 const MACHINE_ACTIVE = ['PREHEAT', 'READY', 'BREWING', 'PAUSED'];
 // mode: how this person brews — learn, machine or skip (null until the first-run choice).
-const prefs = {vibrate: true, sound: true, mode: null};
+const prefs = {vibrate: true, sound: true, mode: null, stepWhy: true};
 const MODES = ['learn', 'machine', 'skip'];
 
 // ---------------------------------------------------------------------------
@@ -1171,12 +1183,76 @@ function entitlementChanged() {
   if (currentScreen() === 'plans') renderPlans();
 }
 
+// ---------------------------------------------------------------------------
+// Learn why: short explanations from data/course.json (docs/BREWING.md and the
+// engine's own texts). For a calculated recipe the engine's reasons come first.
+// ---------------------------------------------------------------------------
+let COURSE = null;
+function courseText(group, key) {
+  return COURSE?.[group]?.[key]?.[LANG] || '';
+}
+async function loadCourse() {
+  try {
+    COURSE = await api('/api/course');
+  } catch (error) { COURSE = null; return; }
+  if (builder.options) { if (builder.variants.length) renderBuilderResult(); renderBuilderCorrection(); }
+  if (currentScreen() === 'recipe' && currentData && currentRecipe && !timerStarted && !running) renderRecipe(currentRecipeIndex, currentRecipe);
+  if (typeof renderCourseViews === 'function') renderCourseViews();
+}
+// A "Why?" button; the explanation opens in the panel of its group, one at a time.
+const whyButton = (text, label) => text
+  ? `<button type="button" class="why-button" data-why-text="${escape(text)}" data-why-label="${escape(label)}" aria-expanded="false" aria-label="${escape(`${t('why_button')} ${label}`)}"><span>${t('why_button')}</span></button>` : '';
+const WHY_PANEL = '<p class="why-panel" aria-live="polite" hidden></p>';
+const WHY_PARAMETERS = {dose: ['dose_g', 'ratio', 'dose_g/water_g'], water: ['water_g', 'ratio', 'dose_g/water_g'],
+  temperature: ['temperature_c'], grind: ['grind', 'particle_microns', 'reference_dial']};
+const WHY_GENERIC_RULES = ['base', 'nominal_target', 'comparison_table', 'no_calibration', 'restored', 'roaster_source'];
+// The engine's own reasons for this recipe (the last two that are specific), else the general text.
+function recipeWhy(recipe, key) {
+  const general = courseText('why', key === 'grind' && recipe.basis === 'roaster' ? 'grind_roaster' : key);
+  const texts = [...new Set((recipe.reasons || [])
+    .filter(reason => WHY_PARAMETERS[key]?.includes(reason.parameter) && !WHY_GENERIC_RULES.includes(reason.rule))
+    .map(reason => LANG === 'ru' ? reason.text_ru : reason.text_en).filter(Boolean))].slice(-2);
+  return texts.length ? `${texts.join(' ')} ${general ? t('why_in_general', general) : ''}`.trim() : general;
+}
+function wireWhy() {
+  document.addEventListener('click', event => {
+    const button = event.target.closest('[data-why-text]');
+    const scope = button?.closest('.why-scope');
+    const panel = scope?.querySelector('.why-panel');
+    if (!panel) return;
+    const open = button.getAttribute('aria-expanded') === 'true';
+    scope.querySelectorAll('[data-why-text]').forEach(other => other.setAttribute('aria-expanded', 'false'));
+    panel.hidden = open;
+    if (open) return;
+    button.setAttribute('aria-expanded', 'true');
+    panel.innerHTML = `<strong>${escape(button.dataset.whyLabel)}</strong> — ${escape(button.dataset.whyText)}`;
+  });
+  $('brew-why-toggle').addEventListener('click', () => {
+    prefs.stepWhy = !prefs.stepWhy;
+    savePrefs();
+    showStepWhy(stepWhyKind);
+  });
+}
+// One line under the current step: why it is there. Hidden with one tap, remembered.
+let stepWhyKind = null;
+const BLOOM_WORDS = /смач|bloom/i;
+function showStepWhy(kind) {
+  stepWhyKind = kind;
+  const text = kind ? courseText('timer', kind) : '';
+  $('brew-why').hidden = !text || !prefs.stepWhy;
+  setText('brew-why', text);
+  $('brew-why-toggle').hidden = !text;
+  setText('brew-why-toggle', t(prefs.stepWhy ? 'brew_why_hide' : 'brew_why_show'));
+}
+const pourKind = step => BLOOM_WORDS.test(String(step?.instruction || '')) ? 'bloom' : 'pour';
+
 function loadPrefs() {
   try {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || localStorage.getItem('firstbrew.prefs') || '{}');
     if (typeof saved.vibrate === 'boolean') prefs.vibrate = saved.vibrate;
     if (typeof saved.sound === 'boolean') prefs.sound = saved.sound;
     if (MODES.includes(saved.mode)) prefs.mode = saved.mode;
+    if (typeof saved.stepWhy === 'boolean') prefs.stepWhy = saved.stepWhy;
   } catch (error) { /* private mode or blocked storage: keep defaults */ }
 }
 function savePrefs() {
@@ -1417,9 +1493,11 @@ async function selectProduct(product) {
   }
 }
 
+let currentRecipeIndex = 0;
 function renderRecipe(index, editedRecipe = null) {
   if (brewMode === 'machine') leaveMachineMode();
   resetTimer();
+  currentRecipeIndex = index;
   const recipe = currentRecipe = editedRecipe || currentData.recipes[index];
   const kind = currentData.recommendation_kind;
   const suggested = ['closest_reference', 'suggested_baseline'].includes(kind);
@@ -1427,8 +1505,8 @@ function renderRecipe(index, editedRecipe = null) {
     ? `<div class="variants" role="group" aria-label="${t('variant')}">${currentData.recipes.map((r, i) =>
         `<button type="button" class="chip" data-variant="${i}" aria-pressed="${i === index}">${escape(r.device || 'V60')}${NBSP}· ${grams(r.coffee_g)}</button>`).join('')}</div>`
     : '';
-  const figures = [[num(recipe.coffee_g), t('unit_g'), t('coffee')], [num(recipe.water_g), t('unit_g'), t('water')],
-                   [num(recipe.temperature_c), t('unit_c'), t('temperature')], [clock(recipe.duration_seconds), '', t('time')]];
+  const figures = [[num(recipe.coffee_g), t('unit_g'), t('coffee'), 'dose'], [num(recipe.water_g), t('unit_g'), t('water'), 'water'],
+                   [num(recipe.temperature_c), t('unit_c'), t('temperature'), 'temperature'], [clock(recipe.duration_seconds), '', t('time'), 'time']];
   const steps = recipe.steps.map(step => `<li class="pour">
       <span class="pour-time">${clock(step.start_seconds)}</span>
       <span class="pour-what"><strong>${escape(stepName(step.instruction))}</strong>${step.total_water_g != null ? `<small>${t('target_on_scale', grams(step.total_water_g))}</small>` : ''}</span>
@@ -1450,10 +1528,12 @@ function renderRecipe(index, editedRecipe = null) {
     <button type="button" class="button edit-trigger" id="edit-recipe">${t('edit_recipe')}</button>
     <div id="recipe-editor" hidden></div>
     <div id="recipe-summary">
-    <div class="figures">${figures.map(([value, unit, label]) => `<div><b>${value}${unit ? `<small>${NBSP}${unit}</small>` : ''}</b><span>${label}</span></div>`).join('')}</div>
-    <p class="line"><span>${t('grind')}</span><strong>${grind}</strong></p>
-    <p class="line"><span>${t('ratio')}</span><strong>${recipe.ratio ? t('ratio_value', num(recipe.ratio)) : t('ratio_unknown')}</strong></p>
-    <h2 class="section">${t('pours')}</h2>
+    <div class="why-scope"><div class="figures">${figures.map(([value, unit, label, key]) => `<div><b>${value}${unit ? `<small>${NBSP}${unit}</small>` : ''}</b><span>${label}</span>${whyButton(courseText('why', key), label)}</div>`).join('')}</div>${WHY_PANEL}</div>
+    <div class="why-scope">
+    <p class="line"><span>${t('grind')} ${whyButton(courseText('why', 'grind_roaster'), t('grind'))}</span><strong>${grind}</strong></p>
+    <p class="line"><span>${t('ratio')} ${whyButton(courseText('why', 'ratio'), t('ratio'))}</span><strong>${recipe.ratio ? t('ratio_value', num(recipe.ratio)) : t('ratio_unknown')}</strong></p>
+    ${WHY_PANEL}</div>
+    <div class="why-scope"><div class="why-heading"><h2 class="section">${t('pours')}</h2>${whyButton(courseText('why', 'pours'), t('pours'))}</div>${WHY_PANEL}</div>
     ${steps ? `<ol class="pours">${steps}</ol>` : `<p class="status">${t('no_steps')}</p>`}
     ${recipe.notes ? `<p class="note">${escape(sourceNote(recipe.notes))}</p>` : ''}
     <div class="recipe-alt"><p><strong>${t('recipe_builder_title')}</strong> ${t('recipe_builder_text')}</p>
@@ -2439,13 +2519,14 @@ function calculatedTiles(recipe, attribute, editableTemperature = false) {
   const quantity = (field, step, label, low, high) => !attribute ? '' : `<div class="builder-quantity">${control(field, -step, `${t('builder_decrease')} ${label}`, recipe[field] <= low)}${control(field, step, `${t('builder_increase')} ${label}`, recipe[field] >= high)}</div>`;
   const info = grindInfo(recipe);
   const grind = info.value == null ? t('builder_grind_unmapped') : [info.value, info.scale].filter(Boolean).map(escape).join(' · ');
-  return `<div class="builder-tiles">
-      <div class="builder-tile"><span>${t('coffee')}</span><strong>${grams(recipe.dose_g)}</strong>${quantity('dose_g', 1, t('coffee'), 5, 40)}</div>
-      <div class="builder-tile"><span>${t('water')}</span><strong>${grams(recipe.water_g)}</strong>${quantity('water_g', 10, t('water'), 80, 600)}</div>
-      <div class="builder-tile"><span>${t('temperature')}</span><strong>${celsius(recipe.temperature_c)}</strong>${editableTemperature ? quantity('temperature_c', 1, t('temperature'), 80, 99) : ''}</div>
-      <div class="builder-tile"><span>${t('ratio')}</span><strong>${escape(num(recipe.ratio))}</strong></div>
-      <div class="builder-tile builder-tile-wide"><span>${t('grind')}</span><strong>${grind}</strong><small>${escape(info.note)}</small></div>
-    </div>`;
+  const why = (key, label) => whyButton(recipeWhy(recipe, key), label);
+  return `<div class="why-scope"><div class="builder-tiles">
+      <div class="builder-tile"><span>${t('coffee')} ${why('dose', t('coffee'))}</span><strong>${grams(recipe.dose_g)}</strong>${quantity('dose_g', 1, t('coffee'), 5, 40)}</div>
+      <div class="builder-tile"><span>${t('water')} ${why('water', t('water'))}</span><strong>${grams(recipe.water_g)}</strong>${quantity('water_g', 10, t('water'), 80, 600)}</div>
+      <div class="builder-tile"><span>${t('temperature')} ${why('temperature', t('temperature'))}</span><strong>${celsius(recipe.temperature_c)}</strong>${editableTemperature ? quantity('temperature_c', 1, t('temperature'), 80, 99) : ''}</div>
+      <div class="builder-tile"><span>${t('ratio')} ${whyButton(courseText('why', 'ratio'), t('ratio'))}</span><strong>${escape(num(recipe.ratio))}</strong></div>
+      <div class="builder-tile builder-tile-wide"><span>${t('grind')} ${why('grind', t('grind'))}</span><strong>${grind}</strong><small>${escape(info.note)}</small></div>
+    </div>${WHY_PANEL}</div>`;
 }
 
 function calculatedSteps(recipe) {
@@ -2811,6 +2892,13 @@ function extractionChart(chart) {
   </figure>`;
 }
 
+// Learn from every cup: one sentence per engine diagnosis, from data/course.json.
+function takeawayCard(code) {
+  const text = courseText('takeaways', code);
+  return text ? `<div class="takeaway" id="takeaway"><p class="takeaway-eyebrow">${t('takeaway_eyebrow')}</p>
+    <h3 class="takeaway-title">${t('takeaway_title')}</h3><p>${escape(text)}</p></div>` : '';
+}
+
 function renderBuilderCorrection() {
   const pane = $('builder-correction');
   const data = builder.correction;
@@ -2822,6 +2910,7 @@ function renderBuilderCorrection() {
     <p class="correction-kind">${t(data.measurement_kind === 'measured' ? 'correction_by_meter' : 'correction_by_taste')}</p>
     <h2 class="title" id="correction-title" tabindex="-1">${escape(ru ? data.diagnosis : data.diagnosis_en)}</h2>
     <p class="correction-explanation">${escape(ru ? data.explanation : data.explanation_en)}</p>
+    ${takeawayCard(data.diagnosis_code)}
     ${extractionChart(data.chart)}
     <h3 class="section">${t('correction_changes')}</h3>
     ${changes ? `<ul class="correction-changes">${changes}</ul>` : `<p class="note">${t(data.at_limit ? 'correction_at_limit' : 'correction_no_changes')}</p>`}
@@ -3814,6 +3903,7 @@ function renderCalculatedTimer(seconds, duration) {
   $('brew-controls').hidden = finished;
   $('brew-done-controls').hidden = !finished;
   $('brew-clock').classList.toggle('builder-clock', !ready);
+  if (ready || finished) showStepWhy(null);
   if (ready) {
     setText('brew-ready-origin', calculatedOrigin(recipe));
     setText('brew-ready-name', brewName || calculatedName(recipe));
@@ -3837,6 +3927,7 @@ function renderCalculatedTimer(seconds, duration) {
     notify(1);
   }
   const pouring = segment.kind === 'pour' || segment.kind === 'fill';
+  showStepWhy(segment.kind === 'pour' ? pourKind(segment.step) : segment.kind);
   const action = segment.step ? stepName(segment.step.instruction)
     : segment.kind === 'wait' ? t('builder_wait')
     : t(segment.kind === 'automatic' ? 'builder_automatic_wait' : 'builder_drawdown');
@@ -3946,6 +4037,8 @@ function updateTimer() {
     action = t('action_drawdown');
     remaining = duration ? t('remaining', countdown(duration - seconds)) : '';
   }
+  showStepWhy(finished || !started ? null : activeIndex >= 0 ? pourKind(steps[activeIndex])
+    : nextIndex >= 0 ? 'wait' : 'drawdown');
   const next = nextIndex >= 0 ? steps[nextIndex] : null;
   const nextText = !started || finished ? ''
     : next ? t('next_step', clock(next.start_seconds), next.total_water_g == null ? stepName(next.instruction).toLowerCase() : t('next_pour_to', stepName(next.instruction), grams(next.total_water_g)))
@@ -4076,6 +4169,7 @@ function renderMachine() {
   const steps = currentRecipe?.steps || [];
   const duration = currentRecipe?.duration_seconds || 0;
   let phase = '', clockText = '', action = '', line = '', progress = 0, nextText = '', toggle = '', toggleDisabled = false;
+  let whyKind = null;
   const clockNode = $('brew-clock');
   clockNode.classList.toggle('small', ['PREHEAT', 'READY', 'IDLE'].includes(status));
   if (status === 'PREHEAT' || status === 'IDLE') {
@@ -4107,6 +4201,7 @@ function renderMachine() {
       phase = t('phase_drawdown'); action = t('action_drawdown');
     }
     line = t('scale_line', grams(state.poured_g), celsius(state.temp_c));
+    whyKind = status === 'PAUSED' ? null : step ? pourKind(step) : next ? 'wait' : 'drawdown';
     progress = duration ? seconds / duration : 0;
     nextText = next ? t('next_step', clock(next.start_seconds), t('next_pour_to', stepName(next.instruction), grams(next.total_water_g)))
       : duration ? t('next_done', clock(duration)) : '';
@@ -4129,6 +4224,7 @@ function renderMachine() {
     toggle = t('machine_retry');
   }
   const done = status === 'DONE';
+  showStepWhy(done ? null : whyKind);
   setText('brew-phase', phase);
   setText('brew-clock', clockText);
   setText('brew-action', action);
@@ -4432,6 +4528,8 @@ function init() {
   wireRecognition();
   wireOwn();
   wireLockSheet();
+  wireWhy();
+  loadCourse();
   wirePlans();
   wireHome();
   loadPlans();

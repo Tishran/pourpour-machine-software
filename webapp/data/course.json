@@ -1,0 +1,126 @@
+{
+  "schema_version": 1,
+  "review": "draft",
+  "why": {
+    "dose": {
+      "ru": "Доза и вода вместе задают соотношение. Меньше воды на ту же дозу — плотнее чашка, больше воды — легче.",
+      "en": "Dose and water together set the brew ratio. Less water for the same dose makes a denser cup; more water, a lighter one.",
+      "source": "brewing_engine._CHANGE_WHY (water_g)"
+    },
+    "water": {
+      "ru": "Это влитая вода, а не вес готового напитка: часть воды остаётся в гуще, поэтому в чашке кофе меньше.",
+      "en": "This is the water poured in, not the weight of the drink: the grounds keep some of it, so the cup holds less.",
+      "source": "docs/BREWING.md#выход-и-структура-рецепта"
+    },
+    "ratio": {
+      "ru": "Соотношение — сколько граммов воды приходится на грамм кофе. Оно задаёт плотность чашки: чем меньше воды на грамм, тем чашка плотнее.",
+      "en": "The ratio is how many grams of water go with each gram of coffee. It sets how dense the cup is: less water per gram, denser cup.",
+      "source": "brewing_engine._CHANGE_WHY (water_g); docs/BREWING.md#реализация-фазы-6"
+    },
+    "temperature": {
+      "ru": "Горячая вода извлекает вкус быстрее, более прохладная — мягче. Для тёмной обжарки обычно начинают с воды попрохладнее.",
+      "en": "Hotter water extracts faster, cooler water more gently. Darker roasts usually start with cooler water.",
+      "source": "brewing_engine._CHANGE_WHY (temperature_c); docs/BREWING.md#коэффициенты-и-научная-оговорка"
+    },
+    "grind": {
+      "ru": "Мельче помол открывает воде больше поверхности кофе, и вкус извлекается полнее; грубее — меньше. Настройка шкалы приблизительная: подстройте её по вкусу и сливу.",
+      "en": "A finer grind exposes more of the coffee to water, so more flavor comes out; a coarser grind, less. The dial setting is approximate: tune it by taste and drawdown.",
+      "source": "brewing_engine._CHANGE_WHY (grind); docs/BREWING.md#кофемолки-критическое-различие-двух-микронов"
+    },
+    "grind_roaster": {
+      "ru": "Мельче помол открывает воде больше поверхности кофе, грубее — меньше. Это настройка обжарщика для его кофемолки: на своей подстройте по вкусу.",
+      "en": "A finer grind exposes more of the coffee to water, a coarser grind less. This is the roaster's setting for their grinder: on yours, tune it by taste.",
+      "source": "brewing_engine._CHANGE_WHY (grind); brewing_engine.adopt_roaster_recipe (assumptions)"
+    },
+    "pours": {
+      "ru": "Первое вливание смачивает весь кофе и даёт газу выйти. Следующие вливания поддерживают ровный уровень воды над слоем кофе.",
+      "en": "The first pour wets all the coffee and lets gas escape. The next pours keep the water level even above the coffee bed.",
+      "source": "brewing_engine._STEP_TEXTS (bloom, even)"
+    },
+    "time": {
+      "ru": "Общее время — ориентир от первого вливания до конца слива. Помол подстраивают по вкусу и по тому, как идёт слив.",
+      "en": "Total time is a guide from the first pour to the end of the drawdown. The grind is tuned by taste and by how the water drains.",
+      "source": "brewing_engine.build (assumptions); docs/BREWING.md#реализация-фазы-2"
+    }
+  },
+  "timer": {
+    "bloom": {
+      "ru": "Блум: смачиваем весь кофе, чтобы газ после обжарки вышел до основных вливаний.",
+      "en": "Bloom: all the coffee gets wet so the gas from roasting escapes before the main pours.",
+      "source": "brewing_engine._STEP_TEXTS (bloom)"
+    },
+    "pour": {
+      "ru": "Вливание: плавно поддерживаем ровный уровень воды над слоем кофе.",
+      "en": "Pour: keep the water level even above the coffee bed.",
+      "source": "brewing_engine._STEP_TEXTS (even)"
+    },
+    "wait": {
+      "ru": "Пауза: вода проходит через слой, контакт с кофе раскрывает вкус.",
+      "en": "Pause: water runs through the bed; contact with the coffee extracts flavor.",
+      "source": "brewing_engine._STEP_TEXTS (steep)"
+    },
+    "drawdown": {
+      "ru": "Слив: вода стекает, и контакт с кофе заканчивается.",
+      "en": "Drawdown: the water drains and contact with the coffee ends.",
+      "source": "brewing_engine._STEP_TEXTS (drain)"
+    },
+    "fill": {
+      "ru": "Заливаем всю воду сразу: весь кофе настаивается одновременно.",
+      "en": "All the water goes in at once: all the coffee steeps at the same time.",
+      "source": "brewing_engine._STEP_TEXTS (fill)"
+    },
+    "steep": {
+      "ru": "Настаивание: контакт воды с кофе раскрывает вкус.",
+      "en": "Steep: contact between water and coffee extracts flavor.",
+      "source": "brewing_engine._STEP_TEXTS (steep)"
+    },
+    "press": {
+      "ru": "Отжим: завершаем контакт воды с кофе.",
+      "en": "Press: this ends the contact between coffee and water.",
+      "source": "brewing_engine._STEP_TEXTS (press)"
+    },
+    "drain": {
+      "ru": "Слив: завершаем контакт воды с кофе.",
+      "en": "Drain: this ends the contact between coffee and water.",
+      "source": "brewing_engine._STEP_TEXTS (drain)"
+    },
+    "automatic": {
+      "ru": "Кофеварка льёт воду сама в стандартном режиме — ручных вливаний нет.",
+      "en": "The brewer pours by itself in its standard mode — there are no manual pours.",
+      "source": "docs/BREWING.md#выход-и-структура-рецепта (automatic_mode)"
+    }
+  },
+  "takeaways": {
+    "under": {
+      "ru": "Кисло или пусто → вкусу не хватило экстракции → в следующий раз мельче помол или горячее вода.",
+      "en": "Sour or hollow → the cup was under-extracted → next time, a finer grind or hotter water.",
+      "source": "brewing_engine._TASTE_EXPLANATIONS (under)"
+    },
+    "over": {
+      "ru": "Горько или сухо → вода вытянула лишнее → в следующий раз грубее помол или вода попрохладнее.",
+      "en": "Bitter or dry → the water pulled out too much → next time, a coarser grind or cooler water.",
+      "source": "brewing_engine._TASTE_EXPLANATIONS (over)"
+    },
+    "weak_after_sweet": {
+      "ru": "Сладко, но водянисто → экстракция в порядке, не хватает плотности → меньше воды на ту же дозу.",
+      "en": "Sweet but watery → extraction is fine, the cup lacks body → less water for the same dose.",
+      "source": "brewing_engine._TASTE_EXPLANATIONS (weak_after_sweet)"
+    },
+    "heavy_after_sweet": {
+      "ru": "Сладко, но тяжело → экстракция в порядке, чашка слишком плотная → чуть больше воды на ту же дозу.",
+      "en": "Sweet but heavy → extraction is fine, the cup is too dense → a little more water for the same dose.",
+      "source": "brewing_engine._TASTE_EXPLANATIONS (heavy_after_sweet)"
+    },
+    "on_target": {
+      "ru": "Сладость и баланс на месте → ничего не меняйте: заварите так же ещё раз, и если вкус повторится — это ваш рецепт.",
+      "en": "Sweetness and balance are there → change nothing: brew it the same way again, and if the taste repeats, it is your recipe.",
+      "source": "brewing_engine._TASTE_EXPLANATIONS (on_target)"
+    },
+    "strength_needs_sweetness": {
+      "ru": "Сначала сладость, потом крепость → крепость меняют, только когда появилась сладость, иначе легко спрятать недоэкстракцию.",
+      "en": "Sweetness first, then strength → change strength only once the cup is sweet, or under-extraction hides behind it.",
+      "source": "brewing_engine._TASTE_EXPLANATIONS (strength_needs_sweetness)"
+    }
+  },
+  "modules": []
+}

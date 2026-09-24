@@ -639,3 +639,26 @@ body[data-screen="start"] #screen-start, body[data-screen="settings"] #screen-se
   body[data-screen="settings"] #screen-find, body[data-screen="settings"] #screen-recipe,
   body[data-screen="plans"] #screen-find, body[data-screen="plans"] #screen-recipe { display: none; }
 }
+
+/* Learn why: a small "Why?" next to each number, the answer in its group's panel. */
+.why-button {
+  display: inline-flex; align-items: center; min-height: 48px; min-width: 48px; margin: 0; padding: 0 2px;
+  border: 0; background: none; color: var(--accent-ink); font-size: .8rem; font-weight: 700; vertical-align: middle;
+}
+.why-button span { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 10px; border: 1.5px solid var(--orange); border-radius: 999px; }
+.why-button[aria-expanded="true"] span { background: var(--orange); color: var(--on-orange); }
+.figures .why-button { margin: 2px 0 -8px -2px; }
+.line span .why-button, .builder-tile > span .why-button { margin: -10px 0 -10px 4px; }
+.why-panel {
+  margin: 8px 0 12px; padding: 10px 12px; border: 1.5px solid var(--orange); border-radius: 10px;
+  background: var(--accent-soft); color: var(--ink); font-size: .92rem; line-height: 1.45;
+}
+.why-heading { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.why-heading .section { margin-bottom: 8px; }
+.why-heading .why-button { margin: 16px 0 0; }
+.brew-why { margin: 0 auto 4px; max-width: 34ch; font-size: .95rem; color: var(--muted); }
+.brew-why-toggle { align-self: center; font-size: .85rem; color: var(--muted); }
+.takeaway { margin: 0 0 16px; padding: 14px 16px; border-radius: 14px; border: 2px solid var(--orange); background: var(--accent-soft); }
+.takeaway-eyebrow { margin: 0; font-size: .78rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); }
+.takeaway-title { margin: 2px 0 6px; font-size: 1.15rem; }
+.takeaway p:last-child { margin: 0; }
