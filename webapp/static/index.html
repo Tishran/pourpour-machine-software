@@ -24,14 +24,18 @@
     <section class="screen" id="screen-find" aria-labelledby="find-title">
       <header class="bar">
         <h1 class="brand" id="find-title">First Brew</h1>
-        <label class="language-switch">
-          <span class="visually-hidden" id="language-label"></span>
-          <select id="language" aria-labelledby="language-label">
-            <option value="ru">RU</option>
-            <option value="en">EN</option>
-          </select>
-        </label>
+        <div class="bar-actions">
+          <label class="language-switch">
+            <span class="visually-hidden" id="language-label"></span>
+            <select id="language" aria-labelledby="language-label">
+              <option value="ru">RU</option>
+              <option value="en">EN</option>
+            </select>
+          </label>
+          <button class="bar-close settings-button" id="open-settings" type="button"><span aria-hidden="true">⚙</span></button>
+        </div>
       </header>
+      <div class="home-mode" id="home-learn" hidden></div>
       <aside class="survey-offer" aria-labelledby="survey-title">
         <div class="survey-discount" aria-hidden="true">−15%</div>
         <div class="survey-copy">
@@ -45,6 +49,7 @@
       <button type="button" class="button primary big" id="photo-button"></button>
       <button class="button gallery-button" id="gallery-button" type="button"></button>
       <button class="button" id="photo-cancel" type="button" hidden></button>
+      <div class="home-mode" id="home-machine" hidden></div>
       <input class="visually-hidden" id="gallery-input" type="file" accept="image/*" tabindex="-1" aria-hidden="true">
       <input class="visually-hidden" id="photo-input" type="file" accept="image/*" capture="environment" tabindex="-1" aria-hidden="true">
       <figure class="scan-preview" id="scan-preview" data-scanning="false" hidden>
@@ -66,6 +71,25 @@
         <div class="results" id="recent-list" role="list"></div>
       </section>
       <div class="results" id="results" role="list" hidden></div>
+      <div class="home-mode" id="home-upgrade" hidden></div>
+      <button class="text-button home-plans" id="open-plans" type="button"></button>
+    </section>
+
+    <section class="screen screen-start" id="screen-start" aria-labelledby="start-title">
+      <header class="bar"><span class="brand">First Brew</span></header>
+      <h1 class="title" id="start-title" tabindex="-1"></h1>
+      <p class="subtitle" id="start-intro"></p>
+      <div class="start-cards">
+        <button class="start-card" type="button" id="start-learn" data-start-mode="learn"><strong></strong><span></span></button>
+        <button class="start-card" type="button" id="start-machine" data-start-mode="machine"><strong></strong><span></span></button>
+        <button class="start-card" type="button" id="start-skip" data-start-mode="skip"><strong></strong><span></span></button>
+      </div>
+    </section>
+
+    <section class="screen screen-settings" id="screen-settings" aria-labelledby="settings-title">
+      <header class="bar"><button class="back" id="settings-back" type="button"></button></header>
+      <h1 class="title" id="settings-title" tabindex="-1"></h1>
+      <div class="settings-body" id="settings-body"></div>
     </section>
 
     <section class="screen screen-builder" id="screen-construct" aria-labelledby="builder-title">

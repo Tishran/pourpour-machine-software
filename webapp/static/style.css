@@ -571,3 +571,56 @@ body[data-screen="plans"] #screen-plans { display: flex; flex-direction: column;
 .plan-name { margin: 0; font-size: 1.2rem; }
 .plan-price { margin: 8px 0 0; font-size: 1.6rem; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .plan-note { margin: 2px 0 0; font-size: .85rem; color: var(--muted); }
+
+/* First run: three ways to brew. */
+body[data-screen="start"] #screen-start, body[data-screen="settings"] #screen-settings { display: flex; flex-direction: column; }
+.start-cards { display: grid; gap: 12px; margin: 8px 0 24px; }
+.start-card {
+  display: grid; gap: 6px; width: 100%; min-height: 96px; padding: 18px 16px; text-align: left;
+  border: 1.5px solid var(--line); border-radius: 16px; background: var(--card);
+}
+.start-card strong { font-size: 1.25rem; line-height: 1.2; letter-spacing: -.01em; }
+.start-card span { font-size: .92rem; color: var(--muted); }
+.start-card:first-child { border-color: var(--orange); background: var(--accent-soft); }
+.start-card:first-child strong { color: var(--accent-ink); }
+.start-card[aria-pressed="true"] { outline: 2px solid var(--orange); outline-offset: 2px; }
+
+/* Home by mode. */
+.settings-button { font-size: 1.3rem; }
+.home-mode { display: grid; gap: 10px; margin: 0 0 16px; }
+#home-machine { margin-top: 12px; }
+.home-card { position: relative; min-width: 0; padding: 14px 16px; border: 1.5px solid var(--line); border-radius: 14px; background: var(--card); }
+.home-card .button { margin-top: 10px; width: 100%; }
+.home-eyebrow { margin: 0 0 4px; font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.home-card-title { margin: 0; font-size: 1.05rem; font-weight: 700; line-height: 1.3; }
+.home-card-meta { margin: 4px 0 0; font-size: .875rem; color: var(--muted); }
+.home-metric { margin: 0; font-size: 2rem; font-weight: 700; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.home-machine-status { margin: 0; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--line); background: var(--card); font-weight: 600; }
+.home-machine-status[data-online="true"] { border-color: var(--orange); }
+.home-machine-status[data-online="true"]::before { content: "●"; color: var(--orange); margin-right: 8px; }
+.home-machine-item { flex-wrap: wrap; }
+.home-machine-item .button { flex: none; min-height: 48px; padding: 8px 12px; font-size: .9rem; }
+#home-machine .section { margin: 12px 0 0; }
+#home-machine .results { margin: 0; }
+.recents.machine-mode { display: none; }
+.home-school-link {
+  min-height: 48px; padding: 10px 14px; border: 1.5px dashed var(--line); border-radius: 12px; background: none;
+  text-align: left; font-size: .92rem; color: var(--accent-ink);
+}
+.upgrade-card { border-color: var(--orange); padding-right: 52px; }
+.upgrade-close { position: absolute; top: 4px; right: 4px; width: 48px; height: 48px; border: 0; background: none; font-size: 1.4rem; color: var(--muted); }
+.home-plans { align-self: center; margin: 4px 0 24px; color: var(--muted); font-size: .92rem; }
+
+/* Settings. */
+.settings-body { display: flex; flex-direction: column; margin-top: 12px; padding-bottom: 32px; }
+.settings-label { display: block; margin-bottom: 6px; font-size: .92rem; font-weight: 600; }
+.settings-switch { display: flex; align-items: center; gap: 12px; min-height: 48px; }
+.settings-switch input { width: 24px; height: 24px; margin: 0; accent-color: var(--orange); flex: none; }
+.settings-wide { width: 100%; margin-top: 8px; }
+.settings-plan { margin: 0 0 8px; font-weight: 600; }
+@media (min-width: 900px) {
+  #screen-start, #screen-settings { grid-column: 1 / -1; width: 100%; max-width: 560px; margin: 0 auto; }
+  body[data-screen="start"] #screen-find, body[data-screen="start"] #screen-recipe,
+  body[data-screen="settings"] #screen-find, body[data-screen="settings"] #screen-recipe,
+  body[data-screen="plans"] #screen-find, body[data-screen="plans"] #screen-recipe { display: none; }
+}

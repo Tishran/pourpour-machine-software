@@ -463,6 +463,38 @@ const STRINGS = {
     lock_inline: (benefit) => `🔒 ${benefit} It comes with the membership.`,
     demo_notice: 'Demo: payment is not connected',
     plans_title: 'One membership. Three ways in.',
+    start_title: 'How do you want to brew coffee?',
+    start_intro: 'You can change this later in the settings.',
+    start_learn: 'Teach me',
+    start_learn_text: 'A recipe for your bag, every number explained, and a lesson from every cup.',
+    start_machine: 'I have a First Brew machine',
+    start_machine_text: 'Scan the bag: one tap sends the recipe to the machine.',
+    start_skip: 'Just a recipe now',
+    start_skip_text: 'A photo or the name of the bag — and the roaster’s recipe.',
+    home_last_brew: 'Last brew',
+    home_repeat: 'Brew again',
+    home_plans: 'Membership and the machine',
+    home_machine_recent: 'Latest recipes',
+    home_school_link: 'Want to know why a recipe tastes good? → School',
+    great_cups_title: 'Cups that came out great',
+    great_cups_value: (n, total) => `${n} of ${total}`,
+    great_cups_note: 'of your latest rated cups: the correction found the recipe on target',
+    great_cups_empty: 'Rate a cup after brewing — here you will see how many came out great.',
+    machine_home_ready: 'First Brew machine is connected and ready.',
+    machine_home_busy: 'The machine is brewing.',
+    machine_home_offline: 'The machine is not responding. Check its power and cable.',
+    machine_home_none: 'No machine is connected to this app: recipes brew with the timer.',
+    machine_home_not_owner: 'A machine is connected. Choose “I have a First Brew machine” in the settings to use it.',
+    upgrade_title: 'Tired of standing with a kettle? The First Brew machine brews your recipe for you.',
+    upgrade_payback: (days, saving) => `Estimate: it pays for itself in about ${days} days at one cup a day, saving ${saving} against a café cup.`,
+    upgrade_open: 'See the machine',
+    settings_brewing: 'While brewing',
+    settings_mode: 'How you brew',
+    settings_start_again: 'Show the first-run choice again',
+    settings_plan: 'Plan',
+    settings_plan_until: (plan, date) => `${plan} · included months until ${date}`,
+    settings_owner: 'machine owner',
+    settings_open_plans: 'Plans and membership',
   },
   ru: {
     app: 'First Brew',
@@ -907,6 +939,38 @@ const STRINGS = {
     lock_inline: (benefit) => `🔒 ${benefit} Это входит в подписку.`,
     demo_notice: 'Демо: оплата не подключена',
     plans_title: 'Одна подписка. Три способа начать.',
+    start_title: 'Как вы хотите варить кофе?',
+    start_intro: 'Выбор можно поменять в настройках.',
+    start_learn: 'Научи меня',
+    start_learn_text: 'Рецепт под пачку, объяснение каждого числа и урок из каждой чашки.',
+    start_machine: 'У меня машина First Brew',
+    start_machine_text: 'Сфотографируйте пачку — рецепт уходит на машину одним нажатием.',
+    start_skip: 'Просто рецепт сейчас',
+    start_skip_text: 'Фото или название пачки — и рецепт обжарщика.',
+    home_last_brew: 'Последняя заварка',
+    home_repeat: 'Повторить',
+    home_plans: 'Подписка и машина',
+    home_machine_recent: 'Последние рецепты',
+    home_school_link: 'Хотите понять, почему рецепт вкусный? → Школа',
+    great_cups_title: 'Чашки, которые получились отличными',
+    great_cups_value: (n, total) => `${n} из ${total}`,
+    great_cups_note: 'из последних оценённых: правка нашла рецепт в ориентире',
+    great_cups_empty: 'Оцените чашку после заварки — здесь появится, сколько получились отличными.',
+    machine_home_ready: 'Машина First Brew на связи и готова.',
+    machine_home_busy: 'Машина заваривает.',
+    machine_home_offline: 'Машина не отвечает. Проверьте питание и кабель.',
+    machine_home_none: 'К приложению не подключена машина: рецепты завариваются по таймеру.',
+    machine_home_not_owner: 'Машина на связи. Выберите в настройках «У меня машина First Brew», чтобы варить на ней.',
+    upgrade_title: 'Надоело стоять с чайником? Машина First Brew сварит ваш рецепт сама.',
+    upgrade_payback: (days, saving) => `Оценка: окупится примерно за ${days} дней при одной чашке в день — экономия ${saving} против чашки в кофейне.`,
+    upgrade_open: 'Посмотреть машину',
+    settings_brewing: 'Во время заваривания',
+    settings_mode: 'Как вы варите',
+    settings_start_again: 'Показать выбор при запуске ещё раз',
+    settings_plan: 'Тариф',
+    settings_plan_until: (plan, date) => `${plan} · включённые месяцы до ${date}`,
+    settings_owner: 'владелец машины',
+    settings_open_plans: 'Тарифы и подписка',
   },
 };
 const SETTINGS_KEY = 'firstbrew.settings.v1';
@@ -963,7 +1027,9 @@ const builder = {options: null, step: 0, mode: 'basic', draft: {}, variants: [],
   ratingOrigin: 'builder', ratedChips: null, ratedName: null,
   adjustCounted: null};  // the rated recipe whose free correction is already used
 const MACHINE_ACTIVE = ['PREHEAT', 'READY', 'BREWING', 'PAUSED'];
-const prefs = {vibrate: true, sound: true};
+// mode: how this person brews — learn, machine or skip (null until the first-run choice).
+const prefs = {vibrate: true, sound: true, mode: null};
+const MODES = ['learn', 'machine', 'skip'];
 
 // ---------------------------------------------------------------------------
 // Membership: plans and rights come from /api/plans (data/plans.json). There are no
@@ -1061,6 +1127,8 @@ async function loadPlans() {
 // Redraw everything that shows a lock or a plan.
 function entitlementChanged() {
   updateCtaBar();
+  if (currentScreen() === 'find') renderHome();
+  if (currentScreen() === 'settings') renderSettings();
   if (builder.options) { updateBuilderStep(); renderBuilderResult(); }
   if (currentScreen() === 'plans') renderPlans();
 }
@@ -1070,6 +1138,7 @@ function loadPrefs() {
     const saved = JSON.parse(localStorage.getItem(SETTINGS_KEY) || localStorage.getItem('firstbrew.prefs') || '{}');
     if (typeof saved.vibrate === 'boolean') prefs.vibrate = saved.vibrate;
     if (typeof saved.sound === 'boolean') prefs.sound = saved.sound;
+    if (MODES.includes(saved.mode)) prefs.mode = saved.mode;
   } catch (error) { /* private mode or blocked storage: keep defaults */ }
 }
 function savePrefs() {
@@ -1162,7 +1231,7 @@ function selectRecent(entry) {
 // ---------------------------------------------------------------------------
 // Screens and browser history
 // ---------------------------------------------------------------------------
-const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own', 'plans'];
+const SCREENS = ['find', 'confirm', 'recipe', 'construct', 'brew', 'mine', 'own', 'plans', 'start', 'settings'];
 function currentScreen() { return document.body.dataset.screen; }
 
 function show(screen, {push = true} = {}) {
@@ -1177,6 +1246,9 @@ function show(screen, {push = true} = {}) {
   if (screen === 'mine') renderMine();
   if (screen === 'own') renderOwn();
   if (screen === 'plans') renderPlans();
+  if (screen === 'start') renderStart();
+  if (screen === 'settings') renderSettings();
+  if (screen === 'find') renderHome();
   if (screen === 'recipe' && machineInfo?.enabled) refreshMachine();
   if (screen === 'brew' && brewMode === 'machine') renderMachine();
   if (push && history.state?.screen !== screen) {
@@ -1186,7 +1258,8 @@ function show(screen, {push = true} = {}) {
   const focusTarget = screen === 'find' ? null : screen === 'recipe' ? $('recipe-title')
     : screen === 'confirm' ? $('confirm-title') : screen === 'construct' ? builderFocusTarget()
     : screen === 'mine' ? $('mine-title') : screen === 'own' ? $('own-title')
-    : screen === 'plans' ? $('plans-title') : $('brew-toggle');
+    : screen === 'plans' ? $('plans-title') : screen === 'start' ? $('start-title')
+    : screen === 'settings' ? $('settings-title') : $('brew-toggle');
   focusTarget?.focus({preventScroll: true});
 }
 
@@ -2184,7 +2257,7 @@ async function rateRoasterRecipe() {
     reply = await post('/api/recipes/adopt', JSON.stringify({recipe: payload, source: roasterSource()}), 'application/json');
   } catch (error) { fail(t('rate_incomplete')); return; }
   setStatus('cta-status', '');
-  openBuilderRating(reply.recipe, {fresh: true, origin: 'recipe', chips: roasterChips()});
+  openBuilderRating(reply.recipe, {fresh: true, origin: 'recipe', chips: roasterChips(), journal: onBrew ? lastJournalId : null});
   if (onBrew) {
     history.replaceState({screen: 'construct'}, '', '#construct');
     show('construct', {push: false});
@@ -2437,9 +2510,10 @@ async function adjustBuilderQuantity(spec) {
 // ---------------------------------------------------------------------------
 const MEASURE_FIELDS = {'fb-tds': 'tds', 'fb-yield': 'yield', 'fb-dose': 'dose', 'fb-drawdown': 'drawdown'};
 
-function openBuilderRating(recipe, {fresh = false, origin = 'builder', chips = null, name = null} = {}) {
+function openBuilderRating(recipe, {fresh = false, origin = 'builder', chips = null, name = null, journal = null} = {}) {
   if (!recipe) return;
   clearTimeout(builder.correctionTimer);
+  if (fresh || builder.rated !== recipe) builder.journalId = journal;
   builder.ratingOrigin = origin;
   builder.ratedName = name;
   builder.ratedChips = chips || (origin === 'builder' ? builderContext(recipe) : null);
@@ -2585,6 +2659,7 @@ async function requestCorrection({focus = false} = {}) {
     if (fresh && entitlement().plan !== 'member') countUse('adjust');
     builder.adjustCounted = rated;
     builder.correction = {...data, feedback};
+    journalRating(rated, feedback, data.diagnosis_code);
     builder.step = 4;
     builderStatus('');
     renderBuilderCorrection();
@@ -3184,12 +3259,12 @@ async function ensureBuilderOptions() {
   } catch (error) { return false; }
 }
 
-async function rateOwnRecipe(recipe, chips, name = null) {
+async function rateOwnRecipe(recipe, chips, name = null, journal = null) {
   if (!await ensureBuilderOptions()) {
     setStatus(currentScreen() === 'own' ? 'own-status' : 'status', t('builder_error'), true);
     return false;
   }
-  openBuilderRating(recipe, {fresh: true, origin: 'own', chips, name});
+  openBuilderRating(recipe, {fresh: true, origin: 'own', chips, name, journal});
   return true;
 }
 
@@ -3264,6 +3339,264 @@ function wireOwn() {
     renderMineEntry();
     if (currentScreen() === 'mine') renderMine();
   });
+}
+
+// ---------------------------------------------------------------------------
+// Journal: every brewed or rated cup on this device. An entry points to its recipe
+// (roaster page, saved recipe, lesson) instead of copying it; "Recent" and "My recipes"
+// stay as they are.
+// ---------------------------------------------------------------------------
+const JOURNAL_KEY = 'firstbrew.journal.v1';
+const MAX_JOURNAL = 200;
+const JOURNAL_REFS = ['roaster', 'own', 'calculated', 'lesson'];
+let lastJournalId = null;
+function validJournalEntry(entry) {
+  return entry && typeof entry.id === 'string' && entry.id.length <= 64 &&
+    typeof entry.at === 'string' && !Number.isNaN(Date.parse(entry.at)) &&
+    typeof entry.coffee === 'string' && entry.coffee.length <= 180 &&
+    ['hand', 'machine'].includes(entry.method) &&
+    (entry.ref == null || JOURNAL_REFS.includes(entry.ref.kind)) &&
+    Array.isArray(entry.tastes) && entry.tastes.every(taste => typeof taste === 'string') &&
+    (entry.diagnosis_code == null || typeof entry.diagnosis_code === 'string');
+}
+function journalEntries() {
+  try {
+    const stored = JSON.parse(localStorage.getItem(JOURNAL_KEY) || '[]');
+    return Array.isArray(stored) ? stored.filter(validJournalEntry) : [];
+  } catch (error) { return []; }
+}
+function writeJournal(entries) {
+  try { localStorage.setItem(JOURNAL_KEY, JSON.stringify(entries.slice(0, MAX_JOURNAL))); return true; }
+  catch (error) { return false; }
+}
+function addJournal(details) {
+  const entry = {id: `cup-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`,
+    at: new Date().toISOString(), coffee: '', method: 'hand', ref: null, tastes: [], diagnosis_code: null, ...details};
+  entry.coffee = String(entry.coffee || '').slice(0, 180);
+  if (!validJournalEntry(entry) || !writeJournal([entry, ...journalEntries()])) return null;
+  return entry;
+}
+function updateJournal(id, changes) {
+  const entries = journalEntries();
+  const index = entries.findIndex(entry => entry.id === id);
+  if (index < 0) return null;
+  entries[index] = {...entries[index], ...changes};
+  return writeJournal(entries) ? entries[index] : null;
+}
+// Where a recipe lives, for the journal: a link, never a copy.
+function recipeRef(recipe, origin) {
+  if (origin === 'own' && own.entry && ownSaved(own.entry)) return {kind: 'own', id: own.entry.id};
+  if (recipe?.origin === 'calculated') return {kind: 'calculated', key: ownRecipeKey(recipe)};
+  if (currentData?.product?.url) return {kind: 'roaster', url: currentData.product.url,
+    name: currentData.product.name, device: recipe?.device || ''};
+  return null;
+}
+function recipeCoffee(recipe, origin) {
+  if (origin === 'own' && own.entry) return ownName(own.entry);
+  if (recipe?.origin === 'calculated') {
+    const chips = builder.ratedChips || (builder.options && recipe.basis !== 'roaster' ? builderContext(recipe) : []);
+    return [calculatedName(recipe), chips?.[0]].filter(Boolean).join(' · ');
+  }
+  return currentData ? recipeTitle() : '';
+}
+function logBrew(method) {
+  if (!currentRecipe) return;
+  const entry = addJournal({method, coffee: recipeCoffee(currentRecipe, brewOrigin), ref: recipeRef(currentRecipe, brewOrigin)});
+  lastJournalId = entry?.id || null;
+}
+// A rating belongs to the cup it came from; a cup rated without the timer gets its own entry.
+function journalRating(recipe, feedback, code) {
+  const record = {tastes: [...(feedback.descriptors || [])], diagnosis_code: code || null};
+  if (builder.journalId && updateJournal(builder.journalId, record)) return;
+  const origin = builder.ratingOrigin === 'own' ? 'own' : builder.ratingOrigin === 'recipe' ? 'recipe' : 'construct';
+  const entry = addJournal({method: 'hand', coffee: builder.ratedName || recipeCoffee(recipe, origin),
+    ref: recipeRef(recipe, origin), ...record});
+  builder.journalId = entry?.id || null;
+}
+// "Cups that came out great": the engine's own diagnosis, nothing invented.
+function greatCups(entries = journalEntries()) {
+  const rated = entries.filter(entry => entry.diagnosis_code).slice(0, 10);
+  return {great: rated.filter(entry => entry.diagnosis_code === 'on_target').length, total: rated.length};
+}
+
+// ---------------------------------------------------------------------------
+// First run and home: learn, machine or just a recipe. Settings hold the same choice.
+// ---------------------------------------------------------------------------
+function renderStart() {
+  setText('start-title', t('start_title'));
+  setText('start-intro', t('start_intro'));
+  for (const mode of MODES) {
+    const card = $(`start-${mode}`);
+    card.querySelector('strong').textContent = t(`start_${mode}`);
+    card.querySelector('span').textContent = t(`start_${mode}_text`);
+    card.setAttribute('aria-pressed', String(prefs.mode === mode));
+  }
+}
+function chooseMode(mode) {
+  if (!MODES.includes(mode)) return;
+  prefs.mode = mode;
+  savePrefs();
+  if (mode === 'machine' && !membership.machineOwner) { membership.machineOwner = true; saveMembership(); }
+  history.replaceState({screen: 'find'}, '', location.pathname + location.search);
+  show('find', {push: false});
+  entitlementChanged();
+}
+
+function resolveRef(ref) {
+  if (ref?.kind === 'roaster') {
+    const recents = loadRecents().filter(entry => entry.product.url === ref.url);
+    const recent = recents.find(entry => (entry.recipe.device || '') === (ref.device || '')) || recents[0];
+    return recent ? () => selectRecent(recent) : null;
+  }
+  if (ref?.kind === 'own') {
+    const entry = ownEntries().find(item => item.id === ref.id);
+    return entry ? () => openOwn(entry, 'home') : null;
+  }
+  return null;
+}
+function renderHome() {
+  document.body.dataset.mode = prefs.mode || 'skip';
+  renderHomeLearn();
+  renderHomeMachine();
+  renderUpgrade();
+  setText('open-plans', t('home_plans'));
+}
+function renderHomeLearn() {
+  const box = $('home-learn');
+  box.hidden = prefs.mode !== 'learn';
+  if (box.hidden) return;
+  const entries = journalEntries();
+  const last = entries.find(entry => resolveRef(entry.ref));
+  const cups = greatCups(entries);
+  box.innerHTML = `
+    ${last ? `<div class="home-card"><p class="home-eyebrow">${t('home_last_brew')}</p>
+      <p class="home-card-title">${escape(last.coffee)}</p><p class="home-card-meta">${escape(ownDate(last.at))}</p>
+      <button type="button" class="button" id="home-repeat">${t('home_repeat')}</button></div>` : ''}
+    <div class="home-card"><p class="home-eyebrow">${t('great_cups_title')}</p>
+      ${cups.total ? `<p class="home-metric">${t('great_cups_value', cups.great, cups.total)}</p><p class="home-card-meta">${t('great_cups_note')}</p>`
+        : `<p class="home-card-meta">${t('great_cups_empty')}</p>`}</div>`;
+  $('home-repeat')?.addEventListener('click', () => resolveRef(last.ref)?.());
+}
+function machineHomeStatus() {
+  if (!machineInfo?.enabled) return t('machine_home_none');
+  if (!machineOnline) return t('machine_home_offline');
+  if (!can('machine_brew')) return t('machine_home_not_owner');
+  return MACHINE_ACTIVE.includes(machineState?.state) ? t('machine_home_busy') : t('machine_home_ready');
+}
+function renderHomeMachine() {
+  const box = $('home-machine');
+  box.hidden = prefs.mode !== 'machine';
+  $('recents').classList.toggle('machine-mode', !box.hidden);
+  if (box.hidden) return;
+  const roaster = loadRecents().map(entry => ({at: entry.usedAt, name: entry.product.name,
+    meta: `${grams(entry.recipe.coffee_g)} · ${grams(entry.recipe.water_g)}`, kind: 'recent', entry}));
+  const saved = ownEntries().filter(entry => entry.recipe.machine_compatible).map(entry => ({
+    at: Date.parse(entry.last_brewed_at || entry.saved_at), name: ownName(entry),
+    meta: `${grams(entry.recipe.dose_g)} · ${grams(entry.recipe.water_g)}`, kind: 'own', entry}));
+  const items = [...roaster, ...saved].sort((a, b) => b.at - a.at).slice(0, 4);
+  homeMachineItems = items;
+  const ready = machineConnected() && !MACHINE_ACTIVE.includes(machineState?.state);
+  box.innerHTML = `<p class="home-machine-status" data-online="${machineConnected()}">${escape(machineHomeStatus())}</p>
+    ${items.length ? `<h2 class="section">${t('home_machine_recent')}</h2><div class="results">${items.map((item, index) => `
+      <div class="coffee home-machine-item"><span class="coffee-copy"><strong>${escape(item.name)}</strong><small>${item.meta}</small></span>
+        <button type="button" class="button primary" data-machine-item="${index}"${ready ? '' : ' disabled'}>${t('machine_button')}</button></div>`).join('')}</div>` : ''}
+    <button type="button" class="home-school-link" id="home-school">${t('home_school_link')}</button>`;
+}
+let homeMachineItems = [];
+function brewHomeItem(index) {
+  const item = homeMachineItems[index];
+  if (!item || !machineConnected()) return;
+  if (item.kind === 'recent') {
+    selectRecent(item.entry);
+    brewOrigin = 'recipe';
+  } else {
+    openOwn(item.entry, 'home');
+    brewOrigin = 'own';
+    currentRecipe = item.entry.recipe;
+  }
+  startMachineBrew();
+}
+// Learn mode: a gentle word about the machine, no earlier than the 10th brew and once a week.
+const UPGRADE_WEEK = 7 * 86400000;
+let upgradeVisible = false;
+function renderUpgrade() {
+  const box = $('home-upgrade');
+  const due = prefs.mode === 'learn' && PLANS && !membership.machineOwner && journalEntries().length >= 10 &&
+    Date.now() - membership.upgradeShownAt >= UPGRADE_WEEK;
+  if (due && !upgradeVisible) { upgradeVisible = true; membership.upgradeShownAt = Date.now(); saveMembership(); }
+  box.hidden = !upgradeVisible || prefs.mode !== 'learn';
+  if (box.hidden) return;
+  const machine = PLANS.plans.find(plan => plan.id === 'machine_bundle');
+  const saving = PLANS.cafe_cup_rub - PLANS.home_cup_rub;
+  const price = machine.price_rub;
+  const days = typeof price === 'object' ? `${Math.round(price.min / saving)}–${Math.round(price.max / saving)}` : String(Math.round(price / saving));
+  box.innerHTML = `<div class="home-card upgrade-card">
+    <button type="button" class="upgrade-close" id="upgrade-close" aria-label="${escape(t('lock_later'))}">×</button>
+    <p class="home-card-title">${t('upgrade_title')}</p>
+    <p class="home-card-meta">${t('upgrade_payback', days, rubles(saving))}</p>
+    <button type="button" class="button" id="upgrade-open">${t('upgrade_open')}</button></div>`;
+  $('upgrade-close').addEventListener('click', () => { upgradeVisible = false; renderUpgrade(); });
+  $('upgrade-open').addEventListener('click', openPlans);
+}
+function wireHome() {
+  $('screen-start').addEventListener('click', event => {
+    const card = event.target.closest('[data-start-mode]');
+    if (card) chooseMode(card.dataset.startMode);
+  });
+  $('open-settings').addEventListener('click', () => show('settings'));
+  $('open-plans').addEventListener('click', openPlans);
+  $('home-machine').addEventListener('click', event => {
+    const item = event.target.closest('[data-machine-item]');
+    if (item) brewHomeItem(Number(item.dataset.machineItem));
+  });
+  $('settings-back').addEventListener('click', () => back('find'));
+  $('settings-body').addEventListener('change', event => {
+    const target = event.target;
+    if (target.id === 'settings-language') changeLanguageTo(target.value);
+    else if (target.id === 'settings-sound' || target.id === 'settings-vibrate') {
+      prefs[target.id === 'settings-sound' ? 'sound' : 'vibrate'] = target.checked;
+      savePrefs();
+      setToggle('brew-sound', 'sound');
+      setToggle('brew-vibrate', 'vibrate');
+    } else if (target.name === 'settings-mode') {
+      prefs.mode = target.value;
+      if (target.value === 'machine' && !membership.machineOwner) { membership.machineOwner = true; saveMembership(); }
+      savePrefs();
+      renderHome();
+      renderSettings();
+    }
+  });
+  $('settings-body').addEventListener('click', event => {
+    const id = event.target.closest('button')?.id;
+    if (id === 'settings-plans') openPlans();
+    else if (id === 'settings-start') show('start');
+  });
+}
+function planName(id) {
+  return PLANS?.plans.find(plan => plan.id === id)?.name[LANG] || id;
+}
+function renderSettings() {
+  setText('settings-title', t('settings'));
+  const state = entitlement();
+  const mode = prefs.mode || 'skip';
+  const bundle = state.includedUntil && state.machineOwner;
+  const planLine = state.plan === 'member'
+    ? (bundle ? t('settings_plan_until', planName('machine_bundle'), ownDate(state.includedUntil)) : planName('member'))
+    : planName('free');
+  $('settings-body').innerHTML = `
+    <label class="builder-field" for="settings-language"><span class="settings-label">${t('language')}</span>
+      <select id="settings-language"><option value="ru"${LANG === 'ru' ? ' selected' : ''}>Русский</option><option value="en"${LANG === 'en' ? ' selected' : ''}>English</option></select></label>
+    <h2 class="section">${t('settings_brewing')}</h2>
+    <label class="settings-switch"><input type="checkbox" id="settings-sound"${prefs.sound ? ' checked' : ''}><span>${t('sound')}</span></label>
+    ${navigator.vibrate ? `<label class="settings-switch"><input type="checkbox" id="settings-vibrate"${prefs.vibrate ? ' checked' : ''}><span>${t('vibrate')}</span></label>` : ''}
+    <h2 class="section">${t('settings_mode')}</h2>
+    <div class="settings-modes" role="radiogroup" aria-label="${escape(t('settings_mode'))}">${MODES.map(value => `
+      <label class="settings-switch"><input type="radio" name="settings-mode" value="${value}"${mode === value ? ' checked' : ''}><span>${t(`start_${value}`)}</span></label>`).join('')}</div>
+    <button type="button" class="button settings-wide" id="settings-start">${t('settings_start_again')}</button>
+    <h2 class="section">${t('settings_plan')}</h2>
+    <p class="settings-plan">${escape(planLine)}${state.machineOwner ? ` · ${t('settings_owner')}` : ''}</p>
+    <p class="demo-note">${t('demo_notice')}</p>
+    <button type="button" class="button settings-wide" id="settings-plans">${t('settings_open_plans')}</button>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -3449,6 +3782,7 @@ function updateTimer() {
       clearInterval(timerInterval);
       keepAwake(false);
       notify(2);
+      logBrew('hand');
       updateBrewStartLabel();
     }
   }
@@ -3539,6 +3873,7 @@ async function refreshMachine() {
   }
   updateCtaBar();
   if (brewMode === 'machine') renderMachine();
+  if (currentScreen() === 'find') renderHomeMachine();
 }
 
 function connectMachineEvents() {
@@ -3568,7 +3903,7 @@ function onMachineState(previous, state) {
   if (state.state === 'PREHEAT' && (previous?.state !== 'PREHEAT' || machineHeatStart == null)) machineHeatStart = state.temp_c;
   if (brewMode === 'machine') {
     if (state.state === 'BREWING' && state.step >= 0 && state.step !== machineLastStep) notify(1);
-    if (state.state === 'DONE' && previous?.state !== 'DONE') notify(2);
+    if (state.state === 'DONE' && previous?.state !== 'DONE') { notify(2); logBrew('machine'); }
     keepAwake(MACHINE_ACTIVE.includes(state.state) && currentScreen() === 'brew');
     renderMachine();
   }
@@ -3806,6 +4141,12 @@ function localize() {
   $('mine-builder').textContent = t('builder_open');
   $('own-back').textContent = t('back');
   $('plans-back').textContent = t('back');
+  $('settings-back').textContent = t('back');
+  $('open-settings').setAttribute('aria-label', t('settings'));
+  $('open-settings').title = t('settings');
+  if (currentScreen() === 'start') renderStart();
+  if (currentScreen() === 'settings') renderSettings();
+  renderHome();
   setText('lock-eyebrow', `${LOCK} ${t('lock_eyebrow')}`);
   setText('lock-demo', t('demo_notice'));
   setText('lock-plans', t('lock_view'));
@@ -3864,6 +4205,15 @@ function localize() {
 
 }
 
+function changeLanguageTo(value) {
+  if (!['ru', 'en'].includes(value)) return;
+  captureBuilderDraft();
+  LANG = value;
+  savePrefs(); localize();
+  if (!photoRequest) setStatus('status', t('status_ready', modelOptions?.coffees || 0));
+  if (currentData && currentRecipe?.origin !== 'calculated' && !running && brewMode === 'local') renderRecipe(0, currentRecipe);
+}
+
 function init() {
   loadPrefs();
   localize();
@@ -3871,14 +4221,14 @@ function init() {
   const shared = location.hash.startsWith(SHARE_PREFIX) ? location.hash.slice(SHARE_PREFIX.length) : null;
   history.replaceState({screen: 'find'}, '', location.pathname + location.search);
   document.body.dataset.screen = 'find';
+  renderHome();
+  // First run: how do you want to brew? A shared recipe link opens the recipe right away.
+  if (!shared && !prefs.mode) {
+    history.replaceState({screen: 'start'}, '', '#start');
+    show('start', {push: false});
+  }
 
-  const changeLanguage = event => {
-    captureBuilderDraft();
-    LANG = event.target.value;
-    savePrefs(); localize();
-    if (!photoRequest) setStatus('status', t('status_ready', modelOptions?.coffees || 0));
-    if (currentData && currentRecipe?.origin !== 'calculated' && !running && brewMode === 'local') renderRecipe(0, currentRecipe);
-  };
+  const changeLanguage = event => changeLanguageTo(event.target.value);
   $('language').addEventListener('change', changeLanguage);
   $('builder-language').addEventListener('change', changeLanguage);
   const wide = matchMedia('(min-width: 900px)');
@@ -3939,9 +4289,9 @@ function init() {
     if (brewMode === 'machine') leaveMachineMode();
     resetTimer();
     if (brewOrigin === 'construct') {
-      openBuilderRating(recipe, {fresh: true, chips: builder.ratedChips});
+      openBuilderRating(recipe, {fresh: true, chips: builder.ratedChips, journal: lastJournalId});
       back('construct');
-    } else if (await rateOwnRecipe(recipe, own.entry?.context_chips, own.entry?.title)) {
+    } else if (await rateOwnRecipe(recipe, own.entry?.context_chips, own.entry?.title, lastJournalId)) {
       // The timer entry becomes the rating, so "back" leads to the saved recipe.
       history.replaceState({screen: 'construct'}, '', '#construct');
       show('construct', {push: false});
@@ -3971,6 +4321,7 @@ function init() {
   wireOwn();
   wireLockSheet();
   wirePlans();
+  wireHome();
   loadPlans();
   if (shared) openShareLink(shared);
   refreshMachine();
